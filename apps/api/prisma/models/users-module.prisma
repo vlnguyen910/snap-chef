@@ -1,0 +1,22 @@
+enum UserRoles {
+    USER
+    MODERATOR
+    ADMIN
+}
+
+model User {
+    id         String
+    email      String    @unique
+    hashed_password   String
+    username   String
+    role       UserRoles
+    avatar_url String
+    is_active  Boolean
+    bio        String?
+    create_at  DateTime
+
+    //Relations
+    Recipe     Recipe[]
+}
+
+
