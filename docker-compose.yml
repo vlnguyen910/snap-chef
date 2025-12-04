@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 12345
-      POSTGRES_DB: snap-chef-db
+      POSTGRES_DB: snap_chef_db
     volumes:
       - db_data:/var/lib/postgresql/data
 
