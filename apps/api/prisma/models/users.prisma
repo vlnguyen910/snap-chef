@@ -5,7 +5,7 @@ enum UserRoles {
 }
 
 model User {
-    id         String
+    id         String    @id @default(cuid()) @unique
     email      String    @unique
     hashed_password   String
     username   String
