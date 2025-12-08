@@ -14,11 +14,14 @@ import argon2 from 'argon2';
 import { TokenPayload } from '../../common/interfaces/auth.interface';
 import { JwtTokenType } from '../../common/enums/jwt.enum';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
-import { User } from 'src/generated/prisma/client';
+import { User, UserRoles } from 'src/generated/prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import type { ConfigType } from '@nestjs/config';
 import { jwtConfiguration } from 'src/common/config/jwt.config';
 import { LoginResponseDto } from './dto/respone/login-respone.dto';
+import { SignUpDto } from './dto/request/sign-up.dto';
+import { SignUpResponseDto } from './dto/respone/sign-up-respone.dto';
+import { RefreshTokenResponseDto } from './dto/respone/refresh-token-respone.dto';
 
 @Injectable()
 export class AuthService {
@@ -41,6 +44,36 @@ export class AuthService {
       throw new UnauthorizedException('Email or password is incorrect');
 
     return this.manageUserToken(user);
+  }
+
+  async signUp(body: SignUpDto): Promise<SignUpResponseDto> {
+    const { email, username, password } = body;
+    const existingUser = await this.userService.findByEmail(email);
+    if (existingUser) {
+      throw new ForbiddenException('Email is already in use');
+    }
+
+    const hashedPassword = await argon2.hash(password);
+    const newUser = await this.userService.create({
+      email,
+      username,
+      password: hashedPassword,
+      role: UserRoles.USER,
+    });
+
+    return this.manageUserToken(newUser);
+  }
+
+  async refreshToken(
+    userPayload: TokenPayload,
+  ): Promise<RefreshTokenResponseDto> {
+    const access_token = await this.generateToken(
+      userPayload,
+      JwtTokenType.AccessToken,
+      this.jwtConfig.accessTokenExpiresIn,
+    );
+
+    return { access_token };
   }
 
   private async manageUserToken(user: User) {

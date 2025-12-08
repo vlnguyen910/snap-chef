@@ -12,10 +12,7 @@ export class UsersService {
       data: { ...payload },
     });
 
-    return {
-      message: 'User created',
-      user,
-    };
+    return user;
   }
 
   findAll() {
