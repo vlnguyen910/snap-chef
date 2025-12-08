@@ -27,7 +27,7 @@ export default function LoginForm() {
         <h2 className="text-3xl font-bold text-gray-900">Welcome back</h2>
         <p className="mt-2 text-sm text-gray-600">
           Don't have an account?{' '}
-          <Link to="/register" className="text-orange-600 hover:text-orange-700 font-medium">
+          <Link to="/auth/register" className="text-orange-600 hover:text-orange-700 font-medium">
             Sign up
           </Link>
         </p>

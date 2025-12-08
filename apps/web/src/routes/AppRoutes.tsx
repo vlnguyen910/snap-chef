@@ -19,7 +19,7 @@ export default function AppRoutes() {
         {/* Auth Routes */}
         <Route path='/auth'>
           <Route path="login" element={<AuthPage />} />
-          <Route path="register" element={<Navigate to="/auth/login?mode=register" replace />} />
+          <Route path="register" element={<AuthPage />} />
         </Route>
         <Route path="/recipes" element={<RecipesPage />} />
         <Route path="/recipes/:id" element={<RecipeDetailPage />} />
