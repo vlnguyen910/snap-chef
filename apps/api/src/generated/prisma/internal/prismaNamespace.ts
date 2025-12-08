@@ -780,7 +780,7 @@ export type RecipeIngredientScalarFieldEnum = (typeof RecipeIngredientScalarFiel
 export const UserScalarFieldEnum = {
   id: 'id',
   email: 'email',
-  hashed_password: 'hashed_password',
+  password: 'password',
   username: 'username',
   role: 'role',
   avatar_url: 'avatar_url',

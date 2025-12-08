@@ -5,15 +5,15 @@ enum UserRoles {
 }
 
 model User {
-    id         String    @id @default(cuid()) @unique
+    id         String    @id @default(cuid()) 
     email      String    @unique
-    hashed_password   String
+    password   String
     username   String
     role       UserRoles
-    avatar_url String
-    is_active  Boolean
+    avatar_url String?   
+    is_active  Boolean  @default(true)
     bio        String?
-    create_at  DateTime
+    create_at  DateTime @default(now())
 
     //Relations
     Recipe     Recipe[]
