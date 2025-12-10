@@ -9,6 +9,15 @@
 * 🟢 You can import this file directly.
 */
 
+export const UserRoles = {
+  USER: 'USER',
+  MODERATOR: 'MODERATOR',
+  ADMIN: 'ADMIN'
+} as const
+
+export type UserRoles = (typeof UserRoles)[keyof typeof UserRoles]
+
+
 export const RecipeStatus = {
   DRAFT: 'DRAFT',
   PUBLISHED: 'PUBLISHED',
@@ -17,12 +26,3 @@ export const RecipeStatus = {
 } as const
 
 export type RecipeStatus = (typeof RecipeStatus)[keyof typeof RecipeStatus]
-
-
-export const UserRoles = {
-  USER: 'USER',
-  MODERATOR: 'MODERATOR',
-  ADMIN: 'ADMIN'
-} as const
-
-export type UserRoles = (typeof UserRoles)[keyof typeof UserRoles]
