@@ -203,12 +203,12 @@ export type IngredientOrderByWithRelationInput = {
 
 export type IngredientWhereUniqueInput = Prisma.AtLeast<{
   id?: number
+  name?: string
   AND?: Prisma.IngredientWhereInput | Prisma.IngredientWhereInput[]
   OR?: Prisma.IngredientWhereInput[]
   NOT?: Prisma.IngredientWhereInput | Prisma.IngredientWhereInput[]
-  name?: Prisma.StringFilter<"Ingredient"> | string
   recipeIngredients?: Prisma.RecipeIngredientListRelationFilter
-}, "id">
+}, "id" | "name">
 
 export type IngredientOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

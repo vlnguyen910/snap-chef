@@ -51,10 +51,11 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
+  User: 'User',
   Recipe: 'Recipe',
   Ingredient: 'Ingredient',
   RecipeIngredient: 'RecipeIngredient',
-  User: 'User'
+  Step: 'Step'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -71,6 +72,21 @@ export const TransactionIsolationLevel = {
 } as const
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+
+
+export const UserScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  password: 'password',
+  username: 'username',
+  role: 'role',
+  avatar_url: 'avatar_url',
+  is_active: 'is_active',
+  bio: 'bio',
+  create_at: 'create_at'
+} as const
+
+export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
 
 export const RecipeScalarFieldEnum = {
@@ -108,19 +124,15 @@ export const RecipeIngredientScalarFieldEnum = {
 export type RecipeIngredientScalarFieldEnum = (typeof RecipeIngredientScalarFieldEnum)[keyof typeof RecipeIngredientScalarFieldEnum]
 
 
-export const UserScalarFieldEnum = {
+export const StepScalarFieldEnum = {
   id: 'id',
-  email: 'email',
-  password: 'password',
-  username: 'username',
-  role: 'role',
-  avatar_url: 'avatar_url',
-  is_active: 'is_active',
-  bio: 'bio',
-  create_at: 'create_at'
+  recipe_id: 'recipe_id',
+  order_index: 'order_index',
+  image_url: 'image_url',
+  content: 'content'
 } as const
 
-export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+export type StepScalarFieldEnum = (typeof StepScalarFieldEnum)[keyof typeof StepScalarFieldEnum]
 
 
 export const SortOrder = {

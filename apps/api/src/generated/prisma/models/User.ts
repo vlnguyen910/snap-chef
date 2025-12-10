@@ -364,11 +364,6 @@ export type UserUncheckedUpdateManyInput = {
   create_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
-export type UserScalarRelationFilter = {
-  is?: Prisma.UserWhereInput
-  isNot?: Prisma.UserWhereInput
-}
-
 export type UserCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
@@ -405,26 +400,45 @@ export type UserMinOrderByAggregateInput = {
   create_at?: Prisma.SortOrder
 }
 
-export type UserCreateNestedOneWithoutRecipeInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutRecipeInput, Prisma.UserUncheckedCreateWithoutRecipeInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutRecipeInput
-  connect?: Prisma.UserWhereUniqueInput
+export type UserNullableScalarRelationFilter = {
+  is?: Prisma.UserWhereInput | null
+  isNot?: Prisma.UserWhereInput | null
 }
 
-export type UserUpdateOneRequiredWithoutRecipeNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutRecipeInput, Prisma.UserUncheckedCreateWithoutRecipeInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutRecipeInput
-  upsert?: Prisma.UserUpsertWithoutRecipeInput
-  connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutRecipeInput, Prisma.UserUpdateWithoutRecipeInput>, Prisma.UserUncheckedUpdateWithoutRecipeInput>
+export type StringFieldUpdateOperationsInput = {
+  set?: string
 }
 
 export type EnumUserRolesFieldUpdateOperationsInput = {
   set?: $Enums.UserRoles
 }
 
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean
+}
+
+export type DateTimeFieldUpdateOperationsInput = {
+  set?: Date | string
+}
+
+export type UserCreateNestedOneWithoutRecipeInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutRecipeInput, Prisma.UserUncheckedCreateWithoutRecipeInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutRecipeInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutRecipeNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutRecipeInput, Prisma.UserUncheckedCreateWithoutRecipeInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutRecipeInput
+  upsert?: Prisma.UserUpsertWithoutRecipeInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutRecipeInput, Prisma.UserUpdateWithoutRecipeInput>, Prisma.UserUncheckedUpdateWithoutRecipeInput>
 }
 
 export type UserCreateWithoutRecipeInput = {
