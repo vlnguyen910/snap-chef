@@ -8,4 +8,8 @@
  *
  * 🟢 You can import this file directly.
  */
+export type * from './models/Recipe.js'
+export type * from './models/Ingredient.js'
+export type * from './models/RecipeIngredient.js'
+export type * from './models/User.js'
 export type * from './commonInputTypes.js'
