@@ -43,7 +43,7 @@ export default function RegisterForm() {
         <h2 className="text-3xl font-bold text-gray-900">Create your account</h2>
         <p className="mt-2 text-sm text-gray-600">
           Already have an account?{' '}
-          <Link to="/login" className="text-orange-600 hover:text-orange-700 font-medium">
+          <Link to="/auth/login" className="text-orange-600 hover:text-orange-700 font-medium">
             Sign in
           </Link>
         </p>

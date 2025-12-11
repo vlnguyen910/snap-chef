@@ -13,7 +13,7 @@ export function useAuth() {
     setError(null);
     try {
       const response = await api.post<LoginResponse>('/auth/login', { email, password });
-      const { user, token } = response.data;
+      const { user, token } = response;
       storeLogin(user, token);
       return true;
     } catch (err: any) {
@@ -29,7 +29,7 @@ export function useAuth() {
     setError(null);
     try {
       const response = await api.post<LoginResponse>('/auth/register', { name, email, password });
-      const { user, token } = response.data;
+      const { user, token } = response;
       storeLogin(user, token);
       return true;
     } catch (err: any) {
@@ -58,7 +58,7 @@ export function useAuth() {
     setError(null);
     try {
       const response = await api.patch<{ user: User }>('/auth/profile', data);
-      useStore.getState().updateUser(response.data.user);
+      useStore.getState().updateUser(response.user);
       return true;
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to update profile.');

@@ -30,7 +30,7 @@ export default function HomePage() {
                   Explore Recipes
                 </Button>
               </Link>
-              <Link to="/register">
+              <Link to="/auth/register">
                 <Button size="lg" variant="outline" className="w-full sm:w-auto">
                   <ChefHat size={20} className="mr-2" />
                   Start Cooking
