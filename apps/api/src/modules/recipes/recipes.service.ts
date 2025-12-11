@@ -8,7 +8,7 @@ import { UpdateRecipeDto } from './dto/update-recipe.dto';
 import { PrismaService } from 'src/db/prisma.service';
 import { IngredientsService } from '../ingredients/ingredients.service';
 import { RecipeStatus } from 'src/generated/prisma/enums';
-import { RecipeIngredient } from 'src/generated/prisma/client';
+import { Recipe, RecipeIngredient } from 'src/generated/prisma/client';
 @Injectable()
 export class RecipesService {
   constructor(
@@ -16,8 +16,7 @@ export class RecipesService {
     private ingredientsService: IngredientsService,
   ) {}
 
-  async create(user_id: string, dto: CreateRecipeDto) {
-    const orderIndices = dto.steps.map((step) => step.order_index);
+  private validateOrderIndices(orderIndices: number[]): void {
     const sortedIndices = [...orderIndices].sort((a, b) => a - b);
 
     if (sortedIndices.length === 0) {
@@ -37,6 +36,11 @@ export class RecipesService {
         throw new BadRequestException('Order index must be continuous');
       }
     }
+  }
+
+  async create(user_id: string, dto: CreateRecipeDto) {
+    const orderIndices = dto.steps.map((step) => step.order_index);
+    this.validateOrderIndices(orderIndices);
 
     return await this.prisma.$transaction(async (tx) => {
       const recipe = await tx.recipe.create({
@@ -93,19 +97,23 @@ export class RecipesService {
     });
   }
 
-  findAll() {
-    return `This action returns all recipes`;
+  async findAll(): Promise<Recipe[]> {
+    return await this.prisma.recipe.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} recipe`;
+  findOne(id: number): Promise<Recipe | null> {
+    return this.prisma.recipe.findUnique({
+      where: { id },
+    });
   }
 
-  update(id: number, updateRecipeDto: UpdateRecipeDto) {
-    return `This action updates a #${id} recipe`;
-  }
+  //TODO: add update logic for ingredients and steps
+  async update(id: number, updateRecipeDto: UpdateRecipeDto) {
+    const { ingredients, steps, ...scalarFields } = updateRecipeDto;
 
-  remove(id: number) {
-    return `This action removes a #${id} recipe`;
+    return await this.prisma.recipe.update({
+      where: { id },
+      data: scalarFields,
+    });
   }
 }
