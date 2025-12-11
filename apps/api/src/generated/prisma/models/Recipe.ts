@@ -219,7 +219,7 @@ export type RecipeGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 
 export type RecipeGroupByOutputType = {
   id: number
-  author_id: string | null
+  author_id: string
   title: string
   description: string | null
   servings: number
@@ -255,7 +255,7 @@ export type RecipeWhereInput = {
   OR?: Prisma.RecipeWhereInput[]
   NOT?: Prisma.RecipeWhereInput | Prisma.RecipeWhereInput[]
   id?: Prisma.IntFilter<"Recipe"> | number
-  author_id?: Prisma.StringNullableFilter<"Recipe"> | string | null
+  author_id?: Prisma.StringFilter<"Recipe"> | string
   title?: Prisma.StringFilter<"Recipe"> | string
   description?: Prisma.StringNullableFilter<"Recipe"> | string | null
   servings?: Prisma.IntFilter<"Recipe"> | number
@@ -271,7 +271,7 @@ export type RecipeWhereInput = {
 
 export type RecipeOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  author_id?: Prisma.SortOrderInput | Prisma.SortOrder
+  author_id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   servings?: Prisma.SortOrder
@@ -290,7 +290,7 @@ export type RecipeWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.RecipeWhereInput | Prisma.RecipeWhereInput[]
   OR?: Prisma.RecipeWhereInput[]
   NOT?: Prisma.RecipeWhereInput | Prisma.RecipeWhereInput[]
-  author_id?: Prisma.StringNullableFilter<"Recipe"> | string | null
+  author_id?: Prisma.StringFilter<"Recipe"> | string
   title?: Prisma.StringFilter<"Recipe"> | string
   description?: Prisma.StringNullableFilter<"Recipe"> | string | null
   servings?: Prisma.IntFilter<"Recipe"> | number
@@ -306,7 +306,7 @@ export type RecipeWhereUniqueInput = Prisma.AtLeast<{
 
 export type RecipeOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  author_id?: Prisma.SortOrderInput | Prisma.SortOrder
+  author_id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   servings?: Prisma.SortOrder
@@ -327,7 +327,7 @@ export type RecipeScalarWhereWithAggregatesInput = {
   OR?: Prisma.RecipeScalarWhereWithAggregatesInput[]
   NOT?: Prisma.RecipeScalarWhereWithAggregatesInput | Prisma.RecipeScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Recipe"> | number
-  author_id?: Prisma.StringNullableWithAggregatesFilter<"Recipe"> | string | null
+  author_id?: Prisma.StringWithAggregatesFilter<"Recipe"> | string
   title?: Prisma.StringWithAggregatesFilter<"Recipe"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"Recipe"> | string | null
   servings?: Prisma.IntWithAggregatesFilter<"Recipe"> | number
@@ -354,7 +354,7 @@ export type RecipeCreateInput = {
 
 export type RecipeUncheckedCreateInput = {
   id?: number
-  author_id?: string | null
+  author_id: string
   title: string
   description?: string | null
   servings: number
@@ -383,7 +383,7 @@ export type RecipeUpdateInput = {
 
 export type RecipeUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  author_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  author_id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   servings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -398,7 +398,7 @@ export type RecipeUncheckedUpdateInput = {
 
 export type RecipeCreateManyInput = {
   id?: number
-  author_id?: string | null
+  author_id: string
   title: string
   description?: string | null
   servings: number
@@ -422,7 +422,7 @@ export type RecipeUpdateManyMutationInput = {
 
 export type RecipeUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  author_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  author_id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   servings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -639,7 +639,7 @@ export type RecipeScalarWhereInput = {
   OR?: Prisma.RecipeScalarWhereInput[]
   NOT?: Prisma.RecipeScalarWhereInput | Prisma.RecipeScalarWhereInput[]
   id?: Prisma.IntFilter<"Recipe"> | number
-  author_id?: Prisma.StringNullableFilter<"Recipe"> | string | null
+  author_id?: Prisma.StringFilter<"Recipe"> | string
   title?: Prisma.StringFilter<"Recipe"> | string
   description?: Prisma.StringNullableFilter<"Recipe"> | string | null
   servings?: Prisma.IntFilter<"Recipe"> | number
@@ -665,7 +665,7 @@ export type RecipeCreateWithoutRecipeIngredientsInput = {
 
 export type RecipeUncheckedCreateWithoutRecipeIngredientsInput = {
   id?: number
-  author_id?: string | null
+  author_id: string
   title: string
   description?: string | null
   servings: number
@@ -708,7 +708,7 @@ export type RecipeUpdateWithoutRecipeIngredientsInput = {
 
 export type RecipeUncheckedUpdateWithoutRecipeIngredientsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  author_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  author_id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   servings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -735,7 +735,7 @@ export type RecipeCreateWithoutStepsInput = {
 
 export type RecipeUncheckedCreateWithoutStepsInput = {
   id?: number
-  author_id?: string | null
+  author_id: string
   title: string
   description?: string | null
   servings: number
@@ -778,7 +778,7 @@ export type RecipeUpdateWithoutStepsInput = {
 
 export type RecipeUncheckedUpdateWithoutStepsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  author_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  author_id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   servings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -962,7 +962,7 @@ export type $RecipePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
-    author_id: string | null
+    author_id: string
     title: string
     description: string | null
     servings: number
