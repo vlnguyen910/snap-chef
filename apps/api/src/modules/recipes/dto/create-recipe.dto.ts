@@ -36,9 +36,9 @@ export class CreateRecipeDto {
   @IsString()
   description?: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsUUID()
-  author_id?: string | null;
+  author_id!: string;
 
   @IsNotEmpty()
   @IsInt()

@@ -22,7 +22,7 @@ CREATE TABLE "User" (
 -- CreateTable
 CREATE TABLE "Recipe" (
     "id" SERIAL NOT NULL,
-    "author_id" TEXT NOT NULL,
+    "author_id" TEXT,
     "title" TEXT NOT NULL,
     "description" TEXT,
     "servings" INTEGER NOT NULL,
@@ -48,7 +48,7 @@ CREATE TABLE "RecipeIngredient" (
     "id" SERIAL NOT NULL,
     "recipe_id" INTEGER NOT NULL,
     "ingredient_id" INTEGER NOT NULL,
-    "quantity" TEXT NOT NULL,
+    "quantity" DOUBLE PRECISION NOT NULL,
     "unit" TEXT NOT NULL,
 
     CONSTRAINT "RecipeIngredient_pkey" PRIMARY KEY ("id")
@@ -59,7 +59,7 @@ CREATE TABLE "Step" (
     "id" SERIAL NOT NULL,
     "recipe_id" INTEGER NOT NULL,
     "order_index" INTEGER NOT NULL,
-    "image_url" TEXT NOT NULL,
+    "image_url" TEXT,
     "content" TEXT NOT NULL,
 
     CONSTRAINT "Step_pkey" PRIMARY KEY ("id")
@@ -68,8 +68,11 @@ CREATE TABLE "Step" (
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "Ingredient_name_key" ON "Ingredient"("name");
+
 -- AddForeignKey
-ALTER TABLE "Recipe" ADD CONSTRAINT "Recipe_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Recipe" ADD CONSTRAINT "Recipe_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "RecipeIngredient" ADD CONSTRAINT "RecipeIngredient_recipe_id_fkey" FOREIGN KEY ("recipe_id") REFERENCES "Recipe"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
