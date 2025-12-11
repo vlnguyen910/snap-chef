@@ -15,6 +15,6 @@ async function bootstrap() {
   );
   app.setGlobalPrefix('api');
   await app.listen(PORT);
-  console.log(`Server running at: http://${PORT}`);
+  console.log(`Server running at: http://${PORT}/api`);
 }
 void bootstrap();

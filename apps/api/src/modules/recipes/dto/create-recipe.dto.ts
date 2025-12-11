@@ -6,7 +6,6 @@ import {
   IsOptional,
   IsString,
   IsUrl,
-  IsUUID,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -37,15 +36,13 @@ export class CreateRecipeDto {
   description?: string;
 
   @IsNotEmpty()
-  @IsUUID()
-  author_id!: string;
-
-  @IsNotEmpty()
   @IsInt()
+  @Min(1)
   cooking_time!: number; // in minutes
 
   @IsNotEmpty()
   @IsInt()
+  @Min(1)
   servings!: number;
 
   @IsNotEmpty()
