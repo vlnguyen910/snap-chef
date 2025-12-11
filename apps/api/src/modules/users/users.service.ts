@@ -19,8 +19,11 @@ export class UsersService {
     return `This action returns all users`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string): Promise<User | null> {
+    const user = await this.prismaService.user.findUnique({
+      where: { id },
+    });
+    return user;
   }
 
   async findByEmail(email: string): Promise<User | null> {
