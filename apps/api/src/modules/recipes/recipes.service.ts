@@ -18,8 +18,8 @@ export class RecipesService {
   ) {}
 
   async create(dto: CreateRecipeDto) {
-    const recipe = await this.prisma.$transaction(async (tx) => {
-      const createdRecipe = await tx.recipe.create({
+    return await this.prisma.$transaction(async (tx) => {
+      const recipe = await tx.recipe.create({
         data: {
           title: dto.title,
           description: dto.description,
@@ -39,17 +39,6 @@ export class RecipesService {
         },
       });
 
-      for (const step of dto.steps) {
-        await tx.step.create({
-          data: {
-            recipe_id: createdRecipe.id,
-            order_index: step.order_index,
-            image_url: step.image_url,
-            content: step.content,
-          },
-        });
-      }
-
       for (const items of dto.ingredients) {
         const ingredient = await this.ingredientsService.upsertByName(
           items.name,
@@ -58,7 +47,7 @@ export class RecipesService {
 
         await tx.recipeIngredient.create({
           data: {
-            recipe_id: createdRecipe.id,
+            recipe_id: recipe.id,
             ingredient_id: ingredient.id,
             quantity: items.quanity,
             unit: items.unit,
@@ -66,10 +55,20 @@ export class RecipesService {
         });
       }
 
-      return createdRecipe;
+      return await tx.recipe.findUnique({
+        where: { id: recipe.id },
+        include: {
+          steps: {
+            orderBy: { order_index: 'asc' },
+          },
+          recipeIngredients: {
+            include: {
+              Ingredient: true,
+            },
+          },
+        },
+      });
     });
-
-    return recipe;
   }
 
   findAll() {
