@@ -22,7 +22,7 @@ CREATE TABLE "User" (
 -- CreateTable
 CREATE TABLE "Recipe" (
     "id" SERIAL NOT NULL,
-    "author_id" TEXT,
+    "author_id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
     "servings" INTEGER NOT NULL,
@@ -72,7 +72,7 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "Ingredient_name_key" ON "Ingredient"("name");
 
 -- AddForeignKey
-ALTER TABLE "Recipe" ADD CONSTRAINT "Recipe_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Recipe" ADD CONSTRAINT "Recipe_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "RecipeIngredient" ADD CONSTRAINT "RecipeIngredient_recipe_id_fkey" FOREIGN KEY ("recipe_id") REFERENCES "Recipe"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
