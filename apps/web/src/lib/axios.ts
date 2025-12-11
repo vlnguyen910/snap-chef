@@ -40,6 +40,7 @@ apiClient.interceptors.response.use(
       // Lưu ý: Dùng window.location sẽ reload trang. Chấp nhận được ở mức cơ bản.
       window.location.href = '/auth/login';
     }
+    console.error("API Error:", error.response?.data || error.message);
     return Promise.reject(error);
   }
 );
