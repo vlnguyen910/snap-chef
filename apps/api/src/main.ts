@@ -13,8 +13,9 @@ async function bootstrap() {
       forbidNonWhitelisted: false,
     }),
   );
+
+  app.enableCors();
   app.setGlobalPrefix('api');
   await app.listen(PORT);
-  console.log(`Server running at: http://${PORT}/api`);
 }
 void bootstrap();
