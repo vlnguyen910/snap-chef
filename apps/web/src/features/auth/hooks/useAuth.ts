@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
-import { api } from '@/lib/axios';
-import type { User, LoginResponse } from '@/types';
+import * as authService from '@/services/authService';
+import type { User } from '@/types';
 
 export function useAuth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -12,12 +12,11 @@ export function useAuth() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await api.post<LoginResponse>('/auth/login', { email, password });
-      const { user, token } = response;
+      const { user, token } = await authService.login(email, password);
       storeLogin(user, token);
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      setError(err.message || 'Login failed. Please check your credentials.');
       return false;
     } finally {
       setIsLoading(false);
@@ -28,12 +27,16 @@ export function useAuth() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await api.post<LoginResponse>('/auth/register', { name, email, password });
-      const { user, token } = response;
+      // Split name into firstName and lastName if provided
+      const nameParts = name.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      const { user, token } = await authService.register(email, password, name, firstName, lastName);
       storeLogin(user, token);
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      setError(err.message || 'Registration failed. Please try again.');
       return false;
     } finally {
       setIsLoading(false);
@@ -44,9 +47,10 @@ export function useAuth() {
     setIsLoading(true);
     setError(null);
     try {
-      await api.post('/auth/logout');
+      await authService.logout();
     } catch (err) {
-      // Ignore logout errors, clear local state anyway
+      console.error('Logout error:', err);
+      // Continue with logout anyway
     } finally {
       storeLogout();
       setIsLoading(false);
@@ -57,14 +61,28 @@ export function useAuth() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await api.patch<{ user: User }>('/auth/profile', data);
-      useStore.getState().updateUser(response.user);
+      const updatedUser = await authService.updateProfile(data);
+      useStore.getState().updateUser(updatedUser);
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to update profile.');
+      setError(err.message || 'Failed to update profile.');
       return false;
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const checkSession = async (): Promise<boolean> => {
+    try {
+      const session = await authService.checkSession();
+      if (session) {
+        storeLogin(session.user, session.token);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Session check error:', err);
+      return false;
     }
   };
 
@@ -73,6 +91,7 @@ export function useAuth() {
     register,
     logout,
     updateProfile,
+    checkSession,
     isLoading,
     error,
   };
