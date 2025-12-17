@@ -4,8 +4,9 @@ import { Plus, Trash2, ChefHat, Camera, X, Lock, Globe } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { uploadToCloudinary } from '@/services/cloudinaryService';
-import { supabase } from '@/lib/supabase';
+import { recipeService } from '@/services/recipeService';
 import { useStore } from '@/lib/store';
+import useToastStore, { toast } from '@/lib/toast-store';
 
 // --- TYPES ---
 type Ingredient = {
@@ -256,7 +257,6 @@ const IngredientsSection = () => {
   );
 };
 
-// --- FIX CHÍNH NẰM Ở ĐÂY: StepsSection ---
 const StepsSection = ({ 
   stepImages, 
   onImageSelect, 
@@ -360,119 +360,49 @@ const StepsSection = ({
 
 // --- MAIN PAGE COMPONENT ---
 export default function CreateRecipePage() {
-  const navigate = useNavigate();
-  // State quản lý preview ảnh của Steps (Map theo index)
-  const [stepImagePreviews, setStepImagePreviews] = useState<Record<number, string>>({});
-  // Lưu trữ File object thật để gửi lên server
-  const [stepFiles, setStepFiles] = useState<Record<number, File>>({});
-  
-  // State cho thumbnail
-  const [thumbnailPreview, setThumbnailPreview] = useState<string>('');
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const methods = useForm<RecipeFormData>({
     defaultValues: {
       title: '',
       description: '',
       cooking_time: 30,
-      serving: 4,
+      serving: 2,
       is_private: false,
       ingredients: [{ name: '', amount: '', unit: '' }],
       steps: [{ order_index: 1, content: '' }],
     },
   });
 
-  // Handle thumbnail image selection
-  const handleThumbnailImageSelect = (file: File) => {
-    const previewUrl = URL.createObjectURL(file);
-    setThumbnailPreview(previewUrl);
-    setThumbnailFile(file);
-  };
+  const [isLoading, setIsLoading] = useState(false);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string>('');
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [stepImagePreviews, setStepImagePreviews] = useState<Record<number, string>>({});
+  const [stepFiles, setStepFiles] = useState<Record<number, File>>({});
 
-  // Handle thumbnail image removal
-  const handleThumbnailImageRemove = () => {
-    if (thumbnailPreview) {
-      URL.revokeObjectURL(thumbnailPreview);
-    }
-    setThumbnailPreview('');
-    setThumbnailFile(null);
-  };
-
-  const handleStepImageSelect = (index: number, file: File) => {
-    const previewUrl = URL.createObjectURL(file);
-    setStepImagePreviews(prev => ({ ...prev, [index]: previewUrl }));
-    setStepFiles(prev => ({ ...prev, [index]: file }));
-  };
-
-  const handleStepImageRemove = (index: number) => {
-    // Revoke URL cũ để tránh memory leak
-    if (stepImagePreviews[index]) {
-      URL.revokeObjectURL(stepImagePreviews[index]);
-    }
-    
-    // Xóa preview và file
-    setStepImagePreviews(prev => {
-      const newState = { ...prev };
-      delete newState[index];
-      return newState;
-    });
-    setStepFiles(prev => {
-      const newState = { ...prev };
-      delete newState[index];
-      return newState;
-    });
-  };
+  const navigate = useNavigate();
+  const { user } = useStore();
 
   const onSubmit = async (data: RecipeFormData) => {
-    // Step 1: Validate inputs
-    if (!data.title.trim()) {
-      alert('Please enter a recipe title.');
-      return;
-    }
-
-    if (!data.description.trim()) {
-      alert('Please enter a recipe description.');
-      return;
-    }
-
-    if (!thumbnailFile) {
-      alert('Please upload a recipe image before submitting.');
-      return;
-    }
-
-    const validIngredients = data.ingredients.filter(ing => ing.name.trim());
-    if (validIngredients.length === 0) {
-      alert('Please add at least one ingredient.');
-      return;
-    }
-
-    const validSteps = data.steps.filter(step => step.content.trim());
-    if (validSteps.length === 0) {
-      alert('Please add at least one cooking step.');
-      return;
-    }
-
-    // Get current user from Zustand store
-    const user = useStore.getState().user;
     if (!user) {
-      alert('You must be logged in to create a recipe.');
+      toast.error('Please login to create a recipe');
       navigate('/auth/login');
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
-      // Step 2: Upload thumbnail to Cloudinary
-      console.log('📤 Uploading thumbnail to Cloudinary...');
-      const thumbnailUrl = await uploadToCloudinary(thumbnailFile);
-      console.log('✅ Thumbnail uploaded:', thumbnailUrl);
+      setIsLoading(true);
 
-      // Step 3: Upload step images to Cloudinary (if any)
+      // Step 1: Upload thumbnail
+      let thumbnailUrl = '';
+      if (thumbnailFile) {
+        console.log('📤 Uploading thumbnail...');
+        thumbnailUrl = await uploadToCloudinary(thumbnailFile);
+        console.log('✅ Thumbnail uploaded:', thumbnailUrl);
+      }
+
+      // Step 2: Upload step images
       const stepsWithImages = await Promise.all(
-        validSteps.map(async (step, index) => {
-          let imageUrl = null;
+        data.steps.map(async (step, index) => {
+          let imageUrl = '';
           if (stepFiles[index]) {
             console.log(`📤 Uploading step ${index + 1} image...`);
             imageUrl = await uploadToCloudinary(stepFiles[index]);
@@ -486,41 +416,33 @@ export default function CreateRecipePage() {
         })
       );
 
-      // Step 4: Prepare ingredients for JSONB
-      const ingredientsData = validIngredients.map(ing => ({
+      // Step 3: Prepare ingredients
+      const validIngredients = data.ingredients.filter(
+        (ing) => ing.name.trim() && ing.amount.trim()
+      );
+
+      const ingredientsData = validIngredients.map((ing) => ({
         name: ing.name.trim(),
         amount: ing.amount.trim(),
         unit: ing.unit.trim(),
       }));
 
-      // Step 5: Insert into Supabase
-      console.log('📝 Inserting recipe into Supabase...');
-      const { data: recipeData, error } = await supabase
-        .from('recipes')
-        .insert({
-          user_id: user.id,
-          title: data.title.trim(),
-          description: data.description.trim(),
-          cooking_time: data.cooking_time,
-          serving: data.serving,
-          is_private: data.is_private,
-          thumbnail_url: thumbnailUrl,
-          ingredients: ingredientsData, // JSONB field
-          steps: stepsWithImages, // JSONB field
-          status: 'pending', // Default to pending for moderation
-        })
-        .select()
-        .single();
+      // Step 4: Create recipe via NestJS API
+      console.log('📝 Creating recipe via API...');
+      await recipeService.createRecipe({
+        title: data.title.trim(),
+        description: data.description.trim(),
+        cooking_time: data.cooking_time,
+        serving: data.serving,
+        thumbnail_url: thumbnailUrl,
+        is_private: data.is_private,
+        ingredients: ingredientsData,
+        steps: stepsWithImages,
+      });
 
-      if (error) {
-        console.error('❌ Supabase error:', error);
-        throw new Error(error.message);
-      }
+      console.log('✅ Recipe created successfully');
+      toast.success('Recipe submitted successfully!');
 
-      // Success handling
-      console.log('✅ Recipe created successfully:', recipeData);
-      alert('Recipe submitted successfully! It will be reviewed by our moderators.');
-      
       // Clear form and navigate
       methods.reset();
       setThumbnailPreview('');
@@ -529,76 +451,68 @@ export default function CreateRecipePage() {
       setStepFiles({});
       navigate('/my-recipes');
     } catch (error) {
-      // Error handling
       console.error('❌ Error creating recipe:', error);
-      
-      if (error instanceof Error) {
-        alert(`Failed to publish recipe: ${error.message}`);
-      } else {
-        alert('An unexpected error occurred. Please try again.');
-      }
+      toast.error('Failed to create recipe');
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="mb-8 flex items-center gap-3">
-          <div className="rounded-full bg-orange-100 p-3">
-            <ChefHat className="text-orange-600" size={28} />
+    <FormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(onSubmit)} className="min-h-screen bg-gray-50 py-8">
+        <div className="container mx-auto px-4">
+          {/* Header */}
+          <div className="mb-8 flex items-center gap-3">
+            <div className="rounded-full bg-orange-100 p-3">
+              <ChefHat className="text-orange-600" size={28} />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Create New Recipe</h1>
+              <p className="mt-1 text-gray-600">Share your culinary masterpiece</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Create New Recipe</h1>
-            <p className="mt-1 text-gray-600">Share your culinary masterpiece</p>
+
+          {/* Main Form */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="space-y-6">
+              <BasicInfoSection />
+              <ThumbnailSection 
+                thumbnailPreview={thumbnailPreview}
+                onImageSelect={handleThumbnailImageSelect}
+                onImageRemove={handleThumbnailImageRemove}
+              />
+            </div>
+            <div className="space-y-6">
+              <IngredientsSection />
+              <StepsSection 
+                stepImages={stepImagePreviews}
+                onImageSelect={handleStepImageSelect}
+                onImageRemove={handleStepImageRemove}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <Button 
+              type="button" 
+              variant="ghost" 
+              onClick={() => navigate(-1)}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              className="bg-orange-600 px-8 hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isLoading}
+            >
+              <ChefHat size={18} className="mr-2" /> 
+              {isLoading ? 'Publishing...' : 'Publish Recipe'}
+            </Button>
           </div>
         </div>
-
-        {/* Main Form */}
-        <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-2">
-              <div className="space-y-6">
-                <BasicInfoSection />
-                <ThumbnailSection 
-                  thumbnailPreview={thumbnailPreview}
-                  onImageSelect={handleThumbnailImageSelect}
-                  onImageRemove={handleThumbnailImageRemove}
-                />
-              </div>
-              <div className="space-y-6">
-                <IngredientsSection />
-                <StepsSection 
-                  stepImages={stepImagePreviews}
-                  onImageSelect={handleStepImageSelect}
-                  onImageRemove={handleStepImageRemove}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-              <Button 
-                type="button" 
-                variant="ghost" 
-                onClick={() => navigate(-1)}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                className="bg-orange-600 px-8 hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isSubmitting}
-              >
-                <ChefHat size={18} className="mr-2" /> 
-                {isSubmitting ? 'Publishing...' : 'Publish Recipe'}
-              </Button>
-            </div>
-          </form>
-        </FormProvider>
-      </div>
-    </div>
+      </form>
+    </FormProvider>
   );
 }
