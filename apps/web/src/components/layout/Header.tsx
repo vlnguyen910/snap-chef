@@ -21,10 +21,10 @@ export default function Header() {
     return location.pathname.startsWith(path);
   };
 
-  const handleLogout = () => {
+  const handleSignout = () => {
     logout(); 
     setIsOpen(false);
-    navigate('/auth/login'); // Chuyển trang sau khi logout
+    navigate('/auth/signin'); // Chuyển trang sau khi signout
   };
 
   return (
@@ -72,22 +72,22 @@ export default function Header() {
                 <Button variant="ghost" asChild>
                   <Link to="/profile" className="flex items-center gap-2">
                     <UserIcon size={18} />
-                    {/* Fallback hiển thị email nếu không có username */}
-                    <span className="max-w-[150px] truncate">{user.username || user.email}</span>
+                    {/* Display name, username, or email in order of priority */}
+                    <span className="max-w-[150px] truncate">{user.name || user.username || user.email}</span>
                   </Link>
                 </Button>
-                <Button variant="default" onClick={handleLogout} className="flex items-center gap-2">
+                <Button variant="default" onClick={handleSignout} className="flex items-center gap-2">
                   <LogOut size={18} />
-                  Logout
+                  Sign Out
                 </Button>
               </>
             ) : (
               <>
                 <Button variant="ghost" asChild>
-                  <Link to="/auth/login">Login</Link>
+                  <Link to="/auth/signin">Sign In</Link>
                 </Button>
                 <Button variant="default" asChild>
-                  <Link to="/auth/register">Sign Up</Link>
+                  <Link to="/auth/signup">Sign Up</Link>
                 </Button>
               </>
             )}
@@ -99,11 +99,55 @@ export default function Header() {
           </Button>
         </div>
 
-        {/* Mobile Navigation (Giữ nguyên logic đóng mở của bạn) */}
+        {/* Mobile Navigation */}
         {isOpen && (
-          <div className="border-t border-gray-200 py-4 md:hidden">
-             {/* ... Copy phần nội dung mobile menu cũ vào đây ... */}
-             {/* Nhớ cập nhật các hàm onClick gọi handleLogout nhé */}
+          <div className="border-t border-gray-200 py-4 md:hidden space-y-2">
+            <Button variant={isActive('/') ? 'secondary' : 'ghost'} asChild className="w-full justify-start">
+              <Link to="/">Home</Link>
+            </Button>
+            <Button variant={isActive('/recipes') ? 'secondary' : 'ghost'} asChild className="w-full justify-start">
+              <Link to="/recipes">Recipes</Link>
+            </Button>
+
+            {isAuthenticated && (
+              <>
+                <Button variant={isActive('/dashboard') ? 'secondary' : 'ghost'} asChild className="w-full justify-start">
+                  <Link to="/dashboard">Dashboard</Link>
+                </Button>
+                <Button variant={isActive('/my-recipes') ? 'secondary' : 'ghost'} asChild className="w-full justify-start">
+                  <Link to="/my-recipes">My Recipes</Link>
+                </Button>
+
+                {user?.role === 'moderator' && (
+                  <Button variant={isActive('/moderation') ? 'secondary' : 'ghost'} asChild className="w-full justify-start">
+                    <Link to="/moderation">Moderation</Link>
+                  </Button>
+                )}
+
+                <Button variant="ghost" asChild className="w-full justify-start">
+                  <Link to="/profile" className="flex items-center gap-2">
+                    <UserIcon size={18} />
+                    {/* Display name, username, or email in order of priority */}
+                    <span>{user.name || user.username || user.email}</span>
+                  </Link>
+                </Button>
+                <Button variant="default" onClick={handleSignout} className="w-full justify-start gap-2">
+                  <LogOut size={18} />
+                  Sign Out
+                </Button>
+              </>
+            )}
+
+            {!isAuthenticated && (
+              <>
+                <Button variant="ghost" asChild className="w-full justify-start">
+                  <Link to="/auth/signin">Sign In</Link>
+                </Button>
+                <Button variant="default" asChild className="w-full justify-start">
+                  <Link to="/auth/signup">Sign Up</Link>
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>

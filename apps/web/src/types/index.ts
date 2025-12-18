@@ -116,18 +116,18 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
-export interface LoginResponse {
+export interface SigninResponse {
   user: User;
   token: string;
 }
 
 // Auth types
-export interface LoginCredentials {
+export interface SigninCredentials {
   email: string;
   password: string;
 }
 
-export interface RegisterData {
+export interface SignupData {
   email: string;
   username: string;
   password: string;

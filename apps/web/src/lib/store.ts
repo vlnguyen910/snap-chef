@@ -6,6 +6,7 @@ interface AppState extends AuthState {
   // Auth actions
   login: (user: User, token: string) => void;
   logout: () => void;
+  signout: () => void;
   updateUser: (user: Partial<User>) => void;
 }
 
@@ -26,6 +27,10 @@ export const useStore = create<AppState>()(
       logout: () => {
         localStorage.removeItem('authToken');
         set({ user: null, token: null, isAuthenticated: false });
+      },
+
+      signout: function() {
+        this.logout();
       },
 
       updateUser: (userData) => 

@@ -28,11 +28,11 @@ api.interceptors.response.use(
   (response) => response.data, // Trả về data luôn cho gọn
   (error) => {
     if (error.response?.status === 401) {
-      // Clear auth state and redirect to login
+      // Clear auth state and redirect to signin
       localStorage.removeItem('accessToken');
       localStorage.removeItem('user');
       // Dùng window.location là cách an toàn nhất để reset app
-      window.location.href = '/auth/login';
+      window.location.href = '/auth/signin';
     }
     return Promise.reject(error);
   }
