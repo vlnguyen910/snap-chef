@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { uploadToCloudinary } from '@/services/cloudinaryService';
 import { recipeService } from '@/services/recipeService';
 import { useStore } from '@/lib/store';
-import useToastStore, { toast } from '@/lib/toast-store';
+import { toast } from '@/lib/toast-store';
 
 // --- TYPES ---
 type Ingredient = {
@@ -380,6 +380,46 @@ export default function CreateRecipePage() {
 
   const navigate = useNavigate();
   const { user } = useStore();
+
+  // Handle thumbnail image selection
+  const handleThumbnailImageSelect = (file: File) => {
+    const previewUrl = URL.createObjectURL(file);
+    setThumbnailPreview(previewUrl);
+    setThumbnailFile(file);
+  };
+
+  // Handle thumbnail image removal
+  const handleThumbnailImageRemove = () => {
+    if (thumbnailPreview) {
+      URL.revokeObjectURL(thumbnailPreview);
+    }
+    setThumbnailPreview('');
+    setThumbnailFile(null);
+  };
+
+  // Handle step image selection
+  const handleStepImageSelect = (index: number, file: File) => {
+    const previewUrl = URL.createObjectURL(file);
+    setStepImagePreviews(prev => ({ ...prev, [index]: previewUrl }));
+    setStepFiles(prev => ({ ...prev, [index]: file }));
+  };
+
+  // Handle step image removal
+  const handleStepImageRemove = (index: number) => {
+    if (stepImagePreviews[index]) {
+      URL.revokeObjectURL(stepImagePreviews[index]);
+    }
+    setStepImagePreviews(prev => {
+      const newState = { ...prev };
+      delete newState[index];
+      return newState;
+    });
+    setStepFiles(prev => {
+      const newState = { ...prev };
+      delete newState[index];
+      return newState;
+    });
+  };
 
   const onSubmit = async (data: RecipeFormData) => {
     if (!user) {

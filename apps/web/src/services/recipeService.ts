@@ -88,5 +88,7 @@ function normalizeRecipe(data: any): Recipe {
     reviewCount: data.reviewCount || 0,
     favoriteCount: data.favoriteCount || 0,
     forkCount: data.forkCount || 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 }

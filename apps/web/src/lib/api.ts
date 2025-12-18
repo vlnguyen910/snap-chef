@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// BỎ DÒNG NÀY ĐI: export const IS_SUPABASE = ...
 
 // Create axios instance for REST API
 export const api = axios.create({
