@@ -17,7 +17,7 @@ export default function RecipesPage() {
         </p>
       </div>
 
-      <RecipeList status={status} />
+      <RecipeList />
     </div>
   );
 }
