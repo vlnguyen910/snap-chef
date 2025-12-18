@@ -20,8 +20,8 @@ export default function AppRoutes() {
         <Route path="/" element={<HomePage />} />
         {/* Auth Routes */}
         <Route path='/auth'>
-          <Route path="login" element={<AuthPage />} />
-          <Route path="register" element={<AuthPage />} />
+          <Route path="signin" element={<AuthPage />} />
+          <Route path="signup" element={<AuthPage />} />
         </Route>
         <Route path="/recipes" element={<RecipesPage />} />
         <Route path="/recipes/:id" element={<RecipeDetailPage />} />

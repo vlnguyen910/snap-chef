@@ -1,56 +1,53 @@
 import { useState } from 'react';
-import { useStore } from '@/lib/store';
 import * as authService from '@/services/authService';
+import { useStore } from '@/lib/store';
 import type { User } from '@/types';
+import type { SignupPayload } from '@/utils/auth.helpers';
 
 export function useAuth() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { login: storeLogin, logout: storeLogout } = useStore();
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const signin = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
     try {
-      const { user, token } = await authService.login(email, password);
-      storeLogin(user, token);
+      const { user, access_token } = await authService.signin(email, password);
+      // Set isAuthenticated immediately, store user (fallback if needed)
+      storeLogin(user, access_token);
       return true;
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      setError(err.response?.data?.message || 'Sign in failed. Please check your credentials.');
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (name: string, email: string, password: string): Promise<boolean> => {
+  const signup = async (payload: SignupPayload): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
     try {
-      // Split name into firstName and lastName if provided
-      const nameParts = name.trim().split(' ');
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
-      
-      const { user, token } = await authService.register(email, password, name, firstName, lastName);
-      storeLogin(user, token);
+      const { user, access_token } = await authService.signup(payload);
+      storeLogin(user, access_token);
       return true;
     } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
+      const errorMessage = err.response?.data?.message || 'Sign up failed. Please try again.';
+      setError(errorMessage);
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = async (): Promise<void> => {
+  const signout = async (): Promise<void> => {
     setIsLoading(true);
     setError(null);
     try {
-      await authService.logout();
+      await authService.signout();
     } catch (err) {
-      console.error('Logout error:', err);
-      // Continue with logout anyway
+      console.error('Sign out error:', err);
     } finally {
       storeLogout();
       setIsLoading(false);
@@ -76,7 +73,7 @@ export function useAuth() {
     try {
       const session = await authService.checkSession();
       if (session) {
-        storeLogin(session.user, session.token);
+        storeLogin(session.user, session.access_token);
         return true;
       }
       return false;
@@ -87,9 +84,9 @@ export function useAuth() {
   };
 
   return {
-    login,
-    register,
-    logout,
+    signin,
+    signup,
+    signout,
     updateProfile,
     checkSession,
     isLoading,

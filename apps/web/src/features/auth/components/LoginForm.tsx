@@ -1,23 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '../hooks/useAuth';
+import { useStore } from '@/lib/store';
 
 export default function LoginForm() {
   const navigate = useNavigate();
-  const { login, isLoading, error } = useAuth();
+  const { signin, isLoading, error } = useAuth();
+  const user = useStore((state) => state.user);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
 
+  // Check if user is already authenticated
+  useEffect(() => {
+    if (user) {
+      // User is already logged in, redirect to home with replace to prevent back navigation
+      navigate('/', { replace: true });
+    }
+  }, [user, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await login(formData.email, formData.password);
+    const success = await signin(formData.email, formData.password);
     if (success) {
-      navigate('/dashboard');
+      window.toast?.success?.('Đăng nhập thành công!');
+      navigate('/');
     }
   };
 
@@ -27,7 +38,7 @@ export default function LoginForm() {
         <h2 className="text-3xl font-bold text-gray-900">Welcome back</h2>
         <p className="mt-2 text-sm text-gray-600">
           Don't have an account?{' '}
-          <Link to="/auth/register" className="text-orange-600 hover:text-orange-700 font-medium">
+          <Link to="/auth/signup" className="text-orange-600 hover:text-orange-700 font-medium">
             Sign up
           </Link>
         </p>

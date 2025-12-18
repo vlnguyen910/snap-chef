@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ 
   allowedRoles = ['user', 'moderator'], 
-  redirectTo = '/auth/login' 
+  redirectTo = '/auth/signin' 
 }: ProtectedRouteProps) {
   const { isAuthenticated, user } = useStore();
 

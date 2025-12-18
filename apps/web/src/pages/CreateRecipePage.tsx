@@ -423,8 +423,8 @@ export default function CreateRecipePage() {
 
   const onSubmit = async (data: RecipeFormData) => {
     if (!user) {
-      toast.error('Please login to create a recipe');
-      navigate('/auth/login');
+      toast.error('Please sign in to create a recipe');
+      navigate('/auth/signin');
       return;
     }
 

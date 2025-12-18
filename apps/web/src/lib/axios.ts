@@ -38,7 +38,7 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('authToken');
       // Lưu ý: Dùng window.location sẽ reload trang. Chấp nhận được ở mức cơ bản.
-      window.location.href = '/auth/login';
+      window.location.href = '/auth/signin';
     }
     console.error("API Error:", error.response?.data || error.message);
     return Promise.reject(error);
