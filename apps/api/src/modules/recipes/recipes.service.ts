@@ -108,10 +108,13 @@ export class RecipesService {
   findOne(id: number): Promise<Recipe | null> {
     return this.prisma.recipe.findUnique({
       where: { id },
+      include: {
+        recipeIngredients: true,
+        steps: true,
+      }
     });
   }
 
-  //TODO: add update logic for ingredients and steps
   async update(id: number, updateRecipeDto: UpdateRecipeDto) {
     const { ingredients, steps, ...scalarFields } = updateRecipeDto;
     
