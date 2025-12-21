@@ -27,8 +27,10 @@ export default function LoginForm() {
     e.preventDefault();
     const success = await signin(formData.email, formData.password);
     if (success) {
-      window.toast?.success?.('Đăng nhập thành công!');
       navigate('/');
+    } else {
+      // Clear password field on failed login
+      setFormData(prev => ({ ...prev, password: '' }));
     }
   };
 
