@@ -26,7 +26,7 @@ model User {
   create_at  DateTime  @default(now())
 
   //Relations
-  Recipe Recipe[]
+  recipe Recipe[]
 }
 
 enum RecipeStatus {
@@ -49,9 +49,9 @@ model Recipe {
   updated_at    DateTime     @updatedAt
 
   //Relations
-  User User? @relation(fields: [author_id], references: [id])
+  user  User @relation(fields: [author_id], references: [id])
 
-  recipeIngredients RecipeIngredient[]
+  ingredients RecipeIngredient[]
 
   steps Step[]
 }
@@ -71,8 +71,8 @@ model RecipeIngredient {
   unit          String
 
   //Relations
-  Recipe     Recipe     @relation(fields: [recipe_id], references: [id])
-  Ingredient Ingredient @relation(fields: [ingredient_id], references: [id])
+  recipe     Recipe     @relation(fields: [recipe_id], references: [id])
+  ingredient Ingredient @relation(fields: [ingredient_id], references: [id])
 }
 
 model Step {
@@ -83,5 +83,5 @@ model Step {
   content     String
 
   //Relations
-  Recipe Recipe @relation(fields: [recipe_id], references: [id])
+  recipe Recipe @relation(fields: [recipe_id], references: [id])
 }

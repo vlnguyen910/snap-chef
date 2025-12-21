@@ -7,7 +7,7 @@ import { JwtStrategy } from 'src/common/strategies/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { jwtConfiguration } from 'src/common/config/jwt.config';
 import { ConfigModule } from '@nestjs/config';
-//import { UsersModule } from '../users/users.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -15,7 +15,7 @@ import { ConfigModule } from '@nestjs/config';
     IngredientsModule,
     PassportModule,
     ConfigModule.forFeature(jwtConfiguration),
-    //UsersModule,
+    UsersModule,
   ],
   controllers: [RecipesController],
   providers: [RecipesService, JwtStrategy],
