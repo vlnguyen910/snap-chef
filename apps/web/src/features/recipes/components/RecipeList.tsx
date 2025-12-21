@@ -47,6 +47,22 @@ export default function RecipeList({ userId }: RecipeListProps) {
     fetchRecipes();
   }, [userId]);
 
+  // ✅ THÊM: Refetch khi component được mount lại (quay lại từ trang khác)
+  useEffect(() => {
+    // Set up interval để tự động refetch mỗi khi user quay lại tab
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchRecipes();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   useEffect(() => {
     // Nếu chưa có data thì không cần lọc
     if (allRecipes.length === 0) return;
