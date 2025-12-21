@@ -9,11 +9,10 @@ export const recipeService = {
     title: string;
     description: string;
     cooking_time: number;
-    serving: number;
+    servings: number; // ✅ Backend expects 'servings' (plural), not 'serving'
     thumbnail_url: string;
-    is_private: boolean;
-    ingredients: Array<{ name: string; amount: string; unit: string }>;
-    steps: Array<{ order_index: number; content: string; image_url: string }>;
+    ingredients: Array<{ name: string; quanity: number; unit: string }>; // ✅ Backend has typo: 'quanity' (missing 't')
+    steps: Array<{ order_index: number; content: string; image_url?: string }>;
   }): Promise<Recipe> => {
     const response = await api.post<{ recipe: any }>('/recipes', recipeData);
     return normalizeRecipe(response.recipe);
@@ -81,7 +80,7 @@ function normalizeRecipe(data: any): Recipe {
     cookTime: data.cooking_time || data.cookTime || 0,
     prepTime: data.prep_time || data.prepTime || 0,
     servings: data.serving || data.servings || 1,
-    status: data.status || 'pending',
+    status: (data.status || 'pending').toLowerCase(), // ✅ Chuẩn hóa về lowercase
     ingredients: data.ingredients || [],
     instructions: data.steps || data.instructions || [],
     rating: data.rating || 0,

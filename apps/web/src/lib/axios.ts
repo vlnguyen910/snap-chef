@@ -2,7 +2,7 @@ import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse,
 
 // 1. Lấy URL từ biến môi trường (Đã chuẩn)
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
-const API_TIMEOUT = 30000;
+const API_TIMEOUT = 120000; // ✅ 120 seconds (2 minutes) for Render cold start
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,

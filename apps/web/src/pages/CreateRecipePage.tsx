@@ -1,7 +1,7 @@
 import { FormProvider, useForm, useFieldArray, useFormContext } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, ChefHat, Camera, X, Lock, Globe } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { Camera, Menu, MoreHorizontal, ChefHat } from 'lucide-react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { uploadToCloudinary } from '@/services/cloudinaryService';
 import { recipeService } from '@/services/recipeService';
@@ -11,7 +11,7 @@ import { toast } from '@/lib/toast-store';
 // --- TYPES ---
 type Ingredient = {
   name: string;
-  amount: string;
+  amount: number; // ✅ Đổi sang number để khớp với API (double)
   unit: string;
 };
 
@@ -26,334 +26,267 @@ type RecipeFormData = {
   cooking_time: number;
   serving: number;
   thumbnailUrl: string;
-  is_private: boolean;
   ingredients: Ingredient[];
   steps: Step[];
 };
 
 // --- SUB-COMPONENTS ---
 
-const BasicInfoSection = () => {
-  const { register, formState: { errors } } = useFormContext<RecipeFormData>();
-  return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm space-y-4">
-      <h2 className="text-xl font-bold text-gray-900">Basic Information</h2>
-      
-      {/* Title */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-gray-700">
-          Recipe Title <span className="text-red-500">*</span>
-        </label>
-        <input
-          {...register('title', { required: 'Title is required' })}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
-          placeholder="e.g., Spicy Thai Basil Chicken"
-        />
-        {errors.title && <p className="mt-1 text-sm text-red-500">{errors.title.message}</p>}
-      </div>
-
-      {/* Description */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-gray-700">
-          Description <span className="text-red-500">*</span>
-        </label>
-        <textarea
-          rows={4}
-          {...register('description', { required: 'Description is required' })}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
-          placeholder="Describe your recipe..."
-        />
-        {errors.description && <p className="mt-1 text-sm text-red-500">{errors.description.message}</p>}
-      </div>
-
-      {/* Time & Servings */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700">Cooking Time (min)</label>
-          <input
-            type="number"
-            {...register('cooking_time', { min: 1, valueAsNumber: true })}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
-          />
-        </div>
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700">Servings</label>
-          <input
-            type="number"
-            {...register('serving', { min: 1, valueAsNumber: true })}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
-          />
-        </div>
-      </div>
-
-      {/* Privacy Setting */}
-      <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4">
-        <div className="flex items-center gap-3">
-          <input
-            type="checkbox"
-            id="is_private"
-            {...register('is_private')}
-            className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-2 focus:ring-orange-500"
-          />
-          <label htmlFor="is_private" className="flex items-center gap-2 text-sm font-medium text-gray-700">
-            <Lock size={16} />
-            <span>Make this recipe private</span>
-          </label>
-        </div>
-        <Globe size={16} className="text-gray-400" />
-      </div>
-    </div>
-  );
-};
-
-const ThumbnailSection = ({ 
+// Image Uploader Section (Left Top)
+const ImageUploaderSection = ({ 
   thumbnailPreview, 
   onImageSelect, 
-  onImageRemove 
 }: { 
   thumbnailPreview: string,
   onImageSelect: (file: File) => void,
-  onImageRemove: () => void
 }) => {
-  const { register, watch } = useFormContext<RecipeFormData>();
-  const thumbnailUrl = watch('thumbnailUrl');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (thumbnailUrl && (thumbnailUrl.startsWith('http') || thumbnailUrl.startsWith('blob'))) {
-      // If URL is provided, it might be a file preview
-    }
-  }, [thumbnailUrl]);
-
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm space-y-4">
-      <h2 className="text-xl font-bold text-gray-900">Recipe Image</h2>
-      
-      {/* Toggle between URL input and File upload */}
-      <div className="flex gap-2 rounded-lg border border-gray-200 bg-gray-50 p-2">
-        <label className="flex cursor-pointer items-center gap-2 rounded px-3 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-white">
-          <input type="radio" name="image-mode" defaultChecked className="hidden" />
-          📤 Upload File
-        </label>
-        <label className="flex cursor-pointer items-center gap-2 rounded px-3 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-white">
-          <input type="radio" name="image-mode" className="hidden" />
-          🔗 URL
-        </label>
-      </div>
-
+    <div className="h-full min-h-[500px] rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        id="main-thumbnail"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onImageSelect(file);
+          e.target.value = '';
+        }}
+      />
       {!thumbnailPreview ? (
-        <div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            id="thumbnail-image"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                onImageSelect(file);
-              }
-              e.target.value = '';
-            }}
-          />
-          <label
-            htmlFor="thumbnail-image"
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 bg-white px-4 py-8 text-gray-600 transition-all hover:border-orange-400 hover:bg-orange-50 hover:text-orange-600"
-          >
-            <Camera size={32} className="text-orange-500" />
-            <div className="text-center">
-              <p className="font-medium">Click to upload or drag image here</p>
-              <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 10MB</p>
-            </div>
-          </label>
-        </div>
+        <label
+          htmlFor="main-thumbnail"
+          className="flex cursor-pointer flex-col items-center justify-center gap-4 p-8 text-center"
+        >
+          <Camera size={64} className="text-gray-400" />
+          <p className="text-lg text-gray-600">
+            Bạn đã đăng hình món mình nấu ở đây chưa?
+          </p>
+        </label>
       ) : (
-        <div className="relative overflow-hidden rounded-lg border border-gray-200">
+        <div className="relative h-full w-full">
           <img 
             src={thumbnailPreview} 
-            alt="Recipe thumbnail" 
-            className="h-64 w-full object-cover" 
+            alt="Recipe" 
+            className="h-full w-full rounded-lg object-cover" 
           />
-          <button
-            type="button"
-            onClick={onImageRemove}
-            className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-md hover:bg-red-600"
-          >
-            <X size={16} />
-          </button>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="absolute bottom-2 left-2 flex items-center gap-2 rounded-lg bg-orange-600 px-3 py-2 text-sm text-white shadow-md hover:bg-orange-700"
+            className="absolute bottom-4 right-4 rounded-lg bg-white px-4 py-2 shadow-md hover:bg-gray-100"
           >
-            <Camera size={16} />
-            Change Image
+            <Camera size={20} />
           </button>
         </div>
       )}
-
-      {/* Fallback: URL input */}
-      <div className="pt-2 border-t border-gray-200">
-        <label className="mb-2 block text-sm font-medium text-gray-700">Or paste image URL</label>
-        <input
-          {...register('thumbnailUrl')}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
-          placeholder="https://example.com/image.jpg"
-        />
-      </div>
     </div>
   );
 };
 
+// General Info Section (Right Top)
+const GeneralInfoSection = () => {
+  const { register, formState: { errors } } = useFormContext<RecipeFormData>();
+  const { user } = useStore();
+
+  return (
+    <div className="space-y-4">
+      {/* Title */}
+      <input
+        {...register('title', { required: 'Title is required' })}
+        className="w-full border-none bg-transparent text-3xl font-bold text-gray-900 placeholder-gray-400 focus:outline-none"
+        placeholder="Nhập tên món"
+      />
+      {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
+
+      {/* User Info */}
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">
+          {user?.firstName?.[0] || 'U'}
+        </div>
+        <div>
+          <p className="font-medium text-gray-900">
+            {user?.firstName || 'User'} {user?.lastName || ''}
+          </p>
+          <p className="text-sm text-gray-500">@{user?.username || 'username'}</p>
+        </div>
+      </div>
+
+      {/* Description */}
+      <textarea
+        {...register('description', { required: 'Description is required' })}
+        rows={8}
+        className="w-full rounded-lg border-none bg-gray-100 px-4 py-3 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+        placeholder="Hãy mô tả cho mọi người về món này..."
+      />
+      {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
+    </div>
+  );
+};
+
+// Ingredients Section (Left Bottom)
 const IngredientsSection = () => {
   const { control, register } = useFormContext<RecipeFormData>();
   const { fields, append, remove } = useFieldArray({ control, name: 'ingredients' });
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+    <div className="space-y-4">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">Ingredients</h2>
-        <Button
-          type="button"
-          onClick={() => append({ name: '', amount: '', unit: '' })}
-          size="sm"
-          className="bg-orange-600 hover:bg-orange-700"
-        >
-          <Plus size={16} className="mr-1" /> Add
-        </Button>
+        <h2 className="text-2xl font-bold text-gray-900">Nguyên Liệu</h2>
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-gray-600">Khẩu phần:</label>
+          <input
+            type="number"
+            {...register('serving', { min: 1, valueAsNumber: true })}
+            className="w-20 rounded-lg border border-gray-300 bg-gray-50 px-3 py-1 text-center focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+        </div>
       </div>
 
-      <div className="space-y-3">
+      {/* Ingredients List */}
+      <div className="space-y-2">
         {fields.map((field, index) => (
-          <div key={field.id} className="grid grid-cols-12 gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3">
+          <div key={field.id} className="flex items-center gap-2">
+            <Menu size={20} className="cursor-move text-gray-400" />
             <input
               {...register(`ingredients.${index}.name`)}
-              placeholder="Name (e.g., Chicken breast)"
-              className="col-span-5 rounded border border-gray-300 px-2 py-1 text-sm focus:border-orange-500 focus:outline-none"
+              placeholder="Rice (tên nguyên liệu)"
+              className="flex-1 rounded-lg border-none bg-gray-100 px-4 py-2 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
             <input
-              {...register(`ingredients.${index}.amount`)}
-              placeholder="Amount (e.g., 2)"
-              className="col-span-3 rounded border border-gray-300 px-2 py-1 text-sm focus:border-orange-500 focus:outline-none"
+              type="number"
+              step="0.01"
+              {...register(`ingredients.${index}.amount`, { valueAsNumber: true })}
+              placeholder="Số lượng"
+              className="w-24 rounded-lg border-none bg-gray-100 px-3 py-2 text-center text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
             <input
               {...register(`ingredients.${index}.unit`)}
-              placeholder="Unit (e.g., cups)"
-              className="col-span-3 rounded border border-gray-300 px-2 py-1 text-sm focus:border-orange-500 focus:outline-none"
+              placeholder="Đơn vị"
+              className="w-24 rounded-lg border-none bg-gray-100 px-3 py-2 text-center text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
             <button
               type="button"
-              onClick={() => remove(index)}
-              disabled={fields.length === 1}
-              className="col-span-1 flex items-center justify-center text-red-500 hover:text-red-700 disabled:opacity-30"
+              onClick={() => fields.length > 1 && remove(index)}
+              className="text-gray-400 hover:text-gray-600"
             >
-              <Trash2 size={16} />
+              <MoreHorizontal size={20} />
             </button>
           </div>
         ))}
       </div>
+
+      <Button
+        type="button"
+        onClick={() => append({ name: '', amount: 0, unit: '' })}
+        variant="ghost"
+        size="sm"
+        className="text-orange-600 hover:text-orange-700"
+      >
+        + Thêm nguyên liệu
+      </Button>
     </div>
   );
 };
 
+// Steps Section (Right Bottom)
 const StepsSection = ({ 
   stepImages, 
   onImageSelect, 
-  onImageRemove 
 }: { 
   stepImages: Record<number, string>, 
   onImageSelect: (index: number, file: File) => void,
-  onImageRemove: (index: number) => void
 }) => {
   const { control, register } = useFormContext<RecipeFormData>();
   const { fields, append, remove } = useFieldArray({ control, name: 'steps' });
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+    <div className="space-y-4">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">Cooking Steps</h2>
-        <Button
-          type="button"
-          onClick={() => append({ order_index: fields.length + 1, content: '' })}
-          size="sm"
-          className="bg-orange-600 hover:bg-orange-700"
-        >
-          <Plus size={16} className="mr-1" /> Add
-        </Button>
+        <h2 className="text-2xl font-bold text-gray-900">Các bước</h2>
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-gray-600">Thời gian nấu:</label>
+          <input
+            type="number"
+            {...register('cooking_time', { min: 1, valueAsNumber: true })}
+            className="w-20 rounded-lg border border-gray-300 bg-gray-50 px-3 py-1 text-center focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+          <span className="text-sm text-gray-600">phút</span>
+        </div>
       </div>
 
-      <div className="space-y-4">
+      {/* Steps List */}
+      <div className="space-y-3">
         {fields.map((field, index) => (
-          <div key={field.id} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-sm font-bold text-orange-600">
+          <div key={field.id} className="space-y-2">
+            <div className="flex items-start gap-2">
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-orange-100 text-sm font-bold text-orange-600">
                 {index + 1}
               </div>
+              <Menu size={20} className="cursor-move text-gray-400 mt-2" />
+              <textarea
+                {...register(`steps.${index}.content`)}
+                placeholder="Mô tả bước này..."
+                rows={2}
+                className="flex-1 rounded-lg border-none bg-gray-100 px-4 py-2 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
               <button
                 type="button"
-                onClick={() => {
-                  remove(index);
-                  onImageRemove(index); // Clean up image mapping
-                }}
-                disabled={fields.length === 1}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-red-500 hover:bg-red-50"
+                onClick={() => fields.length > 1 && remove(index)}
+                className="text-gray-400 hover:text-gray-600 mt-2"
               >
-                <Trash2 size={16} />
+                <MoreHorizontal size={20} />
               </button>
             </div>
 
-            <textarea
-              {...register(`steps.${index}.content`)}
-              placeholder="Describe this step..."
-              rows={3}
-              className="mb-3 w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
-            />
-
-            {/* Image Upload Area */}
-            <div className="mt-3">
-              {!stepImages[index] ? (
-                <div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    id={`step-image-${index}`} // Unique ID for label binding
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) onImageSelect(index, file);
-                      // Reset value để cho phép chọn lại cùng 1 file nếu cần
-                      e.target.value = ''; 
-                    }}
-                  />
-                  <label
-                    htmlFor={`step-image-${index}`}
-                    className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 bg-white px-4 py-3 text-sm text-gray-600 hover:border-orange-400 hover:bg-orange-50 hover:text-orange-600"
-                  >
-                    <Camera size={20} className="text-orange-500" />
-                    <span className="font-medium">Add Image</span>
-                  </label>
-                </div>
-              ) : (
-                <div className="relative overflow-hidden rounded-lg border border-gray-200">
-                  <img
-                    src={stepImages[index]}
-                    alt={`Step ${index + 1}`}
-                    className="h-40 w-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => onImageRemove(index)}
-                    className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              )}
-            </div>
+            {/* Optional Image Upload */}
+            {!stepImages[index] ? (
+              <div className="ml-10">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  id={`step-img-${index}`}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) onImageSelect(index, file);
+                    e.target.value = '';
+                  }}
+                />
+                <label
+                  htmlFor={`step-img-${index}`}
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-2 text-sm text-gray-500 hover:border-orange-400 hover:bg-orange-50 hover:text-orange-600"
+                >
+                  <Camera size={16} />
+                  Thêm hình ảnh
+                </label>
+              </div>
+            ) : (
+              <div className="ml-10">
+                <img
+                  src={stepImages[index]}
+                  alt={`Step ${index + 1}`}
+                  className="h-32 w-full rounded-lg object-cover"
+                />
+              </div>
+            )}
           </div>
         ))}
       </div>
+
+      <Button
+        type="button"
+        onClick={() => append({ order_index: fields.length + 1, content: '' })}
+        variant="ghost"
+        size="sm"
+        className="text-orange-600 hover:text-orange-700"
+      >
+        + Thêm bước
+      </Button>
     </div>
   );
 };
@@ -366,8 +299,7 @@ export default function CreateRecipePage() {
       description: '',
       cooking_time: 30,
       serving: 2,
-      is_private: false,
-      ingredients: [{ name: '', amount: '', unit: '' }],
+      ingredients: [{ name: '', amount: 0, unit: '' }],
       steps: [{ order_index: 1, content: '' }],
     },
   });
@@ -388,15 +320,6 @@ export default function CreateRecipePage() {
     setThumbnailFile(file);
   };
 
-  // Handle thumbnail image removal
-  const handleThumbnailImageRemove = () => {
-    if (thumbnailPreview) {
-      URL.revokeObjectURL(thumbnailPreview);
-    }
-    setThumbnailPreview('');
-    setThumbnailFile(null);
-  };
-
   // Handle step image selection
   const handleStepImageSelect = (index: number, file: File) => {
     const previewUrl = URL.createObjectURL(file);
@@ -404,143 +327,234 @@ export default function CreateRecipePage() {
     setStepFiles(prev => ({ ...prev, [index]: file }));
   };
 
-  // Handle step image removal
-  const handleStepImageRemove = (index: number) => {
-    if (stepImagePreviews[index]) {
-      URL.revokeObjectURL(stepImagePreviews[index]);
-    }
-    setStepImagePreviews(prev => {
-      const newState = { ...prev };
-      delete newState[index];
-      return newState;
-    });
-    setStepFiles(prev => {
-      const newState = { ...prev };
-      delete newState[index];
-      return newState;
-    });
-  };
-
   const onSubmit = async (data: RecipeFormData) => {
+    // ✅ DEBUGGING: Log raw form data at the very start
+    console.log('🔍 ===== CREATE RECIPE SUBMISSION STARTED =====');
+    console.log('📝 Raw Form Data:', data);
+    console.log('👤 Current User:', user);
+    console.log('🖼️ Thumbnail File:', thumbnailFile?.name || 'None');
+    console.log('📸 Step Files:', Object.keys(stepFiles).map(idx => `Step ${idx}: ${stepFiles[Number(idx)]?.name}`));
+
+    // Check authentication
     if (!user) {
-      toast.error('Please sign in to create a recipe');
-      navigate('/auth/signin');
+      console.warn('⚠️ User not authenticated');
+      toast.error('Vui lòng đăng nhập để tạo công thức');
+      // ❌ DO NOT navigate automatically - let user stay on page
       return;
     }
 
     try {
       setIsLoading(true);
 
-      // Step 1: Upload thumbnail
+      // Step 1: Upload thumbnail image
       let thumbnailUrl = '';
       if (thumbnailFile) {
-        console.log('📤 Uploading thumbnail...');
+        console.log('📤 Uploading thumbnail to Cloudinary...');
         thumbnailUrl = await uploadToCloudinary(thumbnailFile);
-        console.log('✅ Thumbnail uploaded:', thumbnailUrl);
+        console.log('✅ Thumbnail uploaded successfully:', thumbnailUrl);
+      } else {
+        console.warn('⚠️ No thumbnail image selected');
       }
 
-      // Step 2: Upload step images
+      // Step 2: Upload step images and transform to backend schema
+      console.log('📤 Processing steps and uploading step images...');
       const stepsWithImages = await Promise.all(
         data.steps.map(async (step, index) => {
           let imageUrl = '';
           if (stepFiles[index]) {
-            console.log(`📤 Uploading step ${index + 1} image...`);
+            console.log(`📤 Uploading image for step ${index + 1}...`);
             imageUrl = await uploadToCloudinary(stepFiles[index]);
             console.log(`✅ Step ${index + 1} image uploaded:`, imageUrl);
           }
-          return {
-            order_index: index + 1,
+          
+          // ✅ CRITICAL FIX: Only include image_url if it exists (not empty string)
+          // Backend validator requires valid URL or field to be absent
+          const stepData: {
+            order_index: number;
+            content: string;
+            image_url?: string;
+          } = {
+            order_index: index + 1, // Backend requires Integer >= 1
             content: step.content.trim(),
-            image_url: imageUrl,
           };
+
+          // Only add image_url if it's not empty
+          if (imageUrl && imageUrl.trim() !== '') {
+            stepData.image_url = imageUrl;
+          }
+
+          return stepData;
         })
       );
+      console.log('✅ Steps processed:', stepsWithImages.length);
+      console.log('✅ Steps with images:', stepsWithImages.filter(s => s.image_url).length);
 
-      // Step 3: Prepare ingredients
+      // Step 3: Transform ingredients to backend schema
       const validIngredients = data.ingredients.filter(
-        (ing) => ing.name.trim() && ing.amount.trim()
+        (ing) => ing.name.trim() && ing.amount > 0
       );
+      console.log(`🥕 Valid ingredients: ${validIngredients.length} out of ${data.ingredients.length}`);
 
+      // ✅ CRITICAL FIX: Backend expects 'quanity' (typo - missing 't')
       const ingredientsData = validIngredients.map((ing) => ({
         name: ing.name.trim(),
-        amount: ing.amount.trim(),
+        quanity: parseFloat(String(ing.amount)) || 1, // Backend key is 'quanity' (typo), Number >= 1
         unit: ing.unit.trim(),
       }));
 
-      // Step 4: Create recipe via NestJS API
-      console.log('📝 Creating recipe via API...');
-      await recipeService.createRecipe({
+      // Step 4: Build final payload with STRICT backend schema mapping
+      // ✅ Based on actual 400 error analysis
+      const payload = {
         title: data.title.trim(),
         description: data.description.trim(),
-        cooking_time: data.cooking_time,
-        serving: data.serving,
-        thumbnail_url: thumbnailUrl,
-        is_private: data.is_private,
+        cooking_time: parseFloat(String(data.cooking_time)) || 0, // Number
+        servings: parseInt(String(data.serving), 10) || 1, // MUST be 'servings' (plural), Integer >= 1
+        thumbnail_url: thumbnailUrl, // snake_case
         ingredients: ingredientsData,
         steps: stepsWithImages,
-      });
+      };
 
-      console.log('✅ Recipe created successfully');
-      toast.success('Recipe submitted successfully!');
+      // ✅ CRITICAL DEBUGGING: Log Final Payload for API
+      console.log('🔍 ===== FINAL PAYLOAD FOR API =====');
+      console.log('Final Payload for API:', JSON.stringify(payload, null, 2));
+      console.log('🔍 Data Types Verification:');
+      console.log('  - title:', typeof payload.title, `(${payload.title.length} chars)`);
+      console.log('  - cooking_time:', typeof payload.cooking_time, `(value: ${payload.cooking_time})`);
+      console.log('  - servings (PLURAL):', typeof payload.servings, `(value: ${payload.servings})`);
+      console.log('  - ingredients count:', payload.ingredients.length);
+      if (payload.ingredients.length > 0) {
+        console.log('  - First ingredient quanity type:', typeof payload.ingredients[0].quanity);
+      }
+      console.log('  - steps count:', payload.steps.length);
+      if (payload.steps.length > 0) {
+        console.log('  - First step order_index:', payload.steps[0].order_index, '(MUST be >= 1)');
+      }
+      console.log('  - thumbnail_url:', payload.thumbnail_url ? 'Present' : 'Missing');
+      console.log('====================================');
 
-      // Clear form and navigate
+      // Step 5: Send to backend API
+      console.log('🚀 Sending POST request to Render backend...');
+      const response = await recipeService.createRecipe(payload);
+      console.log('✅ ===== RECIPE CREATED SUCCESSFULLY =====');
+      console.log('📦 Response:', response);
+
+      // Clear form only after success
       methods.reset();
       setThumbnailPreview('');
       setThumbnailFile(null);
       setStepImagePreviews({});
       setStepFiles({});
-      navigate('/my-recipes');
-    } catch (error) {
-      console.error('❌ Error creating recipe:', error);
-      toast.error('Failed to create recipe');
+      console.log('🧹 Form cleared');
+
+      // ✅ CRITICAL: Show success toast - ONLY navigate when user clicks OK
+      toast.success(
+        'Công thức đã được đăng thành công!',
+        {
+          label: 'OK',
+          onClick: () => {
+            console.log('✅ User clicked OK, navigating to homepage...');
+            navigate('/');
+          },
+        },
+        Infinity // ⏳ Toast stays forever until user clicks OK
+      );
+      console.log('✅ Success toast displayed. Console logs preserved - NO automatic navigation.');
+
+    } catch (error: any) {
+      // ✅ COMPREHENSIVE ERROR LOGGING
+      console.error('❌ ===== ERROR CREATING RECIPE =====');
+      console.error('📛 Error Object:', error);
+      console.error('📛 Error Message:', error?.message);
+      console.error('📛 Error Response:', error?.response);
+      console.error('📛 Response Status:', error?.response?.status);
+      console.error('📛 Response Data:', error?.response?.data);
+      console.error('📛 Response Headers:', error?.response?.headers);
+      console.error('📛 Full Error Stack:', error?.stack);
+      
+      // ✅ CRITICAL: Log validation errors specifically
+      if (error?.response?.data?.message) {
+        console.error('🔴 Validation Errors:', error.response.data.message);
+        if (Array.isArray(error.response.data.message)) {
+          console.error('🔴 Individual Validation Errors:');
+          error.response.data.message.forEach((err: any, idx: number) => {
+            console.error(`  ${idx + 1}. ${JSON.stringify(err)}`);
+          });
+        }
+      }
+      console.error('====================================');
+      
+      // Extract detailed error message from backend
+      let errorMessage = 'Không thể tạo công thức. Vui lòng thử lại.';
+      
+      if (error?.response?.status === 400 && error?.response?.data) {
+        // 400 Bad Request - Validation Error
+        const validationErrors = error.response.data.message;
+        if (Array.isArray(validationErrors)) {
+          // Multiple validation errors
+          errorMessage = `Lỗi validation (${validationErrors.length}): ${validationErrors.join(', ')}`;
+        } else {
+          errorMessage = error.response.data.message || error.response.data.error || 'Validation failed';
+        }
+      } else if (error?.response?.data) {
+        // Other backend errors
+        const backendError = error.response.data;
+        errorMessage = backendError.message || backendError.error || JSON.stringify(backendError);
+        console.error('🔍 Backend Error Details:', backendError);
+      } else if (error?.message?.includes('timeout')) {
+        // Timeout error
+        errorMessage = 'Server không phản hồi (timeout). Vui lòng thử lại sau.';
+      } else if (error?.message) {
+        // Network or other error
+        errorMessage = error.message;
+      }
+      
+      // ✅ Show error toast - DO NOT navigate, let user see the error
+      toast.error(`Lỗi: ${errorMessage}`);
+      console.log('❌ Error toast displayed. User stays on page to review errors.');
+
     } finally {
       setIsLoading(false);
+      console.log('🏁 Submit process completed. Loading state reset.');
     }
   };
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(onSubmit)} className="min-h-screen bg-gray-50 py-8">
-        <div className="container mx-auto px-4">
-          {/* Header */}
-          <div className="mb-8 flex items-center gap-3">
-            <div className="rounded-full bg-orange-100 p-3">
-              <ChefHat className="text-orange-600" size={28} />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Create New Recipe</h1>
-              <p className="mt-1 text-gray-600">Share your culinary masterpiece</p>
-            </div>
+      <form onSubmit={methods.handleSubmit(onSubmit)} className="min-h-screen bg-white py-8">
+        <div className="container mx-auto max-w-7xl px-4">
+          {/* Top Section: 2 Columns */}
+          <div className="mb-8 grid gap-6 lg:grid-cols-2">
+            {/* Left: Image Uploader */}
+            <ImageUploaderSection 
+              thumbnailPreview={thumbnailPreview}
+              onImageSelect={handleThumbnailImageSelect}
+            />
+
+            {/* Right: General Info */}
+            <GeneralInfoSection />
           </div>
 
-          {/* Main Form */}
+          {/* Bottom Section: 2 Columns */}
           <div className="grid gap-6 lg:grid-cols-2">
-            <div className="space-y-6">
-              <BasicInfoSection />
-              <ThumbnailSection 
-                thumbnailPreview={thumbnailPreview}
-                onImageSelect={handleThumbnailImageSelect}
-                onImageRemove={handleThumbnailImageRemove}
-              />
-            </div>
-            <div className="space-y-6">
-              <IngredientsSection />
-              <StepsSection 
-                stepImages={stepImagePreviews}
-                onImageSelect={handleStepImageSelect}
-                onImageRemove={handleStepImageRemove}
-              />
-            </div>
+            {/* Left: Ingredients */}
+            <IngredientsSection />
+
+            {/* Right: Steps */}
+            <StepsSection 
+              stepImages={stepImagePreviews}
+              onImageSelect={handleStepImageSelect}
+            />
           </div>
 
-          <div className="flex items-center justify-end gap-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          {/* Submit Button */}
+          <div className="mt-8 flex items-center justify-end gap-4">
             <Button 
               type="button" 
               variant="ghost" 
               onClick={() => navigate(-1)}
               disabled={isLoading}
             >
-              Cancel
+              Hủy
             </Button>
             <Button 
               type="submit" 
@@ -548,7 +562,7 @@ export default function CreateRecipePage() {
               disabled={isLoading}
             >
               <ChefHat size={18} className="mr-2" /> 
-              {isLoading ? 'Publishing...' : 'Publish Recipe'}
+              {isLoading ? 'Đang đăng...' : 'Đăng công thức'}
             </Button>
           </div>
         </div>

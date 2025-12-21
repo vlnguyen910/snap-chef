@@ -44,6 +44,19 @@ export function Toaster() {
           {/* Message */}
           <p className="text-sm font-medium flex-1">{t.message}</p>
           
+          {/* Action Button (if exists) */}
+          {t.action && (
+            <button
+              onClick={() => {
+                t.action?.onClick();
+                dismissToast(t.id);
+              }}
+              className="px-3 py-1 text-sm font-medium bg-white rounded-md shadow-sm hover:bg-gray-50 transition-colors border border-gray-200"
+            >
+              {t.action.label}
+            </button>
+          )}
+          
           {/* Close Button */}
           <button
             onClick={() => dismissToast(t.id)}

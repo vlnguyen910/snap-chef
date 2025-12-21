@@ -8,7 +8,6 @@ import AuthPage from '@/pages/AuthPage';
 import RecipesPage from '@/pages/RecipesPage';
 import RecipeDetailPage from '@/pages/RecipeDetailPage';
 import ModerationPage from '@/pages/ModerationPage';
-import DashboardPage from '@/pages/DashboardPage';
 import CreateRecipePage from '@/pages/CreateRecipePage';
 import NotFound from '@/pages/NotFound';
 
@@ -30,7 +29,7 @@ export default function AppRoutes() {
       {/* Protected User Routes */}
       <Route element={<ProtectedRoute allowedRoles={['user', 'moderator']} />}>
         <Route element={<MainLayout showSidebar={true} />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/create-recipe" element={<CreateRecipePage />} />
           <Route path="/profile" element={<div className="p-8"><h1 className="text-2xl font-bold">Profile</h1></div>} />
           <Route path="/my-recipes" element={<RecipesPage />} />
           <Route path="/recipes/create" element={<CreateRecipePage />} />
