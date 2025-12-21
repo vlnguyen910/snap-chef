@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom';
 import { ChefHat, Search, Users, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useStore } from '@/lib/store';
 
 export default function HomePage() {
+  const { isAuthenticated } = useStore();
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -30,10 +33,10 @@ export default function HomePage() {
                   Explore Recipes
                 </Button>
               </Link>
-              <Link to="/auth/signup">
+              <Link to={isAuthenticated ? "/dashboard" : "/auth/signup"}>
                 <Button size="lg" variant="outline" className="w-full sm:w-auto">
                   <ChefHat size={20} className="mr-2" />
-                  Start Cooking
+                  {isAuthenticated ? "Go to Dashboard" : "Start Cooking"}
                 </Button>
               </Link>
             </div>
@@ -118,9 +121,9 @@ export default function HomePage() {
           <p className="text-orange-100 text-lg mb-8 max-w-2xl mx-auto">
             Join thousands of home chefs sharing their passion for cooking
           </p>
-          <Link to="/register">
+          <Link to={isAuthenticated ? "/dashboard" : "/auth/signup"}>
             <Button size="lg" variant="outline" className="bg-white text-orange-600 hover:bg-orange-50 border-0">
-              Create Free Account
+              {isAuthenticated ? "Go to Dashboard" : "Create Free Account"}
             </Button>
           </Link>
         </div>
