@@ -3,75 +3,53 @@ import { useParams, Link } from 'react-router-dom';
 import { Clock, Users, Calendar, ArrowLeft, ChefHat } from 'lucide-react';
 import Loading from '@/components/common/Loading';
 import ErrorState from '@/components/common/ErrorState';
+import { recipeService } from '@/services/recipeService';
 import { api } from '@/lib/axios';
 
-// Recipe data interface matching the provided JSON structure
+// Ingredient interface matching backend response
+interface Ingredient {
+  name: string;
+  quanity: number; // Backend typo - missing 't'
+  unit: string;
+  checked?: boolean;
+}
+
+// Step interface matching backend response
+interface Step {
+  order_index: number;
+  content: string;
+  image_url?: string;
+}
+
+// Recipe data interface matching backend API response
 interface RecipeData {
-  id: number;
+  id: string;
   author_id: string;
   title: string;
   description: string | null;
-  servings: number;
-  cooking_time: number; // in hours
+  servings: number; // Plural
+  cooking_time: number; // in minutes (snake_case)
   thumbnail_url: string;
   status: string;
+  ingredients: Ingredient[];
+  steps: Step[];
   created_at: string;
   updated_at: string;
 }
 
-// Mock ingredients data
-const mockIngredients = [
-  { id: 1, name: 'Fresh fish fillets', quantity: '500', unit: 'g', checked: false },
-  { id: 2, name: 'Coconut water', quantity: '200', unit: 'ml', checked: false },
-  { id: 3, name: 'Fish sauce', quantity: '3', unit: 'tbsp', checked: false },
-  { id: 4, name: 'Sugar', quantity: '2', unit: 'tbsp', checked: false },
-  { id: 5, name: 'Black pepper', quantity: '1', unit: 'tsp', checked: false },
-  { id: 6, name: 'Garlic cloves', quantity: '4', unit: 'cloves', checked: false },
-  { id: 7, name: 'Shallots', quantity: '2', unit: 'pieces', checked: false },
-  { id: 8, name: 'Vegetable oil', quantity: '2', unit: 'tbsp', checked: false },
-  { id: 9, name: 'Caramel sauce', quantity: '2', unit: 'tbsp', checked: false },
-  { id: 10, name: 'Fresh chili peppers', quantity: '2', unit: 'pieces', checked: false },
-];
-
-// Mock cooking instructions
-const mockInstructions = [
-  {
-    step: 1,
-    instruction: 'Clean the fish fillets thoroughly and cut into medium-sized pieces. Pat dry with paper towels.',
-  },
-  {
-    step: 2,
-    instruction: 'Mince the garlic and shallots. Slice the chili peppers diagonally.',
-  },
-  {
-    step: 3,
-    instruction: 'In a clay pot or deep pan, heat the vegetable oil over medium heat. Add the minced garlic and shallots, sauté until fragrant.',
-  },
-  {
-    step: 4,
-    instruction: 'Add the caramel sauce and stir well. Place the fish pieces in the pot, making sure they are coated with the caramel mixture.',
-  },
-  {
-    step: 5,
-    instruction: 'Pour in the coconut water, fish sauce, sugar, and black pepper. Bring to a boil.',
-  },
-  {
-    step: 6,
-    instruction: 'Reduce heat to low, cover the pot, and let it simmer for 45-60 minutes until the sauce thickens and the fish is tender.',
-  },
-  {
-    step: 7,
-    instruction: 'Add the chili peppers in the last 10 minutes of cooking for extra flavor.',
-  },
-  {
-    step: 8,
-    instruction: 'Once done, turn off the heat and let it rest for 5 minutes. Serve hot with steamed rice.',
-  },
-];
+// Author data interface
+interface AuthorData {
+  id: string;
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+}
 
 export default function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [recipe, setRecipe] = useState<RecipeData | null>(null);
+  const [author, setAuthor] = useState<AuthorData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
@@ -81,45 +59,57 @@ export default function RecipeDetailPage() {
   }, [id]);
 
   const fetchRecipe = async () => {
+    if (!id) {
+      setError('Recipe ID is missing');
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
+    
     try {
-      // For demo purposes, using mock data
-      // In production, uncomment the API call below
-      // const response = await api.get<{ recipe: RecipeData }>(`/recipes/${id}`);
-      // setRecipe(response.recipe);
+      console.log('🔍 Fetching recipe with ID:', id);
       
-      // Mock data based on provided JSON
-      const mockRecipe: RecipeData = {
-        id: 1,
-        author_id: 'cmj9g22de00001wf4ux8wln9d',
-        title: 'Ca kho vai beep',
-        description: null,
-        servings: 3,
-        cooking_time: 1,
-        thumbnail_url: 'https://cdnv2.tgdd.vn/mwg-static/common/Common/05052025%20-%202025-05-09T154044.858.jpg',
-        status: 'DRAFT',
-        created_at: '2025-12-17T03:20:57.425Z',
-        updated_at: '2025-12-17T03:20:57.425Z',
-      };
+      // Fetch recipe details from API
+      const response = await api.get<any>(`/recipes/${id}`);
       
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setRecipe(mockRecipe);
+      // 🐛 DEBUGGING: Log full API response to verify structure
+      console.log('✅ API Response:', response);
+      console.log('📦 Recipe Data:', JSON.stringify(response, null, 2));
+      console.log('🥕 Ingredients:', response.ingredients);
+      console.log('📝 Steps:', response.steps);
+      
+      setRecipe(response);
+
+      // Fetch author details separately if author_id exists
+      if (response.author_id) {
+        try {
+          console.log('👤 Fetching author with ID:', response.author_id);
+          const authorResponse = await api.get<AuthorData>(`/users/${response.author_id}`);
+          console.log('✅ Author fetched:', authorResponse);
+          setAuthor(authorResponse);
+        } catch (authorError) {
+          console.warn('⚠️ Failed to fetch author details:', authorError);
+          // Continue even if author fetch fails
+        }
+      }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load recipe');
+      console.error('❌ Error fetching recipe:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to load recipe';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const toggleIngredient = (ingredientId: number) => {
+  const toggleIngredient = (index: number) => {
     setCheckedIngredients(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(ingredientId)) {
-        newSet.delete(ingredientId);
+      if (newSet.has(index)) {
+        newSet.delete(index);
       } else {
-        newSet.add(ingredientId);
+        newSet.add(index);
       }
       return newSet;
     });
@@ -134,24 +124,95 @@ export default function RecipeDetailPage() {
     });
   };
 
-  const formatCookingTime = (hours: number) => {
-    if (hours < 1) {
-      return `${hours * 60} minutes`;
-    } else if (hours === 1) {
+  const formatCookingTime = (minutes: number) => {
+    if (minutes < 60) {
+      return `${minutes} mins`;
+    } else if (minutes === 60) {
       return '1 hour';
     } else {
-      return `${hours} hours`;
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      return mins > 0 ? `${hours}h ${mins}m` : `${hours} hours`;
     }
   };
 
-  const getAuthorName = (authorId: string) => {
-    // Placeholder author name
-    return 'Chef Sarah Williams';
+  const getAuthorName = () => {
+    if (author) {
+      if (author.firstName && author.lastName) {
+        return `${author.firstName} ${author.lastName}`;
+      }
+      return author.username || 'Unknown Chef';
+    }
+    return 'Loading...';
   };
+
+  // ✅ DEFENSIVE: Get servings (check both singular and plural)
+  const getServings = () => {
+    if (!recipe) return 1;
+    return recipe.servings || (recipe as any).serving || 1;
+  };
+
+  // ✅ DEFENSIVE: Get cooking time (check both snake_case and camelCase)
+  const getCookingTime = () => {
+    if (!recipe) return 0;
+    return recipe.cooking_time || (recipe as any).cookingTime || 0;
+  };
+
+  // ✅ DEFENSIVE: Parse ingredients with flexible field mapping
+  const getIngredients = () => {
+    if (!recipe?.ingredients || !Array.isArray(recipe.ingredients)) {
+      console.warn('⚠️ No ingredients array found');
+      return [];
+    }
+
+    return recipe.ingredients.map((item: any, index: number) => {
+      // Check multiple possible field names for amount
+      const amount = item.amount || item.quantity || item.quanity || 0;
+      const name = item.name || 'Unknown ingredient';
+      const unit = item.unit || '';
+
+      console.log(`🥕 Ingredient ${index + 1}:`, { name, amount, unit, raw: item });
+
+      return {
+        name,
+        amount,
+        unit,
+        index,
+      };
+    });
+  };
+
+  // ✅ DEFENSIVE: Parse steps with flexible field mapping
+  const getSteps = () => {
+    if (!recipe?.steps || !Array.isArray(recipe.steps)) {
+      console.warn('⚠️ No steps array found');
+      return [];
+    }
+
+    return recipe.steps
+      .map((item: any, index: number) => {
+        // Check multiple possible field names for content
+        const content = item.content || item.instruction || '';
+        const orderIndex = item.order_index !== undefined ? item.order_index : (item.step || index + 1);
+        const imageUrl = item.image_url || item.imageUrl || '';
+
+        console.log(`📝 Step ${orderIndex}:`, { content: content.substring(0, 50), imageUrl, raw: item });
+
+        return {
+          order_index: orderIndex,
+          content,
+          image_url: imageUrl,
+        };
+      })
+      .sort((a, b) => a.order_index - b.order_index); // Sort by order_index
+  };
+
+  const ingredients = getIngredients();
+  const steps = getSteps();
 
   if (isLoading) return <Loading fullScreen />;
   if (error) return <ErrorState message={error} onRetry={fetchRecipe} fullScreen />;
-  if (!recipe) return <ErrorState title="Recipe not found" fullScreen />;
+  if (!recipe) return <ErrorState title="Recipe not found" message="The recipe you're looking for doesn't exist." fullScreen />;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
@@ -190,12 +251,12 @@ export default function RecipeDetailPage() {
                 <div className="flex flex-wrap gap-3">
                   <div className="flex items-center gap-2 bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
                     <Clock className="text-orange-500" size={20} />
-                    <span className="font-medium text-gray-800">{formatCookingTime(recipe.cooking_time)}</span>
+                    <span className="font-medium text-gray-800">{formatCookingTime(getCookingTime())}</span>
                   </div>
                   
                   <div className="flex items-center gap-2 bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
                     <Users className="text-orange-500" size={20} />
-                    <span className="font-medium text-gray-800">{recipe.servings} servings</span>
+                    <span className="font-medium text-gray-800">{getServings()} servings</span>
                   </div>
                   
                   <div className="flex items-center gap-2 bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
@@ -205,7 +266,7 @@ export default function RecipeDetailPage() {
                   
                   <div className="flex items-center gap-2 bg-orange-500 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
                     <ChefHat className="text-white" size={20} />
-                    <span className="font-medium text-white">{getAuthorName(recipe.author_id)}</span>
+                    <span className="font-medium text-white">By {getAuthorName()}</span>
                   </div>
                 </div>
               </div>
@@ -231,24 +292,28 @@ export default function RecipeDetailPage() {
                       Ingredients
                     </h2>
                     
-                    <div className="bg-orange-50 rounded-xl p-6 space-y-3">
-                      {mockIngredients.map((ingredient) => (
-                        <label
-                          key={ingredient.id}
-                          className="flex items-start gap-3 cursor-pointer group hover:bg-orange-100 p-2 rounded-lg transition-colors"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={checkedIngredients.has(ingredient.id)}
-                            onChange={() => toggleIngredient(ingredient.id)}
-                            className="mt-1 w-5 h-5 text-orange-500 rounded border-gray-300 focus:ring-orange-500 focus:ring-2 cursor-pointer"
-                          />
-                          <span className={`flex-1 text-gray-700 ${checkedIngredients.has(ingredient.id) ? 'line-through text-gray-400' : ''}`}>
-                            <span className="font-semibold">{ingredient.quantity} {ingredient.unit}</span> {ingredient.name}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
+                    {ingredients.length > 0 ? (
+                      <div className="bg-orange-50 rounded-xl p-6 space-y-3">
+                        {ingredients.map((ingredient) => (
+                          <label
+                            key={ingredient.index}
+                            className="flex items-start gap-3 cursor-pointer group hover:bg-orange-100 p-2 rounded-lg transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checkedIngredients.has(ingredient.index)}
+                              onChange={() => toggleIngredient(ingredient.index)}
+                              className="mt-1 w-5 h-5 text-orange-500 rounded border-gray-300 focus:ring-orange-500 focus:ring-2 cursor-pointer"
+                            />
+                            <span className={`flex-1 text-gray-700 ${checkedIngredients.has(ingredient.index) ? 'line-through text-gray-400' : ''}`}>
+                              <span className="font-semibold">{ingredient.amount} {ingredient.unit}</span> {ingredient.name}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-gray-500 italic">No ingredients listed for this recipe.</p>
+                    )}
                   </div>
                 </div>
 
@@ -259,22 +324,33 @@ export default function RecipeDetailPage() {
                     Instructions
                   </h2>
                   
-                  <div className="space-y-6">
-                    {mockInstructions.map((instruction) => (
-                      <div key={instruction.step} className="flex gap-4 group">
-                        <div className="flex-shrink-0">
-                          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg group-hover:scale-110 transition-transform">
-                            {instruction.step}
+                  {steps.length > 0 ? (
+                    <div className="space-y-6">
+                      {steps.map((step, index) => (
+                        <div key={index} className="flex gap-4 group">
+                          <div className="flex-shrink-0">
+                            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg group-hover:scale-110 transition-transform">
+                              {step.order_index}
+                            </div>
+                          </div>
+                          <div className="flex-1 pt-2">
+                            <p className="text-gray-700 leading-relaxed text-lg mb-3">
+                              {step.content}
+                            </p>
+                            {step.image_url && (
+                              <img 
+                                src={step.image_url} 
+                                alt={`Step ${step.order_index}`}
+                                className="rounded-lg shadow-md max-w-md w-full mt-3"
+                              />
+                            )}
                           </div>
                         </div>
-                        <div className="flex-1 pt-2">
-                          <p className="text-gray-700 leading-relaxed text-lg">
-                            {instruction.instruction}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 italic">No instructions available for this recipe.</p>
+                  )}
                 </div>
               </div>
 
