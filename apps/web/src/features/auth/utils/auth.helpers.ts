@@ -126,6 +126,15 @@ export function transformSignupData(formData: {
  * //   ]
  * // }
  */
+
+export interface SignupPayload {
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  password: string;
+}
+
 export function validateSignupData(formData: {
   fullName: string;
   email: string;

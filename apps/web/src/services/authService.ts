@@ -1,23 +1,8 @@
 import { api } from '@/lib/axios';
 import type { User } from '@/types';
-import type { SignupPayload } from '@/utils/auth.helpers';
-
-// Utility function to decode JWT token
-function decodeToken(token: string): Record<string, any> {
-  try {
-    // JWT format: header.payload.signature
-    const parts = token.split('.');
-    if (parts.length !== 3) return {};
-    
-    // Decode payload (second part)
-    const payload = parts[1];
-    const decoded = JSON.parse(atob(payload));
-    return decoded;
-  } catch (error) {
-    console.error('Failed to decode token:', error);
-    return {};
-  }
-}
+// 👇 Import cả hàm xử lý tên và Type Payload từ helper
+import { splitFullName } from '@/features/auth/utils/auth.helpers';
+import type { SignupPayload } from '@/features/auth/utils/auth.helpers'; 
 
 export interface AuthResponse {
   user: User;
@@ -25,110 +10,120 @@ export interface AuthResponse {
   refresh_token?: string;
 }
 
-/**
- * Sign in with email and password
- */
+// --- Helpers ---
+function decodeToken(token: string): Record<string, any> {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return {};
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      window.atob(base64).split('').map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.warn('Failed to decode token:', error);
+    return {};
+  }
+}
+
+function transformUser(data: any): User {
+  let finalFirstName = data.firstName || data.first_name;
+  let finalLastName = data.lastName || data.last_name;
+
+  // Logic tách tên nếu backend trả về full name (dùng hàm từ helper)
+  if (!finalFirstName || !finalLastName) {
+    const rawName = data.name || data.full_name || data.fullName;
+    if (rawName) {
+      const split = splitFullName(rawName); // ✅ Dùng hàm import
+      if (!finalFirstName) finalFirstName = split.firstName;
+      if (!finalLastName) finalLastName = split.lastName;
+    }
+  }
+
+  // Fallback
+  if (!finalFirstName) {
+    finalFirstName = data.username || data.email?.split('@')[0] || 'User';
+    finalLastName = '';
+  }
+
+  return {
+    id: data.id || data.sub || 'temp-id',
+    email: data.email || '',
+    username: data.username || data.email?.split('@')[0] || 'user',
+    firstName: finalFirstName,
+    lastName: finalLastName || '',
+    role: data.role?.toLowerCase() || 'user',
+    avatar: data.avatar || data.avatar_url || undefined,
+    bio: data.bio || undefined,
+    createdAt: data.createdAt || data.create_at || data.created_at || new Date().toISOString(),
+  };
+}
+
+// --- Main Functions ---
+
 export async function signin(email: string, password: string): Promise<AuthResponse> {
-  const response = await api.post<{ access_token: string; refresh_token: string; user?: User }>('/auth/login', { 
-    email, 
-    password 
-  });
+  const response = await api.post<any>('/auth/login', { email, password });
 
   if (response.access_token) {
     localStorage.setItem('authToken', response.access_token);
   }
 
-  // Decode token to extract user info
   const decodedToken = decodeToken(response.access_token);
-
-  // Use user from response if available, otherwise extract from token or fallback
-  let user: User;
-  if (response.user) {
-    user = response.user;
-  } else {
-    // Extract user info from token
-    const tokenName = decodedToken.name || 
-                     decodedToken.fullName || 
-                     decodedToken.firstName || 
-                     decodedToken.username ||
-                     email.split('@')[0]; // Fallback to email prefix
-    
-    user = {
-      id: decodedToken.sub || decodedToken.id || 'temp',
-      name: tokenName,
-      email: email,
-      username: decodedToken.username || email.split('@')[0],
-    };
-  }
+  const rawUserData = { ...decodedToken, ...(response.user || {}), email }; 
 
   return {
-    user,
+    user: transformUser(rawUserData),
     access_token: response.access_token,
     refresh_token: response.refresh_token,
   };
 }
 
 /**
- * Sign up a new user
- * Uses transformed payload from auth.helpers
+ * Sign up
+ * ✅ Sử dụng SignupPayload được import từ auth.helpers
  */
 export async function signup(payload: SignupPayload): Promise<AuthResponse> {
-  const response = await api.post<{ access_token: string; refresh_token: string }>('/auth/sign-up', payload);
+  const response = await api.post<any>('/auth/sign-up', payload);
 
   if (response.access_token) {
     localStorage.setItem('authToken', response.access_token);
   }
 
-  // Decode token to extract user info
   const decodedToken = decodeToken(response.access_token);
 
-  // Build user object from decoded token or payload
-  const user: User = {
-    id: decodedToken.sub || decodedToken.id || 'temp',
-    name: decodedToken.name || 
-          decodedToken.fullName || 
-          payload.firstName || 
-          decodedToken.username || 
-          payload.email.split('@')[0],
-    email: payload.email,
-    username: decodedToken.username || payload.username,
+  // Merge dữ liệu
+  const rawUserData = { 
+    ...decodedToken, 
+    email: payload.email, 
+    username: payload.username,
+    firstName: payload.firstName, 
+    lastName: payload.lastName 
   };
 
   return {
-    user,
+    user: transformUser(rawUserData),
     access_token: response.access_token,
     refresh_token: response.refresh_token,
   };
 }
 
-/**
- * Sign out current user
- */
 export async function signout(): Promise<void> {
   try {
     await api.post('/auth/logout');
-  } catch (error) {
-    console.error('API signout error:', error);
-  }
-
+  } catch (error) {}
   localStorage.removeItem('authToken');
   localStorage.removeItem('user');
 }
 
-/**
- * Check for existing session
- */
 export async function checkSession(): Promise<AuthResponse | null> {
   const token = localStorage.getItem('authToken');
-  
-  if (!token) {
-    return null;
-  }
+  if (!token) return null;
 
   try {
     const userResponse = await api.get<any>('/auth/profile');
     return {
-      user: normalizeUser(userResponse),
+      user: transformUser(userResponse),
       access_token: token,
     };
   } catch (error) {
@@ -137,30 +132,7 @@ export async function checkSession(): Promise<AuthResponse | null> {
   }
 }
 
-/**
- * Update user profile
- */
 export async function updateProfile(updates: Partial<User>): Promise<User> {
-  const response = await api.patch<any>('/auth/profile', {
-    username: updates.username,
-    bio: updates.bio,
-    avatar_url: updates.avatar,
-  });
-
-  return normalizeUser(response);
-}
-
-// Helper function to normalize user data from backend
-function normalizeUser(data: any): User {
-  return {
-    id: data.id,
-    email: data.email,
-    username: data.username,
-    firstName: '', // Backend doesn't have these fields
-    lastName: '',  // We can parse username if needed
-    role: data.role?.toLowerCase() || 'user',
-    avatar: data.avatar_url || undefined,
-    bio: data.bio || undefined,
-    createdAt: data.create_at || new Date().toISOString(),
-  };
+  const response = await api.patch<any>('/auth/profile', updates);
+  return transformUser(response);
 }

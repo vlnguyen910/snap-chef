@@ -2,7 +2,7 @@ import { useState } from 'react';
 import * as authService from '@/services/authService';
 import { useStore } from '@/lib/store';
 import type { User } from '@/types';
-import type { SignupPayload } from '@/utils/auth.helpers';
+import type { SignupPayload } from '@/features/auth/utils/auth.helpers';
 
 export function useAuth() {
   const [isLoading, setIsLoading] = useState(false);

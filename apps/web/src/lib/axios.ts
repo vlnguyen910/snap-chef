@@ -34,11 +34,17 @@ apiClient.interceptors.response.use(
     return response.data; 
   },
   (error: AxiosError) => {
-    // Xử lý 401 Unauthorized
+    // Xử lý 401 Unauthorized - but only redirect if user is already logged in
+    // Don't redirect on login page to allow error messages to show
     if (error.response?.status === 401) {
-      localStorage.removeItem('authToken');
-      // Lưu ý: Dùng window.location sẽ reload trang. Chấp nhận được ở mức cơ bản.
-      window.location.href = '/auth/signin';
+      const currentPath = window.location.pathname;
+      const isAuthPage = currentPath.includes('/auth/');
+      
+      // Only redirect if user is on a protected page, not on login/signup
+      if (!isAuthPage) {
+        localStorage.removeItem('authToken');
+        window.location.href = '/auth/signin';
+      }
     }
     console.error("API Error:", error.response?.data || error.message);
     return Promise.reject(error);

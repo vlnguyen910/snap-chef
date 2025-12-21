@@ -45,12 +45,12 @@ export default function Header() {
             <Button variant={isActive('/recipes') ? 'secondary' : 'ghost'} asChild>
               <Link to="/recipes">Recipes</Link>
             </Button>
+            <Button variant={isActive('/create-recipe') ? 'secondary' : 'ghost'} asChild>
+              <Link to="/create-recipe">Create Recipes</Link>
+            </Button>
             
             {isAuthenticated && (
               <>
-                <Button variant={isActive('/dashboard') ? 'secondary' : 'ghost'} asChild>
-                  <Link to="/dashboard">Dashboard</Link>
-                </Button>
                 <Button variant={isActive('/my-recipes') ? 'secondary' : 'ghost'} asChild>
                   <Link to="/my-recipes">My Recipes</Link>
                 </Button>
@@ -73,7 +73,7 @@ export default function Header() {
                   <Link to="/profile" className="flex items-center gap-2">
                     <UserIcon size={18} />
                     {/* Display name, username, or email in order of priority */}
-                    <span className="max-w-[150px] truncate">{user.name || user.username || user.email}</span>
+                    <span className="max-w-[150px] truncate">{user.username || user.email}</span>
                   </Link>
                 </Button>
                 <Button variant="default" onClick={handleSignout} className="flex items-center gap-2">
@@ -108,12 +108,12 @@ export default function Header() {
             <Button variant={isActive('/recipes') ? 'secondary' : 'ghost'} asChild className="w-full justify-start">
               <Link to="/recipes">Recipes</Link>
             </Button>
+            <Button variant={isActive('/create-recipe') ? 'secondary' : 'ghost'} asChild className="w-full justify-start">
+              <Link to="/create-recipe">Create Recipes</Link>
+            </Button>
 
             {isAuthenticated && (
               <>
-                <Button variant={isActive('/dashboard') ? 'secondary' : 'ghost'} asChild className="w-full justify-start">
-                  <Link to="/dashboard">Dashboard</Link>
-                </Button>
                 <Button variant={isActive('/my-recipes') ? 'secondary' : 'ghost'} asChild className="w-full justify-start">
                   <Link to="/my-recipes">My Recipes</Link>
                 </Button>
@@ -128,7 +128,7 @@ export default function Header() {
                   <Link to="/profile" className="flex items-center gap-2">
                     <UserIcon size={18} />
                     {/* Display name, username, or email in order of priority */}
-                    <span>{user.name || user.username || user.email}</span>
+                    <span>{user.username || user.email}</span>
                   </Link>
                 </Button>
                 <Button variant="default" onClick={handleSignout} className="w-full justify-start gap-2">
