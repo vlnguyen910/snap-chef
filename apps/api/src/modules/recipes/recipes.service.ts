@@ -108,7 +108,19 @@ export class RecipesService {
   }
 
   async findAll(): Promise<Recipe[]> {
-    return await this.prisma.recipe.findMany();
+    return await this.prisma.recipe.findMany({
+      include: {
+        user: {
+          select: {
+            username: true,
+            email:true,
+            avatar_url: true,
+            role: true,
+          }
+        },
+        ingredients: true,
+      }
+    });
   }
 
   findOne(id: number): Promise<Recipe | null> {
