@@ -11,11 +11,14 @@ import { PrismaService } from 'src/db/prisma.service';
 import { IngredientsService } from '../ingredients/ingredients.service';
 import { RecipeStatus } from 'src/generated/prisma/enums';
 import { Recipe, RecipeIngredient } from 'src/generated/prisma/client';
+import { UsersService } from '../users/users.service'
+
 @Injectable()
 export class RecipesService {
   constructor(
     private prisma: PrismaService,
     private ingredientsService: IngredientsService,
+    private userService: UsersService,
   ) {}
   
   private readonly logger = new Logger(RecipesService.name);
@@ -43,6 +46,9 @@ export class RecipesService {
   }
 
   async create(user_id: string, dto: CreateRecipeDto) {
+    const user = this.userService.findOne(user_id);
+    if (!user) throw new BadRequestException('User is not exist');
+
     const orderIndices = dto.steps.map((step) => step.order_index);
     this.validateOrderIndices(orderIndices);
 
@@ -88,7 +94,7 @@ export class RecipesService {
             unit: items.unit,
           },
           include: {
-            Ingredient: true,
+            ingredient: true,
           },
         });
         recipeIngredients.push(recipeIngredient);
@@ -109,7 +115,15 @@ export class RecipesService {
     return this.prisma.recipe.findUnique({
       where: { id },
       include: {
-        recipeIngredients: true,
+        user: {
+          select: {
+            username: true,
+            email: true,
+            avatar_url: true,
+            role: true,
+          },
+        },
+        ingredients: true,
         steps: true,
       }
     });
@@ -171,7 +185,7 @@ export class RecipesService {
       return await tx.recipe.findUnique({
         where: { id },
         include: {
-          recipeIngredients: { include: { Ingredient: true } },
+          ingredients: { include: { ingredient: true } },
           steps: { orderBy: { order_index: 'asc' } },
         },
       });
