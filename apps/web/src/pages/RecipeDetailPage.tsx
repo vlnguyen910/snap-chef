@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Clock, Users, Calendar, ArrowLeft, ChefHat } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Clock, Users, Calendar, ArrowLeft, ChefHat, Edit, Trash2, UserPlus, Bookmark } from 'lucide-react';
 import Loading from '@/components/common/Loading';
 import ErrorState from '@/components/common/ErrorState';
 import { recipeService } from '@/services/recipeService';
 import { api } from '@/lib/axios';
+import { useStore } from '@/lib/store';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/lib/toast-store';
 
 // Ingredient interface matching backend response
 interface Ingredient {
@@ -48,11 +51,15 @@ interface AuthorData {
 
 export default function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useStore();
   const [recipe, setRecipe] = useState<RecipeData | null>(null);
   const [author, setAuthor] = useState<AuthorData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   useEffect(() => {
     fetchRecipe();
@@ -100,6 +107,41 @@ export default function RecipeDetailPage() {
       setError(errorMessage);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // ✅ OWNERSHIP LOGIC: Check if logged-in user is the recipe owner
+  const isOwner = user?.id === recipe?.author_id;
+  console.log('🔒 Ownership check:', { userId: user?.id, authorId: recipe?.author_id, isOwner });
+
+  // Handle Follow Author
+  const handleFollowAuthor = () => {
+    // TODO: Implement follow logic with API
+    setIsFollowing(!isFollowing);
+    toast.success(isFollowing ? 'Unfollowed author' : 'Following author!');
+  };
+
+  // Handle Bookmark Recipe
+  const handleBookmark = () => {
+    // TODO: Implement bookmark logic with API
+    setIsBookmarked(!isBookmarked);
+    toast.success(isBookmarked ? 'Removed from bookmarks' : 'Recipe bookmarked!');
+  };
+
+  // Handle Delete Recipe
+  const handleDeleteRecipe = async () => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa công thức này?')) {
+      return;
+    }
+
+    try {
+      console.log('🗑️ Deleting recipe:', id);
+      await api.delete(`/recipes/${id}`);
+      toast.success('Công thức đã được xóa!');
+      navigate('/recipes');
+    } catch (error: any) {
+      console.error('❌ Error deleting recipe:', error);
+      toast.error('Không thể xóa công thức: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -274,6 +316,72 @@ export default function RecipeDetailPage() {
 
             {/* Content Section */}
             <div className="p-6 md:p-10">
+              {/* Action Bar - Conditional based on ownership */}
+              <div className="mb-8 pb-6 border-b border-gray-200">
+                {isOwner ? (
+                  /* CASE A: Owner Actions */
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-sm font-medium">
+                        Your Recipe
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Link to={`/recipes/${id}/edit`}>
+                        <Button
+                          variant="outline"
+                          className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                        >
+                          <Edit size={18} className="mr-2" />
+                          Chỉnh sửa
+                        </Button>
+                      </Link>
+                      <Button
+                        onClick={handleDeleteRecipe}
+                        variant="outline"
+                        className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
+                      >
+                        <Trash2 size={18} className="mr-2" />
+                        Xóa
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  /* CASE B: Viewer Actions (Not Owner) */
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {/* Author Info with Follow Button */}
+                      <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-lg">
+                          {getAuthorName()?.[0] || 'C'}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">{getAuthorName()}</p>
+                          <p className="text-sm text-gray-500">Recipe author</p>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={handleFollowAuthor}
+                        className={isFollowing ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-orange-600 hover:bg-orange-700'}
+                      >
+                        <UserPlus size={18} className="mr-2" />
+                        {isFollowing ? 'Following' : 'Follow'}
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        onClick={handleBookmark}
+                        variant="outline"
+                        className={isBookmarked ? 'border-orange-500 text-orange-600' : 'border-gray-300 text-gray-700'}
+                      >
+                        <Bookmark size={18} className="mr-2" fill={isBookmarked ? 'currentColor' : 'none'} />
+                        {isBookmarked ? 'Saved' : 'Save'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Description */}
               <div className="mb-10">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">About This Recipe</h2>

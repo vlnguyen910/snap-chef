@@ -10,6 +10,7 @@ import RecipeDetailPage from '@/pages/RecipeDetailPage';
 import ModerationPage from '@/pages/ModerationPage';
 import CreateRecipePage from '@/pages/CreateRecipePage';
 import NotFound from '@/pages/NotFound';
+import EditRecipePage from '@/pages/EditRecipePage';
 
 export default function AppRoutes() {
   return (
@@ -32,8 +33,8 @@ export default function AppRoutes() {
           <Route path="/create-recipe" element={<CreateRecipePage />} />
           <Route path="/profile" element={<div className="p-8"><h1 className="text-2xl font-bold">Profile</h1></div>} />
           <Route path="/my-recipes" element={<RecipesPage />} />
-          <Route path="/recipes/create" element={<CreateRecipePage />} />
-          <Route path="/recipes/edit/:id" element={<CreateRecipePage />} />
+          <Route path="/recipes/create" element={<CreateRecipePage />} /> 
+          <Route path="/recipes/:id/edit" element={<EditRecipePage />} />
           <Route path="/favorites" element={<div className="p-8"><h1 className="text-2xl font-bold">Favorites</h1></div>} />
           <Route path="/settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Settings</h1></div>} />
         </Route>
