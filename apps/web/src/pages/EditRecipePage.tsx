@@ -488,7 +488,7 @@ export default function EditRecipePage() {
           
           // ✅ BUILD STEP OBJECT (Backend expects 'order' and 'content')
           const stepData: any = {
-            order: index + 1, // Backend expects 'order' (not order_index)
+            order_index: index + 1, // Backend expects 'order' (not order_index)
             content: step.content.trim(),
           };
 
@@ -537,7 +537,7 @@ export default function EditRecipePage() {
 
       // Step 5: Send PUT request to update recipe
       console.log(`🚀 Sending PUT request to /recipes/${id}...`);
-      const response = await api.put(`/recipes/${id}`, payload);
+      const response = await api.patch(`/recipes/${id}`, payload);
       console.log('✅ Recipe updated successfully:', response);
 
       // Clear temporary files
