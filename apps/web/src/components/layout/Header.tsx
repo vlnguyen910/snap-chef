@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Menu, X, User as UserIcon, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
+import UserMenu from './UserMenu';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -68,19 +69,7 @@ export default function Header() {
           {/* User Menu */}
           <div className="hidden items-center gap-3 md:flex">
             {isAuthenticated && user ? (
-              <>
-                <Button variant="ghost" asChild>
-                  <Link to="/profile" className="flex items-center gap-2">
-                    <UserIcon size={18} />
-                    {/* Display name, username, or email in order of priority */}
-                    <span className="max-w-[150px] truncate">{user.username || user.email}</span>
-                  </Link>
-                </Button>
-                <Button variant="default" onClick={handleSignout} className="flex items-center gap-2">
-                  <LogOut size={18} />
-                  Sign Out
-                </Button>
-              </>
+              <UserMenu />
             ) : (
               <>
                 <Button variant="ghost" asChild>
