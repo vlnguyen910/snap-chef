@@ -12,7 +12,7 @@ import { toast } from '@/lib/toast-store';
 // Ingredient interface matching backend response
 interface Ingredient {
   name: string;
-  quanity: number; // Backend typo - missing 't'
+  quantity: number; // Standardized to correct spelling
   unit: string;
   checked?: boolean;
 }
@@ -209,7 +209,7 @@ export default function RecipeDetailPage() {
 
     return recipe.ingredients.map((item: any, index: number) => {
       // Check multiple possible field names for amount
-      const amount = item.amount || item.quantity || item.quanity || 0;
+      const amount = item.quantity || item.quanity || item.amount || 0;
       const name = item.name || 'Unknown ingredient';
       const unit = item.unit || '';
 

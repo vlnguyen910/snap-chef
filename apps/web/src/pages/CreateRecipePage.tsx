@@ -421,10 +421,10 @@ export default function CreateRecipePage() {
       );
       console.log(`🥕 Valid ingredients: ${validIngredients.length} out of ${data.ingredients.length}`);
 
-      // ✅ CRITICAL FIX: Backend expects 'quanity' (typo - missing 't')
+      // Map frontend 'amount' to backend's expected field
       const ingredientsData = validIngredients.map((ing) => ({
         name: ing.name.trim(),
-        quanity: parseFloat(String(ing.amount)) || 1, // Backend key is 'quanity' (typo), Number >= 1
+        quantity: parseFloat(String(ing.amount)) || 1, // Frontend uses 'quantity' (correct spelling), Number >= 1
         unit: ing.unit.trim(),
       }));
 
@@ -449,7 +449,7 @@ export default function CreateRecipePage() {
       console.log('  - servings (PLURAL):', typeof payload.servings, `(value: ${payload.servings})`);
       console.log('  - ingredients count:', payload.ingredients.length);
       if (payload.ingredients.length > 0) {
-        console.log('  - First ingredient quanity type:', typeof payload.ingredients[0].quanity);
+        console.log('  - First ingredient quantity type:', typeof payload.ingredients[0].quantity);
       }
       console.log('  - steps count:', payload.steps.length);
       if (payload.steps.length > 0) {

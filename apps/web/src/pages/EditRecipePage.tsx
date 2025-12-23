@@ -392,10 +392,10 @@ export default function EditRecipePage() {
         is_private: response.is_private || false,
         thumbnailUrl: response.thumbnail_url || '',
         
-        // Map ingredients: amount/quanity/quantity -> amount
+        // Map ingredients: backend fields -> frontend 'amount'
         ingredients: response.ingredients?.map((ing: any) => ({
           name: ing.name || '',
-          amount: ing.amount || ing.quanity || ing.quantity || 0,
+          amount: ing.quantity || ing.quanity || ing.amount || 0,
           unit: ing.unit || '',
         })) || [{ name: '', amount: 0, unit: '' }],
         
@@ -508,7 +508,7 @@ export default function EditRecipePage() {
 
       const ingredientsData = validIngredients.map((ing) => ({
         name: ing.name.trim(),
-        amount: parseFloat(String(ing.amount)) || 1, // Backend expects 'amount' (not quanity for update)
+        quantity: parseFloat(String(ing.amount)) || 1, // Using correct 'quantity' spelling
         unit: ing.unit.trim(),
       }));
 
