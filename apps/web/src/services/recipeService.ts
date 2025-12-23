@@ -11,7 +11,7 @@ export const recipeService = {
     cooking_time: number;
     servings: number; // ✅ Backend expects 'servings' (plural), not 'serving'
     thumbnail_url: string;
-    ingredients: Array<{ name: string; quanity: number; unit: string }>; // ✅ Backend has typo: 'quanity' (missing 't')
+    ingredients: Array<{ name: string; quantity: number; unit: string }>;
     steps: Array<{ order_index: number; content: string; image_url?: string }>;
   }): Promise<Recipe> => {
     const response = await api.post<{ recipe: any }>('/recipes', recipeData);
