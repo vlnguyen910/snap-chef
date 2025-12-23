@@ -12,6 +12,9 @@ import CreateRecipePage from '@/pages/CreateRecipePage';
 import NotFound from '@/pages/NotFound';
 import EditRecipePage from '@/pages/EditRecipePage';
 
+// Components
+import UserProfile from '@/components/common/UserProfile';
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -31,7 +34,7 @@ export default function AppRoutes() {
       <Route element={<ProtectedRoute allowedRoles={['user', 'moderator']} />}>
         <Route element={<MainLayout showSidebar={true} />}>
           <Route path="/create-recipe" element={<CreateRecipePage />} />
-          <Route path="/profile" element={<div className="p-8"><h1 className="text-2xl font-bold">Profile</h1></div>} />
+          <Route path="/profile" element={<UserProfile />} />
           <Route path="/my-recipes" element={<RecipesPage />} />
           <Route path="/recipes/create" element={<CreateRecipePage />} /> 
           <Route path="/recipes/:id/edit" element={<EditRecipePage />} />
