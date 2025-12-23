@@ -90,7 +90,7 @@ export class RecipesService {
           data: {
             recipe_id: recipe.id,
             ingredient_id: ingredient.id,
-            quantity: items.quanity,
+            quantity: items.quantity,
             unit: items.unit,
           },
           include: {
@@ -169,7 +169,7 @@ export class RecipesService {
             data: {
               recipe_id: id,
               ingredient_id: ingredient.id,
-              quantity: item.quanity,
+              quantity: item.quantity,
               unit: item.unit,
             },
           });

@@ -12,7 +12,7 @@ export class IngredientItemDto {
 
   @IsNumber() // double/float đều là number
   @Min(1)
-  quanity!: number;
+  quantity!: number;
 
   @IsString()
   unit!: string;
