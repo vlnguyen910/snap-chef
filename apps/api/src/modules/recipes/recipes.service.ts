@@ -203,4 +203,37 @@ export class RecipesService {
       });
     })
   }
+
+  async likeRecipe(user_id: string, recipe_id: number) {
+    let isLiked: boolean | null = null;
+    const likedRecipe = await this.prisma.like.findUnique({
+      where: {
+        user_id_recipe_id: {
+          user_id, 
+          recipe_id,
+        }
+      }
+    })
+
+    if (!likedRecipe) {
+      await this.prisma.like.create({
+        data: {user_id, recipe_id}
+      })
+      isLiked = true;
+    }
+
+    await this.prisma.like.delete({
+      where: {
+        user_id_recipe_id: {
+          user_id, 
+          recipe_id,
+        }
+      }
+    })
+    isLiked = false;
+
+    return {
+      is_liked: isLiked,
+    }
+  }
 }

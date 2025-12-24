@@ -43,4 +43,13 @@ export class RecipesController {
   ) {
     return this.recipesService.update(id, updateRecipeDto);
   }
+
+  @Post(':id/like')
+  @UseGuards(AuthGuard('jwt'))
+  likeRecipe(
+    @GetUser() user: User,
+    @Param('id', ParseIntPipe) recipe_id: number
+  ) {
+    return this.recipesService.likeRecipe(user.id, recipe_id);
+  }
 }
