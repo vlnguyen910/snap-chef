@@ -31,7 +31,7 @@ export class CommentsService {
     }
   }
   
-  async findOneById(id: number): Promise<Comment | null> {
+  async findOneById(id: number) {
     return await this.prisma.comment.findUnique({
       where: { id },
       include: {
@@ -62,7 +62,7 @@ export class CommentsService {
   async deleteComment(id: number, user_id: string) {
     const comment = await this.findOneById(id);
     if (!comment) throw new NotFoundException('Comment is not exist');
-    if (comment.user_id !== user_id) throw new UnauthorizedException('You not have right to delete this comment');
+    if (comment.user_id !== user_id && comment.recipe.author_id !== user_id) throw new UnauthorizedException('You not have right to delete this comment');
 
     const deleledComment = await this.prisma.comment.delete({
       where: { id }
