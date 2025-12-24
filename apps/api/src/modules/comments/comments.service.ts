@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from 'src/db/prisma.service';
 import { CreateCommentsDto } from './dto/create-comments.dto';
+import type { Comment } from 'src/generated/prisma/client';
 
 @Injectable()
 export class CommentsService {
@@ -22,5 +23,23 @@ export class CommentsService {
     return {
       message: "Comment Created",
     }
+  }
+
+  async findAllCommentsOfRecipe(recipe_id: number): Promise<Comment []> {
+    const comments = await this.prisma.comment.findMany({
+      where: { recipe_id },
+      include: {
+        user: {
+          select: {
+            username: true,
+            email: true,
+            avatar_url: true,
+            role: true,
+          }
+        }
+      }
+    })
+
+    return comments;
   }
 }

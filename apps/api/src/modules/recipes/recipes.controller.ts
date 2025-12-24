@@ -69,4 +69,9 @@ export class RecipesController {
     return this.commentsService.create(user.id, recipe_id, dto);
   }
 
+  @Get(':id/comments')
+  getAllCommentsOfRecipe(@Param('id', ParseIntPipe) recipe_id: number) {
+    return this.commentsService.findAllCommentsOfRecipe(recipe_id);
+  }
+
 }
