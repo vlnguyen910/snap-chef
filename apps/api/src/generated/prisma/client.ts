@@ -43,6 +43,11 @@ export { Prisma }
  */
 export type User = Prisma.UserModel
 /**
+ * Model Like
+ * 
+ */
+export type Like = Prisma.LikeModel
+/**
  * Model Recipe
  * 
  */
