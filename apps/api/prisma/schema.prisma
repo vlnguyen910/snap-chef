@@ -27,6 +27,17 @@ model User {
 
   //Relations
   recipe Recipe[]
+  likes  Like[]
+}
+
+model Like {
+  user_id   String
+  recipe_id Int
+  
+  //Relations
+  user   User   @relation(fields: [user_id], references: [id])
+  recipe Recipe @relation(fields: [recipe_id], references: [id])
+  @@id([user_id, recipe_id])
 }
 
 enum RecipeStatus {
@@ -50,10 +61,9 @@ model Recipe {
 
   //Relations
   user  User @relation(fields: [author_id], references: [id])
-
   ingredients RecipeIngredient[]
-
   steps Step[]
+  likes Like[]
 }
 
 model Ingredient {
