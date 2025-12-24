@@ -17,6 +17,7 @@ import { GetUser } from 'src/common/decorators/user.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { CommentsService } from '../comments/comments.service';
 import { CreateCommentsDto } from '../comments/dto/create-comments.dto';
+import { UpdateCommentDto } from '../comments/dto/update-comment.dto';
 
 @Controller('recipes')
 export class RecipesController {
@@ -81,5 +82,15 @@ export class RecipesController {
     @GetUser() user: User
   ) {
     return this.commentsService.deleteComment(id, user.id);
+  }
+
+  @Patch(':id/comments/:comment_id')
+  @UseGuards(AuthGuard('jwt'))
+  updateComment(
+    @Param('comment_id', ParseIntPipe) id: number,
+    @GetUser() user: User,
+    @Body() dto: UpdateCommentDto,
+  ) {
+    return this.commentsService.updateComment(id, user.id, dto);
   }
 }
