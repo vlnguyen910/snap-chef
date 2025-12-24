@@ -73,5 +73,13 @@ export class RecipesController {
   getAllCommentsOfRecipe(@Param('id', ParseIntPipe) recipe_id: number) {
     return this.commentsService.findAllCommentsOfRecipe(recipe_id);
   }
-
+  
+  @Delete(':id/comments/:comment_id')
+  @UseGuards(AuthGuard('jwt'))
+  deleteComment(
+    @Param('comment_id', ParseIntPipe) id: number,
+    @GetUser() user: User
+  ) {
+    return this.commentsService.deleteComment(id, user.id);
+  }
 }
