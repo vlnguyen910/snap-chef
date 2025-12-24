@@ -1,4 +1,9 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { 
+  Injectable, 
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { PrismaService } from 'src/db/prisma.service';
 import { CreateCommentsDto } from './dto/create-comments.dto';
 import type { Comment } from 'src/generated/prisma/client';
@@ -24,6 +29,16 @@ export class CommentsService {
       message: "Comment Created",
     }
   }
+  
+  async findOneById(id: number): Promise<Comment | null> {
+    return await this.prisma.comment.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        recipe: true,
+      }
+    })
+  }
 
   async findAllCommentsOfRecipe(recipe_id: number): Promise<Comment []> {
     const comments = await this.prisma.comment.findMany({
@@ -41,5 +56,19 @@ export class CommentsService {
     })
 
     return comments;
+  }
+
+  async deleteComment(id: number, user_id: string) {
+    const comment = await this.findOneById(id);
+    if (!comment) throw new NotFoundException('Comment is not exist');
+    if (comment.user_id !== user_id) throw new UnauthorizedException('You not have right to delete this comment');
+
+    const deleledComment = await this.prisma.comment.delete({
+      where: { id }
+    })
+    
+    return {
+      message: "Comment deleted",
+    }
   }
 }
