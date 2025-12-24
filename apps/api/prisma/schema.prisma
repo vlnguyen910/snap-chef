@@ -28,16 +28,7 @@ model User {
   //Relations
   recipe Recipe[]
   likes  Like[]
-}
-
-model Like {
-  user_id   String
-  recipe_id Int
-  
-  //Relations
-  user   User   @relation(fields: [user_id], references: [id])
-  recipe Recipe @relation(fields: [recipe_id], references: [id])
-  @@id([user_id, recipe_id])
+  comments Comment[]
 }
 
 enum RecipeStatus {
@@ -64,6 +55,7 @@ model Recipe {
   ingredients RecipeIngredient[]
   steps Step[]
   likes Like[]
+  comments Comment[]
 }
 
 model Ingredient {
@@ -93,5 +85,28 @@ model Step {
   content     String
 
   //Relations
+  recipe Recipe @relation(fields: [recipe_id], references: [id])
+}
+
+model Like {
+  user_id   String
+  recipe_id Int
+  
+  //Relations
+  user   User   @relation(fields: [user_id], references: [id])
+  recipe Recipe @relation(fields: [recipe_id], references: [id])
+  @@id([user_id, recipe_id])
+}
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  user_id    String
+  recipe_id  Int
+  content    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  //Relations
+  user   User   @relation(fields: [user_id], references: [id])
   recipe Recipe @relation(fields: [recipe_id], references: [id])
 }
