@@ -8,6 +8,7 @@ import { PassportModule } from '@nestjs/passport';
 import { jwtConfiguration } from 'src/common/config/jwt.config';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from '../users/users.module';
+import { CommentsModule } from '../comments/comments.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { UsersModule } from '../users/users.module';
     PassportModule,
     ConfigModule.forFeature(jwtConfiguration),
     UsersModule,
+    CommentsModule,
   ],
   controllers: [RecipesController],
   providers: [RecipesService, JwtStrategy],
