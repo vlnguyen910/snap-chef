@@ -3,7 +3,8 @@ CREATE TABLE "Comment" (
     "id" SERIAL NOT NULL,
     "user_id" TEXT NOT NULL,
     "recipe_id" INTEGER NOT NULL,
-    "content" TEXT NOT NULL,
+    "content" TEXT,
+    "rating" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
