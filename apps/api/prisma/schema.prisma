@@ -29,6 +29,8 @@ model User {
   recipe Recipe[]
   likes  Like[]
   comments Comment[]
+  followers Follow[] @relation("followerRelation") 
+  following Follow[] @relation("followingRelation")
 }
 
 enum RecipeStatus {
@@ -110,4 +112,16 @@ model Comment {
   //Relations
   user   User   @relation(fields: [user_id], references: [id])
   recipe Recipe @relation(fields: [recipe_id], references: [id])
+}
+
+model Follow {
+  follower_id String
+  following_id String
+  created_at DateTime @default(now())
+
+  //Relations
+  follower  User @relation("followerRelation", fields: [follower_id], references: [id])
+  following User @relation("followingRelation", fields: [following_id], references: [id])
+
+  @@id([follower_id, following_id])
 }
