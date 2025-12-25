@@ -115,8 +115,8 @@ model Comment {
 }
 
 model Follow {
-  follower_id String
-  following_id String
+  follower_id String  //nguoi theo doi
+  following_id String //nguoi duoc theo doi
   created_at DateTime @default(now())
 
   //Relations
