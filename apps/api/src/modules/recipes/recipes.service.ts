@@ -118,7 +118,13 @@ export class RecipesService {
             role: true,
           }
         },
-        ingredients: true,
+        ingredients: {
+          select: {
+            quantity: true,
+            unit: true,
+            ingredient: true,
+          }
+        }
       }
     });
   }
@@ -135,7 +141,13 @@ export class RecipesService {
             role: true,
           },
         },
-        ingredients: true,
+        ingredients: {
+          select: {
+            quantity: true,
+            unit: true,
+            ingredient: true,
+          }
+        },
         steps: true,
       }
     });
@@ -197,7 +209,13 @@ export class RecipesService {
       return await tx.recipe.findUnique({
         where: { id },
         include: {
-          ingredients: { include: { ingredient: true } },
+          ingredients: {
+            select: {
+              quantity: true,
+              unit: true,
+              ingredient: true,
+            }
+          },
           steps: { orderBy: { order_index: 'asc' } },
         },
       });
