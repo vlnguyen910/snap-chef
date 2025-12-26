@@ -99,7 +99,7 @@ export class UsersService {
     const {password, _count, ...userData} = user;
     return {
       ...userData,
-      folloers_count: _count.followers,
+      followers_count: _count.followers,
       following_count: _count.following,
       recipes_count: _count.recipe,
     }
