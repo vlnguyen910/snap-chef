@@ -8,6 +8,8 @@ import {
   Delete,
   UseGuards,
   ParseIntPipe,
+  Put,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -16,6 +18,7 @@ import { GetUser } from 'src/common/decorators/user.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { Public } from 'src/common/decorators/public.decorator';
 import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt-auth.guard';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -60,5 +63,13 @@ export class UsersController {
     return this.usersService.followUser(user.id, following_id);
   }
 
-
+  @Put(':id')
+  @UseGuards(JwtAuthGuard)
+  update(
+    @Param('id') id: string,
+    @GetUser() user: User,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.usersService.update(id, user.id, updateUserDto);
+  }
 }

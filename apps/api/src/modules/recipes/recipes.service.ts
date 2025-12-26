@@ -207,7 +207,8 @@ export class RecipesService {
 
     const oldRecipe = await this.findOne(id);
     if (!oldRecipe) throw new NotFoundException('Recipe not found');
-    if (oldRecipe.author_id !== user_id) throw new UnauthorizedException('You have not right to edit this');
+    if (oldRecipe.author_id !== user_id) 
+      throw new UnauthorizedException('You have no right to perform this action');
 
     return await this.prisma.$transaction(async (tx) => {
       const updateRecipe = await tx.recipe.update({
@@ -279,9 +280,8 @@ export class RecipesService {
     });
 
     if (!recipe) throw new NotFoundException('Recipe not found');
-    if (recipe.author_id === user_id) {
+    if (recipe.author_id === user_id) 
       throw new BadRequestException('You cannot like your own recipe');
-    }
 
     const existingLike = await this.prisma.like.findUnique({
       where: {
