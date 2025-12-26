@@ -18,6 +18,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { CommentsService } from '../comments/comments.service';
 import { CreateCommentsDto } from '../comments/dto/create-comments.dto';
 import { UpdateCommentDto } from '../comments/dto/update-comment.dto';
+import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt-auth.guard';
+import { JwtAuthGuard } from 'src/common/guards/jwt.guard'; 
 
 @Controller('recipes')
 export class RecipesController {
@@ -27,7 +29,7 @@ export class RecipesController {
   ) {}
 
   @Post()
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   create(@GetUser() user: User, @Body() createRecipeDto: CreateRecipeDto) {
     return this.recipesService.create(user.id, createRecipeDto);
   }
@@ -38,16 +40,22 @@ export class RecipesController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.recipesService.findOne(id);
+  @UseGuards(OptionalJwtAuthGuard)
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUser() user: User | undefined,
+  ) {
+    return this.recipesService.findOne(id, user?.id);
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   update(
     @Param('id', ParseIntPipe) id: number,
+    @GetUser() user: User,
     @Body() updateRecipeDto: UpdateRecipeDto,
   ) {
-    return this.recipesService.update(id, updateRecipeDto);
+    return this.recipesService.update(id, user.id, updateRecipeDto);
   }
   
   //Social Features
