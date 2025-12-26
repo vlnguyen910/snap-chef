@@ -13,7 +13,9 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import type { User } from 'src/generated/prisma/client';
 import { GetUser } from 'src/common/decorators/user.decorator';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import { Public } from 'src/common/decorators/public.decorator';
+import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -30,9 +32,9 @@ export class UsersController {
   }
 
   @Get('/me')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   getProfile(@GetUser() user: User) {
-    return this.usersService.getProfile(user.id);
+    return this.usersService.getCurrentProfile(user.id);
   }
 
   @Get(':id')
@@ -40,9 +42,17 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
+  @Get(':id/profile')
+  @UseGuards(OptionalJwtAuthGuard)
+  getPublicProfile(
+    @Param('id') target_id: string,
+    @GetUser() user: User | undefined,
+  ) {
+    return this.usersService.getPublicProfile(target_id, user?.id);
+  }
 
   @Post(':id/follow')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   followUser(
     @GetUser() user: User,
     @Param('id') following_id: string,

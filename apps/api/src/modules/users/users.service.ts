@@ -79,8 +79,8 @@ export class UsersService {
       message, 
     }
   }
-
-  async getProfile(user_id: string) {
+  
+  async getCurrentProfile(user_id: string) {
     const user = await this.prisma.user.findUnique({
       where: {id: user_id}, 
       include: {
@@ -102,6 +102,31 @@ export class UsersService {
       folloers_count: _count.followers,
       following_count: _count.following,
       recipes_count: _count.recipe,
+    }
+  }
+
+  async getPublicProfile(target_id: string, current_id: string | undefined) {
+    const targetUser = await this.getCurrentProfile(target_id);
+    if (!targetUser) throw new NotFoundException('User is not exist,');
+    
+    let isFollowed = false;
+    if (current_id) { 
+      const followingUser = await this.prisma.follow.findUnique({
+        where: {
+          follower_id_following_id: {
+            follower_id: current_id,
+            following_id: target_id,
+          }
+        }
+      });
+
+      if (followingUser) isFollowed = true;
+    }
+
+    const { email, role, ...userWithoutSensitiveInfo } = targetUser;
+    return {
+      user: userWithoutSensitiveInfo,
+      is_followed: isFollowed,
     }
   }
 }
