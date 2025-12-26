@@ -1,10 +1,12 @@
 import { 
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'src/db/prisma.service';
 import { User } from 'src/generated/prisma/client';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -128,5 +130,23 @@ export class UsersService {
       user: userWithoutSensitiveInfo,
       is_followed: isFollowed,
     }
+  }
+
+  async update(id: string, user_id: string, payload: UpdateUserDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    
+    if (!user) throw new NotFoundException('User is not exist');
+    if (user.id !== user_id) 
+      throw new UnauthorizedException('You have no right to perform this action');
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: { ...payload },
+    });
+
+    return updatedUser;  
   }
 }
