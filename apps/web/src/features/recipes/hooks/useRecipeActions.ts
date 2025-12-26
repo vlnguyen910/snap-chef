@@ -13,30 +13,30 @@ export function useRecipeActions() {
 
   const toggleFavorite = async (recipeId: string): Promise<boolean> => {
     if (!user) {
-      setError('Please login to favorite recipes');
+      setError('Please login to like recipes');
       return false;
     }
 
     setIsLoading(true);
     setError(null);
     try {
-      const isFavorited = favoritedIds.has(recipeId);
+      // Backend uses toggle endpoint - single POST request
+      const response = await api.post<{ is_liked: boolean }>(`/recipes/${recipeId}/like`);
       
-      if (isFavorited) {
-        await api.delete(`/recipes/${recipeId}/favorite`);
+      // Update local state based on server response
+      if (response.is_liked) {
+        setFavoritedIds(prev => new Set(prev).add(recipeId));
+      } else {
         setFavoritedIds(prev => {
           const next = new Set(prev);
           next.delete(recipeId);
           return next;
         });
-      } else {
-        await api.post(`/recipes/${recipeId}/favorite`);
-        setFavoritedIds(prev => new Set(prev).add(recipeId));
       }
       
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to update favorite');
+      setError(err.response?.data?.message || 'Failed to update like');
       return false;
     } finally {
       setIsLoading(false);

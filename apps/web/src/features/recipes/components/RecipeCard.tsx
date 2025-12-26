@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
-import { Clock, Users, Star, Heart, GitFork } from 'lucide-react';
+import { Clock, Users, Heart, MessageCircle } from 'lucide-react';
 import type { Recipe } from '@/types';
 import { useRecipeActions } from '../hooks/useRecipeActions';
 import { BookmarkButton } from '@/components/common/BookmarkButton';
+import { RatingDisplay } from '@/components/common/RatingDisplay';
+import { ShareButton } from '@/components/common/ShareButton';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -64,31 +66,65 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          <div className="flex items-center gap-3 text-sm">
-            <div className="flex items-center gap-1 text-yellow-500">
-              <Star size={16} fill="currentColor" />
-              <span className="font-medium">{recipe.averageRating?.toFixed(1) || '0.0'}</span>
-              <span className="text-gray-400">({recipe.ratingsCount || 0})</span>
-            </div>
-            <div className="flex items-center gap-1 text-gray-500">
-              <GitFork size={16} />
-              <span>{recipe.forksCount || 0}</span>
-            </div>
-          </div>
+        {/* Rating Display */}
+        <div className="py-2">
+          <RatingDisplay 
+            averageRating={recipe.averageRating || recipe.rating || 0}
+            ratingCount={recipe.ratingsCount || recipe.reviewCount || 0}
+            size="sm"
+          />
+        </div>
 
-          <div className="flex items-center gap-2">
+        {/* Action Toolbar */}
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+          {/* Left: Like, Comment, Share */}
+          <div className="flex items-center gap-1">
+            {/* Like Button */}
             <button
               onClick={() => toggleFavorite(recipe.id)}
               disabled={isLoading}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
+              className="flex items-center gap-1 p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50 group"
+              title="Like recipe"
             >
               <Heart 
-                size={20} 
-                className={isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'}
+                size={18} 
+                className={isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-500 group-hover:text-red-500'}
               />
+              {(recipe.favoriteCount || 0) > 0 && (
+                <span className="text-xs text-gray-600">
+                  {recipe.favoriteCount}
+                </span>
+              )}
             </button>
-            
+
+            {/* Comment Button */}
+            <Link to={`/recipes/${recipe.id}#comments`}>
+              <button
+                className="flex items-center gap-1 p-2 hover:bg-gray-100 rounded-full transition-colors group"
+                title="View comments"
+              >
+                <MessageCircle 
+                  size={18} 
+                  className="text-gray-500 group-hover:text-blue-600"
+                />
+                {(recipe.reviewCount || 0) > 0 && (
+                  <span className="text-xs text-gray-600">
+                    {recipe.reviewCount}
+                  </span>
+                )}
+              </button>
+            </Link>
+
+            {/* Share Button */}
+            <ShareButton 
+              recipeId={recipe.id}
+              recipeTitle={recipe.title}
+              size="sm"
+            />
+          </div>
+
+          {/* Right: Bookmark */}
+          <div>
             <BookmarkButton 
               recipeId={recipe.id} 
               size="sm"
@@ -99,20 +135,11 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         <div className="flex items-center gap-2 text-xs text-gray-500">
           <span>by</span>
           <Link 
-            to={`/profile/${recipe.userId}`}
+            to={`/profile/${recipe.userId || recipe.authorId}`}
             className="font-medium text-orange-600 hover:text-orange-700"
           >
-            {recipe.user?.name || 'Unknown'}
+            {recipe.user?.name || recipe.author?.username || 'Unknown'}
           </Link>
-          {recipe.originalRecipeId && (
-            <>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <GitFork size={12} />
-                Forked
-              </span>
-            </>
-          )}
         </div>
       </div>
     </div>
