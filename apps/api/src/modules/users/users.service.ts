@@ -79,4 +79,29 @@ export class UsersService {
       message, 
     }
   }
+
+  async getProfile(user_id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {id: user_id}, 
+      include: {
+        _count: {
+          select: {
+            followers: true,
+            following: true,
+            recipe: true,
+          }
+        }
+      }
+    });
+
+    if (!user) throw new NotFoundException('User not exist');
+    
+    const {password, _count, ...userData} = user;
+    return {
+      ...userData,
+      folloers_count: _count.followers,
+      following_count: _count.following,
+      recipes_count: _count.recipe,
+    }
+  }
 }

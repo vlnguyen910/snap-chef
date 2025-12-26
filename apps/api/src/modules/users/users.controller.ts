@@ -29,16 +29,18 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('/me')
+  @UseGuards(AuthGuard('jwt'))
+  getProfile(@GetUser() user: User) {
+    return this.usersService.getProfile(user.id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-  //   return this.usersService.update(+id, updateUserDto);
-  // }
-  
+
   @Post(':id/follow')
   @UseGuards(AuthGuard('jwt'))
   followUser(
@@ -47,4 +49,6 @@ export class UsersController {
   ) {
     return this.usersService.followUser(user.id, following_id);
   }
+
+
 }
