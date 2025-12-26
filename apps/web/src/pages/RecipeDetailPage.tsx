@@ -75,6 +75,7 @@ export default function RecipeDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
@@ -106,7 +107,16 @@ export default function RecipeDetailPage() {
       let authorResponse = null;
       if (recipeResponse.author_id) {
         try {
-          authorResponse = await api.get<AuthorData>(`/users/${recipeResponse.author_id}`);
+          // Fetch public profile with follow status
+          const profileResponse = await api.get<{ user: AuthorData; is_followed: boolean }>(
+            `/users/${recipeResponse.author_id}/profile`
+          );
+          authorResponse = profileResponse.user;
+          
+          // Set follow status from API
+          if (profileResponse.is_followed !== undefined) {
+            setIsFollowing(profileResponse.is_followed);
+          }
         } catch (authorError) {
           console.warn('Failed to fetch author details:', authorError);
         }
@@ -119,6 +129,14 @@ export default function RecipeDetailPage() {
       setRecipe(recipeResponse);
       if (authorResponse) {
         setAuthor(authorResponse);
+      }
+      
+      // ✅ Set like status from API response
+      if (recipeResponse.is_liked !== undefined) {
+        setIsLiked(recipeResponse.is_liked);
+      }
+      if (recipeResponse.likes_count !== undefined) {
+        setLikeCount(recipeResponse.likes_count);
       }
     } catch (err: any) {
       console.error('❌ Error fetching recipe:', err);
@@ -157,7 +175,7 @@ export default function RecipeDetailPage() {
     setIsLikeLoading(true);
 
     try {
-      const response = await api.post<{ is_liked: boolean }>(`/recipes/${id}/likeToggle`);
+      const response = await api.post<{ is_liked: boolean }>(`/recipes/${id}/like`);
       
       // Sync with server response
       setIsLiked(response.is_liked);
@@ -203,7 +221,9 @@ export default function RecipeDetailPage() {
     setIsBookmarkLoading(true);
 
     try {
-      await api.post(`/recipes/${id}/bookmarkToggle`);
+      // Note: Backend bookmark API doesn't exist yet - this will fail
+      // TODO: Implement backend bookmark API
+      await api.post(`/recipes/${id}/bookmark`);
       
       toast.success(newIsBookmarked ? '🔖 Bookmarked!' : 'Removed from bookmarks');
     } catch (error: any) {
@@ -221,11 +241,52 @@ export default function RecipeDetailPage() {
     }
   };
 
-  // Handle Follow Author
-  const handleFollowAuthor = () => {
-    // TODO: Implement follow logic with API
-    setIsFollowing(!isFollowing);
-    toast.success(isFollowing ? 'Unfollowed author' : 'Following author!');
+  // Handle Follow Author with Optimistic UI
+  const handleFollowAuthor = async () => {
+    if (!recipe?.author_id) return;
+
+    // Check if user is logged in
+    if (!user) {
+      toast.warning('Please login to follow users');
+      navigate('/auth');
+      return;
+    }
+
+    // Prevent following yourself
+    if (user.id === recipe.author_id) {
+      toast.error('You cannot follow yourself!');
+      return;
+    }
+
+    // Prevent spamming
+    if (isFollowLoading) return;
+
+    // Optimistic UI Update
+    const previousIsFollowing = isFollowing;
+    const newIsFollowing = !isFollowing;
+
+    setIsFollowing(newIsFollowing);
+    setIsFollowLoading(true);
+
+    try {
+      const response = await api.post<{ message: string }>(`/users/${recipe.author_id}/follow`);
+      
+      toast.success(newIsFollowing ? '✅ Following!' : 'Unfollowed');
+    } catch (error: any) {
+      // Revert optimistic update on error
+      setIsFollowing(previousIsFollowing);
+
+      if (error.response?.status === 401) {
+        toast.error('Please login to follow users');
+        navigate('/auth');
+      } else if (error.response?.status === 404) {
+        toast.error('User not found');
+      } else {
+        toast.error('Failed to update follow status');
+      }
+    } finally {
+      setIsFollowLoading(false);
+    }
   };
 
   // Handle Delete Recipe
@@ -466,6 +527,7 @@ export default function RecipeDetailPage() {
                       </div>
                       <Button
                         onClick={handleFollowAuthor}
+                        disabled={isFollowLoading}
                         className={isFollowing ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-orange-600 hover:bg-orange-700'}
                       >
                         <UserPlus size={18} className="mr-2" />

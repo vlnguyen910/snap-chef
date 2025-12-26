@@ -71,10 +71,16 @@ function normalizeRecipe(data: any): Recipe {
     imageUrl: data.thumbnail_url || data.image_url || '',
     userId: data.author_id || data.userId || '',
     authorId: data.author_id || data.authorId || '',
-    author: data.author || {
+    // Map user data from backend
+    user: data.user ? {
+      id: data.user.id || data.author_id || '',
+      name: data.user.username || 'Unknown',
+      avatar: data.user.avatar_url,
+    } : undefined,
+    author: data.author || data.user || {
       id: data.author_id || '',
-      username: 'Unknown',
-      avatar: undefined,
+      username: data.user?.username || 'Unknown',
+      avatar: data.user?.avatar_url,
     },
     cookingTime: data.cooking_time || data.cookingTime || 0,
     cookTime: data.cooking_time || data.cookTime || 0,
@@ -84,8 +90,8 @@ function normalizeRecipe(data: any): Recipe {
     ingredients: data.ingredients || [],
     instructions: data.steps || data.instructions || [],
     rating: data.rating || 0,
-    reviewCount: data.reviewCount || 0,
-    favoriteCount: data.favoriteCount || 0,
+    reviewCount: data.reviewCount || data.comments_count || 0,
+    favoriteCount: data.favoriteCount || data.likes_count || 0,
     forkCount: data.forkCount || 0,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
