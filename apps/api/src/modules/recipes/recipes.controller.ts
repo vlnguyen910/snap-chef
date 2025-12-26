@@ -48,6 +48,11 @@ export class RecipesController {
     return this.recipesService.findOne(id, user?.id);
   }
 
+  @Get('user/:id')
+  getUserRecipes(@Param('id') user_id: string) {
+    return this.recipesService.getUserRecipes(user_id);
+  }
+
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   update(

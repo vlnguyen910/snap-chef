@@ -312,4 +312,30 @@ export class RecipesService {
       return { is_liked: true };
     }
   }
+
+  async getUserRecipes(user_id: string) {
+    const recipes = await this.prisma.recipe.findMany({
+      where: { author_id: user_id },
+      include: {
+        _count: {
+          select: {
+            comments: true,
+            likes: true,
+          }
+        }
+      },
+      orderBy: {
+        created_at: 'desc',
+      }
+    });
+
+    return recipes.map((recipe) => {
+      const { _count, ...recipeData } = recipe;
+      return {
+        ...recipeData,
+        comments_count: _count.comments,
+        likes_count: _count.likes,
+      };
+    });
+  }
 }
