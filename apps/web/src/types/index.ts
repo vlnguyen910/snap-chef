@@ -16,7 +16,7 @@ export interface User {
 export interface Recipe {
   id: string;
   title: string;
-  description: string;
+  description?: string | null;
   imageUrl?: string;
   userId: string;
   user?: {
@@ -87,6 +87,32 @@ export interface Rating {
   rating: number;
   review?: string;
   createdAt: string;
+}
+
+// Comment types
+export interface Comment {
+  id: string;
+  recipeId: string;
+  userId: string;
+  user?: {
+    id: string;
+    username: string;
+    avatar?: string;
+  };
+  content: string;
+  rating: number; // 0-5 stars
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCommentPayload {
+  content: string;
+  rating: number; // Must be 0-5
+}
+
+export interface UpdateCommentPayload {
+  content?: string;
+  rating?: number;
 }
 
 export interface ModerationQueue {

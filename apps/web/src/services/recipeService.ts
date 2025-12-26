@@ -7,7 +7,7 @@ export const recipeService = {
    */
   createRecipe: async (recipeData: {
     title: string;
-    description: string;
+    description?: string | null;
     cooking_time: number;
     servings: number; // ✅ Backend expects 'servings' (plural), not 'serving'
     thumbnail_url: string;

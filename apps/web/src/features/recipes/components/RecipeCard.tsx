@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Clock, Users, Star, Heart, GitFork } from 'lucide-react';
 import type { Recipe } from '@/types';
 import { useRecipeActions } from '../hooks/useRecipeActions';
+import { BookmarkButton } from '@/components/common/BookmarkButton';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -76,16 +77,23 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
             </div>
           </div>
 
-          <button
-            onClick={() => toggleFavorite(recipe.id)}
-            disabled={isLoading}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
-          >
-            <Heart 
-              size={20} 
-              className={isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => toggleFavorite(recipe.id)}
+              disabled={isLoading}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
+            >
+              <Heart 
+                size={20} 
+                className={isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'}
+              />
+            </button>
+            
+            <BookmarkButton 
+              recipeId={recipe.id} 
+              size="sm"
             />
-          </button>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-gray-500">

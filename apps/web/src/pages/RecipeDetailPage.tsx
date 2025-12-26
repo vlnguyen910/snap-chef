@@ -1,18 +1,33 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Clock, Users, Calendar, ArrowLeft, ChefHat, Edit, Trash2, UserPlus, Bookmark } from 'lucide-react';
+import { Clock, Users, Calendar, ArrowLeft, ChefHat, Edit, Trash2, UserPlus, Bookmark, Heart } from 'lucide-react';
 import Loading from '@/components/common/Loading';
 import ErrorState from '@/components/common/ErrorState';
+import { RecipeComments } from '@/components/common/RecipeComments';
 import { recipeService } from '@/services/recipeService';
 import { api } from '@/lib/axios';
 import { useStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/lib/toast-store';
 
-// Ingredient interface matching backend response
-interface Ingredient {
+// Base Ingredient interface from API
+interface IngredientFromAPI {
+  id: number;
   name: string;
-  quantity: number; // Standardized to correct spelling
+}
+
+// Recipe Ingredient interface matching backend response
+interface RecipeIngredient {
+  ingredient_id: number;
+  quantity: number;
+  unit: string;
+  ingredient?: IngredientFromAPI; // Optional nested ingredient
+}
+
+// Ingredient interface for display
+interface Ingredient {
+  name: string; 
+  quantity: number;
   unit: string;
   checked?: boolean;
 }
@@ -34,7 +49,7 @@ interface RecipeData {
   cooking_time: number; // in minutes (snake_case)
   thumbnail_url: string;
   status: string;
-  ingredients: Ingredient[];
+  ingredients: RecipeIngredient[]; // Changed to RecipeIngredient[]
   steps: Step[];
   created_at: string;
   updated_at: string;
@@ -55,11 +70,16 @@ export default function RecipeDetailPage() {
   const { user } = useStore();
   const [recipe, setRecipe] = useState<RecipeData | null>(null);
   const [author, setAuthor] = useState<AuthorData | null>(null);
+  const [allIngredients, setAllIngredients] = useState<IngredientFromAPI[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
   const [isFollowing, setIsFollowing] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [isLikeLoading, setIsLikeLoading] = useState(false);
+  const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
 
   useEffect(() => {
     fetchRecipe();
@@ -76,30 +96,29 @@ export default function RecipeDetailPage() {
     setError(null);
     
     try {
-      console.log('🔍 Fetching recipe with ID:', id);
+      // Fetch recipe details and all ingredients in parallel
+      const [recipeResponse, ingredientsResponse] = await Promise.all([
+        api.get<any>(`/recipes/${id}`),
+        api.get<IngredientFromAPI[]>('/ingredients').catch(() => [])
+      ]);
       
-      // Fetch recipe details from API
-      const response = await api.get<any>(`/recipes/${id}`);
-      
-      // 🐛 DEBUGGING: Log full API response to verify structure
-      console.log('✅ API Response:', response);
-      console.log('📦 Recipe Data:', JSON.stringify(response, null, 2));
-      console.log('🥕 Ingredients:', response.ingredients);
-      console.log('📝 Steps:', response.steps);
-      
-      setRecipe(response);
-
-      // Fetch author details separately if author_id exists
-      if (response.author_id) {
+      // Fetch author details if author_id exists
+      let authorResponse = null;
+      if (recipeResponse.author_id) {
         try {
-          console.log('👤 Fetching author with ID:', response.author_id);
-          const authorResponse = await api.get<AuthorData>(`/users/${response.author_id}`);
-          console.log('✅ Author fetched:', authorResponse);
-          setAuthor(authorResponse);
+          authorResponse = await api.get<AuthorData>(`/users/${recipeResponse.author_id}`);
         } catch (authorError) {
-          console.warn('⚠️ Failed to fetch author details:', authorError);
-          // Continue even if author fetch fails
+          console.warn('Failed to fetch author details:', authorError);
         }
+      }
+      
+      // ✅ BATCH STATE UPDATES - Only 1 re-render instead of 3!
+      if (Array.isArray(ingredientsResponse) && ingredientsResponse.length > 0) {
+        setAllIngredients(ingredientsResponse);
+      }
+      setRecipe(recipeResponse);
+      if (authorResponse) {
+        setAuthor(authorResponse);
       }
     } catch (err: any) {
       console.error('❌ Error fetching recipe:', err);
@@ -110,22 +129,103 @@ export default function RecipeDetailPage() {
     }
   };
 
-  // ✅ OWNERSHIP LOGIC: Check if logged-in user is the recipe owner
-  const isOwner = user?.id === recipe?.author_id;
-  console.log('🔒 Ownership check:', { userId: user?.id, authorId: recipe?.author_id, isOwner });
+  // ✅ OWNERSHIP LOGIC: Check if logged-in user is the recipe owner (memoized)
+  const isOwner = useMemo(() => user?.id === recipe?.author_id, [user?.id, recipe?.author_id]);
+
+  // Handle Toggle Like with Optimistic UI
+  const handleLike = async () => {
+    if (!id) return;
+
+    // Check if user is logged in
+    if (!user) {
+      toast.warning('Please login to like this recipe');
+      navigate('/auth');
+      return;
+    }
+
+    // Prevent spamming
+    if (isLikeLoading) return;
+
+    // Optimistic UI Update
+    const previousIsLiked = isLiked;
+    const previousLikeCount = likeCount;
+    const newIsLiked = !isLiked;
+    const newLikeCount = newIsLiked ? likeCount + 1 : likeCount - 1;
+
+    setIsLiked(newIsLiked);
+    setLikeCount(newLikeCount);
+    setIsLikeLoading(true);
+
+    try {
+      const response = await api.post<{ is_liked: boolean }>(`/recipes/${id}/likeToggle`);
+      
+      // Sync with server response
+      setIsLiked(response.is_liked);
+      
+      toast.success(response.is_liked ? '❤️ Liked!' : 'Unliked');
+    } catch (error: any) {
+      // Revert optimistic update on error
+      setIsLiked(previousIsLiked);
+      setLikeCount(previousLikeCount);
+
+      if (error.response?.status === 401) {
+        toast.error('Please login to like recipes');
+        navigate('/auth');
+      } else if (error.response?.status === 403) {
+        toast.error('You cannot like your own recipe!');
+      } else {
+        toast.error('Failed to update like status');
+      }
+    } finally {
+      setIsLikeLoading(false);
+    }
+  };
+
+  // Handle Toggle Bookmark with Optimistic UI
+  const handleBookmark = async () => {
+    if (!id) return;
+
+    // Check if user is logged in
+    if (!user) {
+      toast.warning('Please login to bookmark this recipe');
+      navigate('/auth');
+      return;
+    }
+
+    // Prevent spamming
+    if (isBookmarkLoading) return;
+
+    // Optimistic UI Update
+    const previousIsBookmarked = isBookmarked;
+    const newIsBookmarked = !isBookmarked;
+
+    setIsBookmarked(newIsBookmarked);
+    setIsBookmarkLoading(true);
+
+    try {
+      await api.post(`/recipes/${id}/bookmarkToggle`);
+      
+      toast.success(newIsBookmarked ? '🔖 Bookmarked!' : 'Removed from bookmarks');
+    } catch (error: any) {
+      // Revert optimistic update on error
+      setIsBookmarked(previousIsBookmarked);
+
+      if (error.response?.status === 401) {
+        toast.error('Please login to bookmark recipes');
+        navigate('/auth');
+      } else {
+        toast.error('Failed to update bookmark status');
+      }
+    } finally {
+      setIsBookmarkLoading(false);
+    }
+  };
 
   // Handle Follow Author
   const handleFollowAuthor = () => {
     // TODO: Implement follow logic with API
     setIsFollowing(!isFollowing);
     toast.success(isFollowing ? 'Unfollowed author' : 'Following author!');
-  };
-
-  // Handle Bookmark Recipe
-  const handleBookmark = () => {
-    // TODO: Implement bookmark logic with API
-    setIsBookmarked(!isBookmarked);
-    toast.success(isBookmarked ? 'Removed from bookmarks' : 'Recipe bookmarked!');
   };
 
   // Handle Delete Recipe
@@ -135,7 +235,6 @@ export default function RecipeDetailPage() {
     }
 
     try {
-      console.log('🗑️ Deleting recipe:', id);
       await api.delete(`/recipes/${id}`);
       toast.success('Công thức đã được xóa!');
       navigate('/recipes');
@@ -200,20 +299,29 @@ export default function RecipeDetailPage() {
     return recipe.cooking_time || (recipe as any).cookingTime || 0;
   };
 
-  // ✅ DEFENSIVE: Parse ingredients with flexible field mapping
-  const getIngredients = () => {
+  // ✅ DEFENSIVE: Parse ingredients with flexible field mapping and ID-to-name resolution (memoized)
+  const getIngredients = useMemo(() => {
     if (!recipe?.ingredients || !Array.isArray(recipe.ingredients)) {
-      console.warn('⚠️ No ingredients array found');
       return [];
     }
 
     return recipe.ingredients.map((item: any, index: number) => {
-      // Check multiple possible field names for amount
       const amount = item.quantity || item.quanity || item.amount || 0;
-      const name = item.name || 'Unknown ingredient';
       const unit = item.unit || '';
-
-      console.log(`🥕 Ingredient ${index + 1}:`, { name, amount, unit, raw: item });
+      
+      // Try to get name from multiple sources
+      let name = 'Unknown ingredient';
+      
+      if (item.name) {
+        name = item.name;
+      } else if (item.ingredient?.name) {
+        name = item.ingredient.name;
+      } else if (item.ingredient_id && allIngredients.length > 0) {
+        const foundIngredient = allIngredients.find(ing => ing.id === item.ingredient_id);
+        if (foundIngredient) {
+          name = foundIngredient.name;
+        }
+      }
 
       return {
         name,
@@ -222,23 +330,19 @@ export default function RecipeDetailPage() {
         index,
       };
     });
-  };
+  }, [recipe?.ingredients, allIngredients]);
 
-  // ✅ DEFENSIVE: Parse steps with flexible field mapping
-  const getSteps = () => {
+  // ✅ DEFENSIVE: Parse steps with flexible field mapping (memoized)
+  const getSteps = useMemo(() => {
     if (!recipe?.steps || !Array.isArray(recipe.steps)) {
-      console.warn('⚠️ No steps array found');
       return [];
     }
 
     return recipe.steps
       .map((item: any, index: number) => {
-        // Check multiple possible field names for content
         const content = item.content || item.instruction || '';
         const orderIndex = item.order_index !== undefined ? item.order_index : (item.step || index + 1);
         const imageUrl = item.image_url || item.imageUrl || '';
-
-        console.log(`📝 Step ${orderIndex}:`, { content: content.substring(0, 50), imageUrl, raw: item });
 
         return {
           order_index: orderIndex,
@@ -246,11 +350,11 @@ export default function RecipeDetailPage() {
           image_url: imageUrl,
         };
       })
-      .sort((a, b) => a.order_index - b.order_index); // Sort by order_index
-  };
+      .sort((a, b) => a.order_index - b.order_index);
+  }, [recipe?.steps]);
 
-  const ingredients = getIngredients();
-  const steps = getSteps();
+  const ingredients = getIngredients;
+  const steps = getSteps;
 
   if (isLoading) return <Loading fullScreen />;
   if (error) return <ErrorState message={error} onRetry={fetchRecipe} fullScreen />;
@@ -369,10 +473,32 @@ export default function RecipeDetailPage() {
                       </Button>
                     </div>
                     <div className="flex items-center gap-3">
+                      {/* Like Button */}
+                      <Button
+                        onClick={handleLike}
+                        variant="outline"
+                        disabled={isLikeLoading}
+                        className={isLiked ? 'border-red-500 text-red-600 hover:bg-red-50' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}
+                      >
+                        <Heart 
+                          size={18} 
+                          className="mr-2" 
+                          fill={isLiked ? 'currentColor' : 'none'}
+                        />
+                        {isLiked ? 'Liked' : 'Like'}
+                        {likeCount > 0 && (
+                          <span className="ml-2 px-2 py-0.5 bg-gray-100 rounded-full text-xs font-semibold">
+                            {likeCount}
+                          </span>
+                        )}
+                      </Button>
+
+                      {/* Bookmark Button */}
                       <Button
                         onClick={handleBookmark}
                         variant="outline"
-                        className={isBookmarked ? 'border-orange-500 text-orange-600' : 'border-gray-300 text-gray-700'}
+                        disabled={isBookmarkLoading}
+                        className={isBookmarked ? 'border-orange-500 text-orange-600 hover:bg-orange-50' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}
                       >
                         <Bookmark size={18} className="mr-2" fill={isBookmarked ? 'currentColor' : 'none'} />
                         {isBookmarked ? 'Saved' : 'Save'}
@@ -467,6 +593,11 @@ export default function RecipeDetailPage() {
                 <p className="text-center text-gray-500 text-sm">
                   Enjoy your delicious meal! Don't forget to share your creation with friends and family. 🍽️
                 </p>
+              </div>
+
+              {/* Comments Section */}
+              <div className="mt-12 pt-8 border-t border-gray-200">
+                <RecipeComments recipeOwnerId={recipe?.author_id} />
               </div>
             </div>
           </div>

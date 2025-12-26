@@ -1,145 +1,211 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X, User as UserIcon, LogOut } from 'lucide-react';
+import { Menu, X, User as UserIcon, LogOut, Search } from 'lucide-react';
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import UserMenu from './UserMenu';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
 
-  // 1. TỐI ƯU ZUSTAND: Chọn lọc state cần thiết
   const user = useStore((state) => state.user);
   const logout = useStore((state) => state.logout);
-  // Kiểm tra xem user có tồn tại không để xác định đã login
-  const isAuthenticated = !!user; 
+  const isAuthenticated = !!user;
 
-  // 2. LOGIC ACTIVE LINK (Đã sửa lỗi chọn nhầm Home)
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
 
   const handleSignout = () => {
-    logout(); 
+    logout();
     setIsOpen(false);
-    navigate('/auth/signin'); // Chuyển trang sau khi signout
+    navigate('/auth/signin');
   };
 
-  return (
-    <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between py-4">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-orange-600 transition-colors hover:text-orange-700">
-            <span className="text-3xl">🍳</span>
-            Snap Chef
-          </Link>
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/recipes?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
-          {/* Desktop Navigation */}
-          <div className="hidden gap-1 md:flex">
-            <Button variant={isActive('/') ? 'secondary' : 'ghost'} asChild>
-              <Link to="/">Home</Link>
-            </Button>
-            <Button variant={isActive('/recipes') ? 'secondary' : 'ghost'} asChild>
-              <Link to="/recipes">Recipes</Link>
-            </Button>
-            <Button variant={isActive('/create-recipe') ? 'secondary' : 'ghost'} asChild>
-              <Link to="/create-recipe">Create Recipes</Link>
-            </Button>
+  const navLinks = [
+    { path: '/', label: 'Home' },
+    { path: '/recipes', label: 'Recipes' },
+    { path: '/create-recipe', label: 'Create Recipe' },
+    ...(isAuthenticated ? [{ path: '/my-recipes', label: 'My Recipes' }] : []),
+    ...(user?.role === 'moderator' ? [{ path: '/moderation', label: 'Moderation' }] : []),
+  ];
+
+  return (
+    <header className="sticky top-0 z-50 bg-white shadow-md">
+      <div className="container mx-auto px-4">
+        {/* Desktop Layout - 3 Column Grid */}
+        <div className="hidden md:grid md:grid-cols-3 items-center h-16 gap-4">
+          {/* Left Section: Logo + Search Bar */}
+          <div className="flex items-center gap-4">
+            <Link 
+              to="/" 
+              className="text-2xl font-bold text-orange-600 hover:text-orange-700 transition-colors flex-shrink-0"
+            >
+              SnapChef
+            </Link>
             
-            {isAuthenticated && (
-              <>
-                <Button variant={isActive('/my-recipes') ? 'secondary' : 'ghost'} asChild>
-                  <Link to="/my-recipes">My Recipes</Link>
-                </Button>
-                
-                {/* Optional chaining (?.) để tránh lỗi nếu user null */}
-                {user?.role === 'moderator' && (
-                  <Button variant={isActive('/moderation') ? 'secondary' : 'ghost'} asChild>
-                    <Link to="/moderation">Moderation</Link>
-                  </Button>
-                )}
-              </>
-            )}
+            <form 
+              onSubmit={handleSearch}
+              className="flex items-center"
+            >
+              <div className="relative w-64">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-black-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search..."
+                  className="w-full pl-11 pr-4 py-2 bg-orange-100 rounded-full border border-transparent focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all text-sm"
+                />
+              </div>
+            </form>
           </div>
 
-          {/* User Menu */}
-          <div className="hidden items-center gap-3 md:flex">
+          {/* Center Section: Navigation Links */}
+          <nav className="flex items-center justify-center gap-6">
+            {navLinks.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`text-sm font-medium transition-colors relative group whitespace-nowrap ${
+                  isActive(link.path)
+                    ? 'text-orange-600 font-bold'
+                    : 'text-gray-700 hover:text-orange-600'
+                }`}
+              >
+                {link.label}
+                {isActive(link.path) && (
+                  <span className="absolute bottom-[-20px] left-0 right-0 h-0.5 bg-orange-600"></span>
+                )}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Right Section: User Profile / Auth Buttons */}
+          <div className="flex items-center justify-end gap-3">
             {isAuthenticated && user ? (
               <UserMenu />
             ) : (
               <>
-                <Button variant="ghost" asChild>
+                <Button variant="ghost" asChild className="hover:text-orange-600">
                   <Link to="/auth/signin">Sign In</Link>
                 </Button>
-                <Button variant="default" asChild>
+                <Button 
+                  asChild 
+                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                >
                   <Link to="/auth/signup">Sign Up</Link>
                 </Button>
               </>
             )}
           </div>
+        </div>
+
+        {/* Mobile Layout */}
+        <div className="flex md:hidden items-center justify-between h-16">
+          {/* Logo */}
+          <Link 
+            to="/" 
+            className="text-2xl font-bold text-orange-600 hover:text-orange-700 transition-colors"
+          >
+            SnapChef
+          </Link>
 
           {/* Mobile Menu Button */}
-          <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)} className="md:hidden">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="p-2 text-gray-700 hover:text-orange-600 transition-colors"
+            aria-label="Toggle menu"
+          >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </Button>
+          </button>
         </div>
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="border-t border-gray-200 py-4 md:hidden space-y-2">
-            <Button variant={isActive('/') ? 'secondary' : 'ghost'} asChild className="w-full justify-start">
-              <Link to="/">Home</Link>
-            </Button>
-            <Button variant={isActive('/recipes') ? 'secondary' : 'ghost'} asChild className="w-full justify-start">
-              <Link to="/recipes">Recipes</Link>
-            </Button>
-            <Button variant={isActive('/create-recipe') ? 'secondary' : 'ghost'} asChild className="w-full justify-start">
-              <Link to="/create-recipe">Create Recipes</Link>
-            </Button>
+          <div className="md:hidden py-4 border-t border-gray-200">
+            {/* Search Bar (Mobile) */}
+            <form onSubmit={handleSearch} className="mb-4">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search..."
+                  className="w-full pl-11 pr-4 py-2 bg-gray-100 rounded-full border border-transparent focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all text-sm"
+                />
+              </div>
+            </form>
 
-            {isAuthenticated && (
-              <>
-                <Button variant={isActive('/my-recipes') ? 'secondary' : 'ghost'} asChild className="w-full justify-start">
-                  <Link to="/my-recipes">My Recipes</Link>
-                </Button>
+            {/* Mobile Nav Links */}
+            <div className="space-y-1">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setIsOpen(false)}
+                  className={`block px-4 py-3 rounded-md text-sm font-medium transition-colors ${
+                    isActive(link.path)
+                      ? 'text-orange-600 font-bold bg-orange-50'
+                      : 'text-gray-700 hover:text-orange-600 hover:bg-gray-50'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
 
-                {user?.role === 'moderator' && (
-                  <Button variant={isActive('/moderation') ? 'secondary' : 'ghost'} asChild className="w-full justify-start">
-                    <Link to="/moderation">Moderation</Link>
-                  </Button>
-                )}
-
-                <Button variant="ghost" asChild className="w-full justify-start">
-                  <Link to="/profile" className="flex items-center gap-2">
+              {isAuthenticated && user ? (
+                <>
+                  <Link
+                    to="/profile"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium text-gray-700 hover:text-orange-600 hover:bg-gray-50 transition-colors"
+                  >
                     <UserIcon size={18} />
-                    {/* Display name, username, or email in order of priority */}
                     <span>{user.username || user.email}</span>
                   </Link>
-                </Button>
-                <Button variant="default" onClick={handleSignout} className="w-full justify-start gap-2">
-                  <LogOut size={18} />
-                  Sign Out
-                </Button>
-              </>
-            )}
-
-            {!isAuthenticated && (
-              <>
-                <Button variant="ghost" asChild className="w-full justify-start">
-                  <Link to="/auth/signin">Sign In</Link>
-                </Button>
-                <Button variant="default" asChild className="w-full justify-start">
-                  <Link to="/auth/signup">Sign Up</Link>
-                </Button>
-              </>
-            )}
+                  <button
+                    onClick={handleSignout}
+                    className="flex items-center gap-3 w-full px-4 py-3 rounded-md text-sm font-medium text-gray-700 hover:text-orange-600 hover:bg-gray-50 transition-colors"
+                  >
+                    <LogOut size={18} />
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/auth/signin"
+                    onClick={() => setIsOpen(false)}
+                    className="block px-4 py-3 rounded-md text-sm font-medium text-gray-700 hover:text-orange-600 hover:bg-gray-50 transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/auth/signup"
+                    onClick={() => setIsOpen(false)}
+                    className="block px-4 py-3 rounded-md text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 transition-colors text-center"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         )}
       </div>
-    </nav>
+    </header>
   );
 }
