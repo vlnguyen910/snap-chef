@@ -17,10 +17,10 @@ import type * as Prisma from "./prismaNamespace.js"
 
 const config: runtime.GetPrismaClientConfig = {
   "previewFeatures": [],
-  "clientVersion": "7.2.0",
-  "engineVersion": "0c8ef2ce45c83248ab3df073180d5eda9e8be7a3",
+  "clientVersion": "7.0.1",
+  "engineVersion": "f09f2815f091dbba658cdcd2264306d88bb5bda6",
   "activeProvider": "postgresql",
-  "inlineSchema": "generator client {\n  provider     = \"prisma-client\"\n  output       = \"../src/generated/prisma\"\n  moduleFormat = \"cjs\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nenum UserRoles {\n  USER\n  MODERATOR\n  ADMIN\n}\n\nmodel User {\n  id         String    @id @default(cuid())\n  email      String    @unique\n  password   String\n  username   String\n  role       UserRoles\n  avatar_url String?\n  is_active  Boolean   @default(true)\n  bio        String?\n  create_at  DateTime  @default(now())\n\n  //Relations\n  recipe    Recipe[]\n  likes     Like[]\n  comments  Comment[]\n  followers Follow[]  @relation(\"followerRelation\")\n  following Follow[]  @relation(\"followingRelation\")\n}\n\nenum RecipeStatus {\n  DRAFT\n  PUBLISHED\n  PENDING\n  REJECTED\n}\n\nmodel Recipe {\n  id            Int          @id @default(autoincrement())\n  author_id     String\n  title         String\n  description   String?\n  servings      Int\n  cooking_time  Int\n  thumbnail_url String\n  status        RecipeStatus\n  created_at    DateTime     @default(now())\n  updated_at    DateTime     @updatedAt\n\n  //Relations\n  user        User               @relation(fields: [author_id], references: [id])\n  ingredients RecipeIngredient[]\n  steps       Step[]\n  likes       Like[]\n  comments    Comment[]\n}\n\nmodel Ingredient {\n  id   Int    @id @default(autoincrement())\n  name String @unique\n\n  recipeIngredients RecipeIngredient[]\n}\n\nmodel RecipeIngredient {\n  id            Int    @id @default(autoincrement())\n  recipe_id     Int\n  ingredient_id Int\n  quantity      Float\n  unit          String\n\n  //Relations\n  recipe     Recipe     @relation(fields: [recipe_id], references: [id])\n  ingredient Ingredient @relation(fields: [ingredient_id], references: [id])\n}\n\nmodel Step {\n  id          Int     @id @default(autoincrement())\n  recipe_id   Int\n  order_index Int\n  image_url   String?\n  content     String\n\n  //Relations\n  recipe Recipe @relation(fields: [recipe_id], references: [id])\n}\n\nmodel Like {\n  user_id    String\n  recipe_id  Int\n  created_at DateTime @default(now())\n\n  //Relations\n  user   User   @relation(fields: [user_id], references: [id])\n  recipe Recipe @relation(fields: [recipe_id], references: [id])\n\n  @@id([user_id, recipe_id])\n}\n\nmodel Comment {\n  id         Int      @id @default(autoincrement())\n  user_id    String\n  recipe_id  Int\n  content    String?\n  rating     Int\n  created_at DateTime @default(now())\n  updated_at DateTime @updatedAt\n\n  //Relations\n  user   User   @relation(fields: [user_id], references: [id])\n  recipe Recipe @relation(fields: [recipe_id], references: [id])\n}\n\nmodel Follow {\n  follower_id  String //nguoi theo doi\n  following_id String //nguoi duoc theo doi\n  created_at   DateTime @default(now())\n\n  //Relations\n  follower  User @relation(\"followerRelation\", fields: [follower_id], references: [id])\n  following User @relation(\"followingRelation\", fields: [following_id], references: [id])\n\n  @@id([follower_id, following_id])\n}\n",
+  "inlineSchema": "generator client {\n  provider     = \"prisma-client\"\n  output       = \"../src/generated/prisma\"\n  moduleFormat = \"cjs\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nenum UserRoles {\n  USER\n  MODERATOR\n  ADMIN\n}\n\nmodel User {\n  id         String    @id @default(cuid())\n  email      String    @unique\n  password   String\n  username   String\n  role       UserRoles\n  avatar_url String?\n  is_active  Boolean   @default(true)\n  bio        String?\n  create_at  DateTime  @default(now())\n\n  //Relations\n  recipe    Recipe[]\n  likes     Like[]\n  comments  Comment[]\n  followers Follow[]  @relation(\"followerRelation\")\n  following Follow[]  @relation(\"followingRelation\")\n\n  //Indexes\n  @@index([username])\n}\n\nenum RecipeStatus {\n  DRAFT\n  PUBLISHED\n  PENDING\n  REJECTED\n}\n\nmodel Recipe {\n  id            Int          @id @default(autoincrement())\n  author_id     String\n  title         String\n  description   String?\n  servings      Int\n  cooking_time  Int\n  thumbnail_url String\n  status        RecipeStatus\n  created_at    DateTime     @default(now())\n  updated_at    DateTime     @updatedAt\n\n  //Relations\n  user        User               @relation(fields: [author_id], references: [id])\n  ingredients RecipeIngredient[]\n  steps       Step[]\n  likes       Like[]\n  comments    Comment[]\n\n  //Indexes\n  @@index([title])\n}\n\nmodel Ingredient {\n  id   Int    @id @default(autoincrement())\n  name String @unique\n\n  //Relations\n  recipeIngredients RecipeIngredient[]\n\n  //Indexes\n  @@index([name])\n}\n\nmodel RecipeIngredient {\n  id            Int    @id @default(autoincrement())\n  recipe_id     Int\n  ingredient_id Int\n  quantity      Float\n  unit          String\n\n  //Relations\n  recipe     Recipe     @relation(fields: [recipe_id], references: [id])\n  ingredient Ingredient @relation(fields: [ingredient_id], references: [id])\n}\n\nmodel Step {\n  id          Int     @id @default(autoincrement())\n  recipe_id   Int\n  order_index Int\n  image_url   String?\n  content     String\n\n  //Relations\n  recipe Recipe @relation(fields: [recipe_id], references: [id])\n}\n\nmodel Like {\n  user_id    String\n  recipe_id  Int\n  created_at DateTime @default(now())\n\n  //Relations\n  user   User   @relation(fields: [user_id], references: [id])\n  recipe Recipe @relation(fields: [recipe_id], references: [id])\n\n  @@id([user_id, recipe_id])\n}\n\nmodel Comment {\n  id         Int      @id @default(autoincrement())\n  user_id    String\n  recipe_id  Int\n  content    String?\n  rating     Int\n  created_at DateTime @default(now())\n  updated_at DateTime @updatedAt\n\n  //Relations\n  user   User   @relation(fields: [user_id], references: [id])\n  recipe Recipe @relation(fields: [recipe_id], references: [id])\n}\n\nmodel Follow {\n  follower_id  String //nguoi theo doi\n  following_id String //nguoi duoc theo doi\n  created_at   DateTime @default(now())\n\n  //Relations\n  follower  User @relation(\"followerRelation\", fields: [follower_id], references: [id])\n  following User @relation(\"followingRelation\", fields: [following_id], references: [id])\n\n  @@id([follower_id, following_id])\n}\n",
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -62,7 +62,7 @@ export interface PrismaClientConstructor {
    * const users = await prisma.user.findMany()
    * ```
    * 
-   * Read more in our [docs](https://pris.ly/d/client).
+   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client).
    */
 
   new <
@@ -84,7 +84,7 @@ export interface PrismaClientConstructor {
  * const users = await prisma.user.findMany()
  * ```
  * 
- * Read more in our [docs](https://pris.ly/d/client).
+ * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client).
  */
 
 export interface PrismaClient<
@@ -113,7 +113,7 @@ export interface PrismaClient<
    * const result = await prisma.$executeRaw`UPDATE User SET cool = ${true} WHERE email = ${'user@email.com'};`
    * ```
    *
-   * Read more in our [docs](https://pris.ly/d/raw-queries).
+   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
    */
   $executeRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any[]): Prisma.PrismaPromise<number>;
 
@@ -125,7 +125,7 @@ export interface PrismaClient<
    * const result = await prisma.$executeRawUnsafe('UPDATE User SET cool = $1 WHERE email = $2 ;', true, 'user@email.com')
    * ```
    *
-   * Read more in our [docs](https://pris.ly/d/raw-queries).
+   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
    */
   $executeRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<number>;
 
@@ -136,7 +136,7 @@ export interface PrismaClient<
    * const result = await prisma.$queryRaw`SELECT * FROM User WHERE id = ${1} OR email = ${'user@email.com'};`
    * ```
    *
-   * Read more in our [docs](https://pris.ly/d/raw-queries).
+   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
    */
   $queryRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any[]): Prisma.PrismaPromise<T>;
 
@@ -148,7 +148,7 @@ export interface PrismaClient<
    * const result = await prisma.$queryRawUnsafe('SELECT * FROM User WHERE id = $1 OR email = $2;', 1, 'user@email.com')
    * ```
    *
-   * Read more in our [docs](https://pris.ly/d/raw-queries).
+   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
    */
   $queryRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<T>;
 

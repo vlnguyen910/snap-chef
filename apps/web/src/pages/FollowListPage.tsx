@@ -1,17 +1,67 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Users, UserCheck, UserPlus, Loader2, ArrowLeft } from 'lucide-react';
-import { useFollowing, useFollowers, useToggleFollow } from '@/hooks/useUser';
-import { Link, useNavigate } from 'react-router-dom';
+import { useToggleFollow } from '@/hooks/useUser';
+import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/axios';
 import type { FollowUser } from '@/types';
 
 type TabType = 'following' | 'followers';
 
 export default function FollowListPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabType>('following');
+  const location = useLocation();
+  const { id: targetUserId } = useParams<{ id: string }>();
+  
+  // Determine initial tab based on URL path
+  const initialTab: TabType = location.pathname.includes('/followers') ? 'followers' : 'following';
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
 
-  const { data: followingList = [], isLoading: followingLoading, error: followingError } = useFollowing();
-  const { data: followersList = [], isLoading: followersLoading, error: followersError } = useFollowers();
+  // Update tab when URL changes
+  useEffect(() => {
+    const newTab = location.pathname.includes('/followers') ? 'followers' : 'following';
+    setActiveTab(newTab);
+  }, [location.pathname]);
+
+  // Fetch user's following list (people they follow)
+  const { data: followingList = [], isLoading: followingLoading, error: followingError } = useQuery<FollowUser[]>({
+    queryKey: ['user-following', targetUserId],
+    queryFn: async () => {
+      if (!targetUserId) return [];
+      const response = await api.get<any>(`/users/${targetUserId}`);
+      // Backend returns user with followers/following arrays
+      // following array contains people this user follows (following_id = user.id)
+      return response.followers?.map((follow: any) => ({
+        id: follow.following_id,
+        username: follow.following?.username,
+        email: follow.following?.email,
+        avatar_url: follow.following?.avatar_url,
+        bio: follow.following?.bio,
+        is_following: true, // This user follows them
+      })) || [];
+    },
+    enabled: !!targetUserId && activeTab === 'following',
+  });
+
+  // Fetch user's followers list (people who follow them)
+  const { data: followersList = [], isLoading: followersLoading, error: followersError } = useQuery<FollowUser[]>({
+    queryKey: ['user-followers', targetUserId],
+    queryFn: async () => {
+      if (!targetUserId) return [];
+      const response = await api.get<any>(`/users/${targetUserId}`);
+      // following array contains people who follow this user (follower_id = user.id)
+      return response.following?.map((follow: any) => ({
+        id: follow.follower_id,
+        username: follow.follower?.username,
+        email: follow.follower?.email,
+        avatar_url: follow.follower?.avatar_url,
+        bio: follow.follower?.bio,
+        is_following: false, // These are their followers
+      })) || [];
+    },
+    enabled: !!targetUserId && activeTab === 'followers',
+  });
+
   const { toggleFollow, isLoading: toggleLoading } = useToggleFollow();
 
   const isLoading = activeTab === 'following' ? followingLoading : followersLoading;

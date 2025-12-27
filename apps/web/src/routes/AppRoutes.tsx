@@ -31,6 +31,8 @@ export default function AppRoutes() {
         <Route path="/recipes/:id" element={<RecipeDetailPage />} />
         {/* Public User Profile */}
         <Route path="/users/:id/profile" element={<UserProfile />} />
+        <Route path="/users/:id/followers" element={<FollowListPage />} />
+        <Route path="/users/:id/following" element={<FollowListPage />} />
       </Route>
 
       {/* Protected User Routes */}

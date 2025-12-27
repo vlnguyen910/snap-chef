@@ -1,30 +1,19 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X, User as UserIcon, LogOut, Search, Loader2 } from 'lucide-react';
+import { Menu, X, User as UserIcon, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import UserMenu from './UserMenu';
-import { useSearchUsers } from '@/hooks/useUser';
-import { useDebounce } from '@/hooks/useDebounce';
-import type { SearchUserResult } from '@/types';
+import GlobalSearch from '@/components/common/GlobalSearch';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
   const user = useStore((state) => state.user);
   const logout = useStore((state) => state.logout);
   const isAuthenticated = !!user;
-
-  const debouncedQuery = useDebounce(searchQuery, 300);
-  
-  const { data: users = [], isLoading, error } = useSearchUsers(
-    { q: debouncedQuery },
-    { enabled: debouncedQuery.length > 0 && isAuthenticated }
-  );
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
@@ -35,12 +24,6 @@ export default function Header() {
     logout();
     setIsOpen(false);
     navigate('/auth/signin');
-  };
-
-  const handleUserClick = (userId: string) => {
-    navigate(`/users/${userId}/profile`);
-    setSearchQuery('');
-    setIsSearchOpen(false);
   };
 
   const navLinks = [
@@ -65,85 +48,9 @@ export default function Header() {
               SnapChef
             </Link>
             
-            {/* User Search */}
+            {/* Global Search with mode toggle */}
             {isAuthenticated && (
-              <div className="relative w-64">
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-600" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      setIsSearchOpen(true);
-                    }}
-                    onFocus={() => setIsSearchOpen(true)}
-                    placeholder="Search users..."
-                    className="w-full pl-11 pr-4 py-2 bg-orange-100 rounded-full border border-transparent focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all text-sm"
-                  />
-                </div>
-
-                {/* Search Results Dropdown */}
-                {isSearchOpen && searchQuery && (
-                  <>
-                    <div 
-                      className="fixed inset-0 z-40" 
-                      onClick={() => setIsSearchOpen(false)}
-                    />
-                    
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 max-h-96 overflow-y-auto z-50">
-                      {isLoading ? (
-                        <div className="flex items-center justify-center py-8">
-                          <Loader2 className="h-6 w-6 text-orange-500 animate-spin" />
-                          <span className="ml-2 text-gray-600">Searching...</span>
-                        </div>
-                      ) : error ? (
-                        <div className="px-4 py-8 text-center text-red-600 text-sm">
-                          Failed to search users
-                        </div>
-                      ) : users.length === 0 ? (
-                        <div className="px-4 py-8 text-center text-gray-500 text-sm">
-                          No users found for "{searchQuery}"
-                        </div>
-                      ) : (
-                        <div className="py-2">
-                          {users.map((user: SearchUserResult) => (
-                            <div
-                              key={user.id}
-                              onClick={() => handleUserClick(user.id)}
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 transition-colors cursor-pointer"
-                            >
-                              <img 
-                                src={user.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.username} 
-                                alt={user.username}
-                                className="h-10 w-10 rounded-full object-cover"
-                                onError={(e) => {
-                                  const img = e.target as HTMLImageElement;
-                                  img.src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.username;
-                                }}
-                              />
-                              
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-gray-900 truncate text-sm">
-                                  {user.username}
-                                </p>
-                                <p className="text-xs text-gray-500 truncate">
-                                  {user.email}
-                                </p>
-                                {user.bio && (
-                                  <p className="text-xs text-gray-400 truncate mt-0.5">
-                                    {user.bio}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
+              <GlobalSearch className="w-80" />
             )}
           </div>
 
