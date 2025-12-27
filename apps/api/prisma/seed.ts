@@ -86,8 +86,8 @@ async function main() {
           },
           steps: {
             create: [
-              { order_index: 1, content: faker.lorem.sentence() },
-              { order_index: 2, content: faker.lorem.sentence() },
+              { order_index: 1, content: faker.lorem.sentence(), image_url: faker.image.url() },
+              { order_index: 2, content: faker.lorem.sentence(), image_url: faker.image.url() },
             ],
           },
         },
