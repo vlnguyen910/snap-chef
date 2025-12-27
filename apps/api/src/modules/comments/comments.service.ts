@@ -53,6 +53,9 @@ export class CommentsService {
             role: true,
           }
         }
+      },
+      orderBy: {
+        created_at: "desc",
       }
     })
 

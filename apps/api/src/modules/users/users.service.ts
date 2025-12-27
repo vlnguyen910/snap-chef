@@ -83,6 +83,9 @@ export class UsersService {
   }
   
   async getLikedRecipes(user_id: string) {
+    const user = await this.findOne(user_id);
+    if (!user) throw new NotFoundException('User is not exist');
+
     return await this.prisma.like.findMany({
       where: { user_id },
       select: { recipe: true },
