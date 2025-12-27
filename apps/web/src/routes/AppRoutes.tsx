@@ -11,6 +11,7 @@ import ModerationPage from '@/pages/ModerationPage';
 import CreateRecipePage from '@/pages/CreateRecipePage';
 import NotFound from '@/pages/NotFound';
 import EditRecipePage from '@/pages/EditRecipePage';
+import FollowListPage from '@/pages/FollowListPage';
 
 // Components
 import UserProfile from '@/components/common/UserProfile';
@@ -28,6 +29,8 @@ export default function AppRoutes() {
         </Route>
         <Route path="/recipes" element={<RecipesPage />} />
         <Route path="/recipes/:id" element={<RecipeDetailPage />} />
+        {/* Public User Profile */}
+        <Route path="/users/:id/profile" element={<UserProfile />} />
       </Route>
 
       {/* Protected User Routes */}
@@ -38,6 +41,7 @@ export default function AppRoutes() {
           <Route path="/my-recipes" element={<RecipesPage />} />
           <Route path="/recipes/create" element={<CreateRecipePage />} /> 
           <Route path="/recipes/:id/edit" element={<EditRecipePage />} />
+          <Route path="/follow" element={<FollowListPage />} />
           <Route path="/favorites" element={<div className="p-8"><h1 className="text-2xl font-bold">Favorites</h1></div>} />
           <Route path="/settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Settings</h1></div>} />
         </Route>

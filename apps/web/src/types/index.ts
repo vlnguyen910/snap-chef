@@ -166,3 +166,41 @@ export interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
 }
+
+// User Profile & Search types
+export interface UserProfile {
+  id: string;
+  email: string;
+  username: string;
+  role: 'USER' | 'MODERATOR' | 'ADMIN';
+  avatar_url: string;
+  is_active: boolean;
+  bio: string;
+  create_at: string;
+  followers_count: number;
+  following_count: number;
+  recipes_count: number;
+  is_followed: boolean;
+}
+
+export interface FollowUser {
+  id: string;
+  username: string;
+  avatar_url: string;
+  bio?: string;
+}
+
+export interface SearchUsersParams {
+  q: string;
+  limit?: number;
+  offset?: number;
+}
+
+// Search User Result from API /users/search
+export interface SearchUserResult {
+  id: string;
+  email: string;
+  username: string;
+  avatar_url: string;
+  bio: string;
+}
