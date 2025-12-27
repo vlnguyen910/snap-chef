@@ -90,8 +90,15 @@ export class RecipesController {
   }
 
   @Get(':id/comments')
-  getAllCommentsOfRecipe(@Param('id', ParseIntPipe) recipe_id: number) {
-    return this.commentsService.findAllCommentsOfRecipe(recipe_id);
+  getAllCommentsOfRecipe(
+    @Param('id', ParseIntPipe) recipe_id: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(5), ParseIntPipe) limit: number,
+  ) {
+    return this.commentsService.findAllCommentsOfRecipe(
+      recipe_id,
+      { page, limit }
+    );
   }
   
   @Delete(':id/comments/:comment_id')
