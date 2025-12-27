@@ -53,6 +53,12 @@ export class UsersController {
   ) {
     return this.usersService.getPublicProfile(target_id, user?.id);
   }
+  
+  @Get('me/likes')
+  @UseGuards(JwtAuthGuard)
+  getLikedRecipes(@GetUser() user: User) {
+    return this.usersService.getLikedRecipes(user.id);
+  }
 
   @Post(':id/follow')
   @UseGuards(JwtAuthGuard)

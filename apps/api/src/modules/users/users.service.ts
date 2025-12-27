@@ -82,6 +82,13 @@ export class UsersService {
     }
   }
   
+  async getLikedRecipes(user_id: string) {
+    return await this.prisma.like.findMany({
+      where: { user_id },
+      select: { recipe: true },
+    })
+  }
+
   async getCurrentProfile(user_id: string) {
     const user = await this.prisma.user.findUnique({
       where: {id: user_id}, 
