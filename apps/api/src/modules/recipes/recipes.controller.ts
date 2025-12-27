@@ -22,6 +22,7 @@ import { CreateCommentsDto } from '../comments/dto/create-comments.dto';
 import { UpdateCommentDto } from '../comments/dto/update-comment.dto';
 import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt-auth.guard';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard'; 
+import { CommentPaginationDto, RecipePaginationDto } from 'src/common/dto/pagination.dto';
 
 @Controller('recipes')
 export class RecipesController {
@@ -38,11 +39,9 @@ export class RecipesController {
 
   @Get()
   findAll(
-    @Query('page',new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(15), ParseIntPipe) limit: number,
-    @Query('search') search?: string,
+    @Query() query: RecipePaginationDto,
   ) {
-    return this.recipesService.findAll({ page, limit, search });
+    return this.recipesService.findAll(query);
   }
 
   @Get(':id')
@@ -92,12 +91,11 @@ export class RecipesController {
   @Get(':id/comments')
   getAllCommentsOfRecipe(
     @Param('id', ParseIntPipe) recipe_id: number,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(5), ParseIntPipe) limit: number,
+    @Query() query: CommentPaginationDto,
   ) {
     return this.commentsService.findAllCommentsOfRecipe(
       recipe_id,
-      { page, limit }
+      query
     );
   }
   

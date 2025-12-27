@@ -8,6 +8,7 @@ import { PrismaService } from 'src/db/prisma.service';
 import { CreateCommentsDto } from './dto/create-comments.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import type { Comment } from 'src/generated/prisma/client';
+import { CommentPaginationDto } from "src/common/dto/pagination.dto";
 
 @Injectable()
 export class CommentsService {
@@ -43,12 +44,9 @@ export class CommentsService {
 
   async findAllCommentsOfRecipe(
     recipe_id: number, 
-    params: {
-      page: number,
-      limit: number,
-    }
-  ): Promise<Comment []> {
-    const { page, limit } = params;
+    query: CommentPaginationDto
+  ) {
+    const { page, limit } = query;
     const skip = (page - 1) * limit;
 
     const comments = await this.prisma.comment.findMany({
