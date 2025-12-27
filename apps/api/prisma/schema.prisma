@@ -31,6 +31,9 @@ model User {
   comments Comment[]
   followers Follow[] @relation("followerRelation") 
   following Follow[] @relation("followingRelation")
+
+  //Indexes
+  @@index([username])
 }
 
 enum RecipeStatus {
@@ -58,13 +61,20 @@ model Recipe {
   steps Step[]
   likes Like[]
   comments Comment[]
+
+  //Indexes
+  @@index([title])
 }
 
 model Ingredient {
   id   Int    @id @default(autoincrement())
   name String @unique
 
+  //Relations
   recipeIngredients RecipeIngredient[]
+
+  //Indexes
+  @@index([name])
 }
 
 model RecipeIngredient {

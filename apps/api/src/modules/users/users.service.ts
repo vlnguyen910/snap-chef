@@ -71,18 +71,18 @@ export class UsersService {
     });
   }
 
-  async followUser(follower_id: string, following_id: string) {
-    const followerUser = this.findOne(follower_id);
+  async followUser(current_id: string, following_id: string) {
+    const currentUser = this.findOne(current_id);
     const followingUser = this.findOne(following_id);
 
-    if (!followerUser || !followingUser) throw new NotFoundException('User is not exist');
+    if (!currentUser || !followingUser) throw new NotFoundException('User is not exist');
     
 
     let isFollowed: boolean | null = null;
     const followedUser = await this.prisma.follow.findUnique({
       where: { 
         follower_id_following_id: {
-          follower_id,
+          follower_id: current_id,
           following_id,
         }
       } 
@@ -91,7 +91,7 @@ export class UsersService {
     if (!followedUser) {
       await this.prisma.follow.create({
         data: { 
-          follower_id,
+          follower_id: current_id,
           following_id,
         }
       })
@@ -102,7 +102,7 @@ export class UsersService {
       await this.prisma.follow.delete({
         where : {
           follower_id_following_id: {
-            follower_id,
+            follower_id: current_id,
             following_id,
           }
         }
@@ -145,8 +145,9 @@ export class UsersService {
     const {password, _count, ...userData} = user;
     return {
       ...userData,
-      followers_count: _count.followers,
-      following_count: _count.following,
+      //Is it was is it
+      followers_count: _count.following, 
+      following_count: _count.followers,
       recipes_count: _count.recipe,
     }
   }
