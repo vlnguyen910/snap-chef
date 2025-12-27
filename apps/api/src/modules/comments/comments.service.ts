@@ -41,9 +41,21 @@ export class CommentsService {
     })
   }
 
-  async findAllCommentsOfRecipe(recipe_id: number): Promise<Comment []> {
+  async findAllCommentsOfRecipe(
+    recipe_id: number, 
+    params: {
+      page: number,
+      limit: number,
+    }
+  ): Promise<Comment []> {
+    const { page, limit } = params;
+    const skip = (page - 1) * limit;
+
     const comments = await this.prisma.comment.findMany({
       where: { recipe_id },
+      skip,
+      take: limit,
+      orderBy: { created_at: 'desc' },
       include: {
         user: {
           select: {
@@ -54,9 +66,6 @@ export class CommentsService {
           }
         }
       },
-      orderBy: {
-        created_at: "desc",
-      }
     })
 
     return comments;
