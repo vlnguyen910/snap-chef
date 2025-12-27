@@ -64,6 +64,18 @@ export const recipeService = {
 
 // Helper function to normalize recipe data
 function normalizeRecipe(data: any): Recipe {
+  // Calculate average rating from comments if available
+  let averageRating = 0;
+  let ratingsCount = 0;
+  
+  if (data.comments && Array.isArray(data.comments) && data.comments.length > 0) {
+    const ratings = data.comments.filter((c: any) => c.rating != null).map((c: any) => c.rating);
+    if (ratings.length > 0) {
+      averageRating = ratings.reduce((sum: number, r: number) => sum + r, 0) / ratings.length;
+      ratingsCount = ratings.length;
+    }
+  }
+  
   return {
     id: data.id?.toString() || '',
     title: data.title || '',
@@ -89,7 +101,9 @@ function normalizeRecipe(data: any): Recipe {
     status: (data.status || 'pending').toLowerCase(), // ✅ Chuẩn hóa về lowercase
     ingredients: data.ingredients || [],
     instructions: data.steps || data.instructions || [],
-    rating: data.rating || 0,
+    rating: data.rating || averageRating,
+    averageRating: data.average_rating || averageRating,
+    ratingsCount: data.ratings_count || ratingsCount,
     reviewCount: data.reviewCount || data.comments_count || 0,
     favoriteCount: data.favoriteCount || data.likes_count || 0,
     forkCount: data.forkCount || 0,

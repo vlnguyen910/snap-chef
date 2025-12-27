@@ -1,7 +1,7 @@
 import { Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, Transition } from '@headlessui/react';
-import { User as UserIcon, LogOut, ChevronDown } from 'lucide-react';
+import { User as UserIcon, LogOut, ChevronDown, Users } from 'lucide-react';
 import { useStore } from '@/lib/store';
 
 export default function UserMenu() {
@@ -20,9 +20,17 @@ export default function UserMenu() {
     <Menu as="div" className="relative inline-block text-left">
       <div>
         <Menu.Button className="inline-flex items-center gap-3 rounded-full px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none transition-all group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-600 text-white font-bold text-sm shadow-sm">
-            {user.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
-          </div>
+          {user.avatar ? (
+            <img 
+              src={user.avatar} 
+              alt={user.username || user.email}
+              className="h-9 w-9 rounded-full object-cover shadow-sm"
+            />
+          ) : (
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-600 text-white font-bold text-sm shadow-sm">
+              {user.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
+            </div>
+          )}
           <span className="max-w-[100px] truncate font-medium">
             {user.username || user.email}
           </span>
@@ -51,6 +59,19 @@ export default function UserMenu() {
                 >
                   <UserIcon className="h-5 w-5" aria-hidden="true" />
                   Profile
+                </Link>
+              )}
+            </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <Link
+                  to="/follow"
+                  className={`${
+                    active ? 'bg-orange-50 text-orange-600' : 'text-gray-900'
+                  } group flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors`}
+                >
+                  <Users className="h-5 w-5" aria-hidden="true" />
+                  Following & Followers
                 </Link>
               )}
             </Menu.Item>
