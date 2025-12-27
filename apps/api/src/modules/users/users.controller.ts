@@ -10,13 +10,14 @@ import {
   ParseIntPipe,
   Put,
   UnauthorizedException,
+  Query,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import type { User } from 'src/generated/prisma/client';
 import { GetUser } from 'src/common/decorators/user.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
-import { Public } from 'src/common/decorators/public.decorator';
 import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt-auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -30,8 +31,19 @@ export class UsersController {
   }
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  @UseGuards(OptionalJwtAuthGuard)
+  findAll(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(5), ParseIntPipe) limit: number,
+    @Query('search') search?: string,
+    @GetUser() user?: User | undefined,
+  ) {
+    return this.usersService.findAll({
+      page,
+      limit,
+      search,
+      current_user_id: user?.id,
+    });
   }
 
   @Get('/me')
