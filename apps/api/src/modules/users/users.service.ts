@@ -7,6 +7,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'src/db/prisma.service';
 import { User } from 'src/generated/prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserWhereInput } from 'src/generated/prisma/models';
 
 @Injectable()
 export class UsersService {
@@ -20,8 +21,41 @@ export class UsersService {
     return user;
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(params: { page: number, limit: number, search?: string, current_user_id?: string }) {
+    const { page, limit, search, current_user_id } = params;
+    const skip = (page - 1) * limit;
+
+    const whereCondition: UserWhereInput = {
+      is_active: true,
+    }
+
+    if (current_user_id) {
+      whereCondition.id = { not: current_user_id }; 
+    }
+
+    if (search) {
+      whereCondition.OR = [
+        {
+          username: { contains: search, mode: 'insensitive' },
+        },
+      ];
+    }
+    
+    const users = await this.prisma.user.findMany({
+      where: whereCondition,
+      skip,
+      take: limit,
+      orderBy: { 
+        followers: { _count: 'desc' } 
+      },
+      select: {
+        id: true,
+        username: true,
+        avatar_url: true,
+      } 
+    })
+
+    return users;
   }
 
   async findOne(id: string): Promise<User | null> {
