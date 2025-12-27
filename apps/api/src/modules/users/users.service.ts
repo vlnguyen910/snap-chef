@@ -8,6 +8,7 @@ import { PrismaService } from 'src/db/prisma.service';
 import { User } from 'src/generated/prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserWhereInput } from 'src/generated/prisma/models';
+import { UserPaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class UsersService {
@@ -21,8 +22,8 @@ export class UsersService {
     return user;
   }
 
-  async findAll(params: { page: number, limit: number, search?: string, current_user_id?: string }) {
-    const { page, limit, search, current_user_id } = params;
+  async findAll(query: UserPaginationDto, current_user_id?: string | undefined) {
+    const { page, limit, search} = query;
     const skip = (page - 1) * limit;
 
     const whereCondition: UserWhereInput = {

@@ -20,6 +20,8 @@ import { GetUser } from 'src/common/decorators/user.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt-auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserPaginationDto } from 'src/common/dto/pagination.dto';
+
 
 @Controller('users')
 export class UsersController {
@@ -33,17 +35,13 @@ export class UsersController {
   @Get()
   @UseGuards(OptionalJwtAuthGuard)
   findAll(
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(5), ParseIntPipe) limit: number,
-    @Query('search') search?: string,
+    @Query() query: UserPaginationDto,
     @GetUser() user?: User | undefined,
   ) {
-    return this.usersService.findAll({
-      page,
-      limit,
-      search,
-      current_user_id: user?.id,
-    });
+    return this.usersService.findAll(
+      query,
+      user?.id
+    );
   }
 
   @Get('/me')

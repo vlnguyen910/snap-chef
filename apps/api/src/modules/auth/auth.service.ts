@@ -47,7 +47,7 @@ export class AuthService {
   }
 
   async signUp(body: SignUpDto): Promise<SignUpResponseDto> {
-    const { email, username, password } = body;
+    const { email, username, password, avatar_url } = body;
     const existingUser = await this.userService.findByEmail(email);
     if (existingUser) {
       throw new ForbiddenException('Email is already in use');
@@ -58,6 +58,7 @@ export class AuthService {
       email,
       username,
       password: hashedPassword,
+      avatar_url,
       role: UserRoles.USER,
     });
 
