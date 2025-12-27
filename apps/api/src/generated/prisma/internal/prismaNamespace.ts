@@ -1105,7 +1105,8 @@ export type StepScalarFieldEnum = (typeof StepScalarFieldEnum)[keyof typeof Step
 
 export const LikeScalarFieldEnum = {
   user_id: 'user_id',
-  recipe_id: 'recipe_id'
+  recipe_id: 'recipe_id',
+  created_at: 'created_at'
 } as const
 
 export type LikeScalarFieldEnum = (typeof LikeScalarFieldEnum)[keyof typeof LikeScalarFieldEnum]
