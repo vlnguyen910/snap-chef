@@ -12,6 +12,8 @@ import { IngredientsService } from '../ingredients/ingredients.service';
 import { RecipeStatus } from 'src/generated/prisma/enums';
 import { Recipe, RecipeIngredient } from 'src/generated/prisma/client';
 import { UsersService } from '../users/users.service'
+import { contains } from 'class-validator';
+import { RecipeWhereInput } from 'src/generated/prisma/models/Recipe';
 
 @Injectable()
 export class RecipesService {
@@ -107,8 +109,33 @@ export class RecipesService {
     });
   }
 
-  async findAll(): Promise<Recipe[]> {
+  async findAll(params: {page: number; limit: number; search?: string}): Promise<Recipe[]> {
+    const { page, limit, search } = params;
+    const skip = (page - 1) * limit;
+    
+ const whereCondition: RecipeWhereInput = {
+    // status: 'PUBLISHED',
+  };
+
+  if (search) {
+    whereCondition.OR = [
+      {
+        title: { contains: search, mode: 'insensitive' },
+      },
+      {
+        ingredients: {
+          some: {
+            ingredient: { name: { contains: search, mode: 'insensitive' } },
+          },
+        },
+      },
+    ];
+  }
     const recipes = await this.prisma.recipe.findMany({
+      where: whereCondition,
+      skip,
+      take: limit,
+      orderBy: { created_at: 'desc' },
       include: {
         user: {
           select: {
@@ -132,9 +159,6 @@ export class RecipesService {
           }
         }
       },
-      orderBy: {
-        created_at: 'desc',
-      }
     });
 
     return recipes.map((recipe) => {
