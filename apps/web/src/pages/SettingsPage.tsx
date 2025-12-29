@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Sun, Moon, Monitor, Eye, Globe, Check } from 'lucide-react';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useTheme } from '@/context/themeContext';
@@ -8,44 +9,48 @@ type Language = 'en' | 'vi';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
+  const { t, i18n } = useTranslation();
   const [compactView, setCompactView] = useState(false);
   const [language, setLanguage] = useState<Language>('vi');
 
-  useDocumentTitle('Settings');
+  useDocumentTitle(t('settings.title'));
 
   // Load settings from localStorage on mount
   useEffect(() => {
     const savedCompactView = localStorage.getItem('compactView') === 'true';
-    const savedLanguage = localStorage.getItem('language') as Language;
+    const savedLanguage = (localStorage.getItem('language') || i18n.language) as Language;
 
-    if (savedLanguage) setLanguage(savedLanguage);
+    setLanguage(savedLanguage);
     setCompactView(savedCompactView);
-  }, []);
+  }, [i18n.language]);
 
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
     setTheme(newTheme);
-    toast.success(`Chế độ ${newTheme === 'light' ? 'Sáng' : newTheme === 'dark' ? 'Tối' : 'Hệ thống'} đã được áp dụng`);
+    const themeName = newTheme === 'light' ? t('settings.light_theme') : newTheme === 'dark' ? t('settings.dark_theme') : t('settings.system_theme');
+    toast.success(`${themeName} ${t('settings.theme_applied')}`);
   };
 
   const handleCompactViewToggle = () => {
     const newValue = !compactView;
     setCompactView(newValue);
     localStorage.setItem('compactView', String(newValue));
-    toast.success(newValue ? 'Chế độ thu gọn đã bật' : 'Chế độ thu gọn đã tắt');
+    toast.success(newValue ? t('settings.compact_on') : t('settings.compact_off'));
   };
 
   const handleLanguageChange = (newLanguage: Language) => {
     setLanguage(newLanguage);
+    i18n.changeLanguage(newLanguage);
     localStorage.setItem('language', newLanguage);
-    toast.success(`Ngôn ngữ đã đổi sang ${newLanguage === 'en' ? 'English' : 'Tiếng Việt'}`);
+    const langName = newLanguage === 'en' ? 'English' : 'Tiếng Việt';
+    toast.success(`${t('settings.language_changed')} ${langName}`);
   };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Cài đặt</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">Tùy chỉnh trải nghiệm của bạn</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('settings.title')}</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">{t('settings.subtitle')}</p>
       </div>
 
       {/* Settings Sections */}
@@ -57,8 +62,8 @@ export default function SettingsPage() {
               <Sun className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Giao diện</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Chọn chủ đề hiển thị</p>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('settings.appearance')}</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('settings.appearance_desc')}</p>
             </div>
           </div>
 
@@ -79,8 +84,8 @@ export default function SettingsPage() {
               )}
               <div className="flex flex-col items-center gap-2">
                 <Sun className="h-8 w-8 text-yellow-500" />
-                <span className="font-semibold text-gray-900 dark:text-white">Sáng</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">Chế độ sáng</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{t('settings.light_mode')}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{t('settings.light_mode_desc')}</span>
               </div>
             </button>
 
@@ -100,8 +105,8 @@ export default function SettingsPage() {
               )}
               <div className="flex flex-col items-center gap-2">
                 <Moon className="h-8 w-8 text-indigo-500 dark:text-indigo-400" />
-                <span className="font-semibold text-gray-900 dark:text-white">Tối</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">Chế độ tối</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{t('settings.dark_mode')}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{t('settings.dark_mode_desc')}</span>
               </div>
             </button>
 
@@ -121,8 +126,8 @@ export default function SettingsPage() {
               )}
               <div className="flex flex-col items-center gap-2">
                 <Monitor className="h-8 w-8 text-gray-500 dark:text-gray-400" />
-                <span className="font-semibold text-gray-900 dark:text-white">Hệ thống</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">Tự động</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{t('settings.system_mode')}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{t('settings.system_mode_desc')}</span>
               </div>
             </button>
           </div>
@@ -135,16 +140,16 @@ export default function SettingsPage() {
               <Eye className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Tùy chọn hiển thị</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Điều chỉnh cách hiển thị nội dung</p>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('settings.view_options')}</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('settings.view_options_desc')}</p>
             </div>
           </div>
 
           <div className="flex items-center justify-between py-4 border-t border-gray-100 dark:border-gray-700">
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">Chế độ thu gọn</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">{t('settings.compact_view')}</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Hiển thị nội dung ở dạng thu gọn, tiết kiệm không gian
+                {t('settings.compact_view_desc')}
               </p>
             </div>
             <button
@@ -169,8 +174,8 @@ export default function SettingsPage() {
               <Globe className="h-5 w-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Ngôn ngữ</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Chọn ngôn ngữ hiển thị</p>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('settings.language')}</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('settings.language_desc')}</p>
             </div>
           </div>
 
@@ -192,7 +197,7 @@ export default function SettingsPage() {
               <div className="flex items-center gap-3">
                 <span className="text-3xl">🇻🇳</span>
                 <div className="text-left">
-                  <div className="font-semibold text-gray-900 dark:text-white">Tiếng Việt</div>
+                  <div className="font-semibold text-gray-900 dark:text-white">{t('settings.vietnamese')}</div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">Vietnamese</div>
                 </div>
               </div>
@@ -215,8 +220,8 @@ export default function SettingsPage() {
               <div className="flex items-center gap-3">
                 <span className="text-3xl">🇺🇸</span>
                 <div className="text-left">
-                  <div className="font-semibold text-gray-900 dark:text-white">English</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">English (US)</div>
+                  <div className="font-semibold text-gray-900 dark:text-white">{t('settings.english')}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">{t('settings.english_us')}</div>
                 </div>
               </div>
             </button>
@@ -240,9 +245,9 @@ export default function SettingsPage() {
               </svg>
             </div>
             <div className="text-sm text-blue-700 dark:text-blue-300">
-              <p className="font-semibold mb-1">Lưu ý</p>
+              <p className="font-semibold mb-1">{t('settings.note_title')}</p>
               <p>
-                Các cài đặt này được lưu trên trình duyệt của bạn. Chúng chưa được đồng bộ với máy chủ và sẽ chỉ áp dụng trên thiết bị này.
+                {t('settings.note_desc')}
               </p>
             </div>
           </div>
