@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { 
   LayoutDashboard, 
@@ -19,24 +20,25 @@ interface SidebarProps {
 export default function Sidebar({ className = '' }: SidebarProps) {
   const location = useLocation();
   const { user } = useStore();
+  const { t } = useTranslation();
 
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path);
 
   // User menu items
   const userMenuItems = [
-    { path: '/profile', label: 'My Profile', icon: User },
-    { path: '/my-recipes', label: 'My Recipes', icon: ChefHat },
-    { path: '/favorites', label: 'Favorites', icon: Heart },
-    { path: '/settings', label: 'Settings', icon: Settings },
+    { path: '/profile', label: t('sidebar.my_profile'), icon: User },
+    { path: '/my-recipes', label: t('sidebar.my_recipes'), icon: ChefHat },
+    { path: '/favorites', label: t('sidebar.favorites'), icon: Heart },
+    { path: '/settings', label: t('sidebar.settings'), icon: Settings },
   ];
 
   // Moderator menu items
   const moderatorMenuItems = [
-    { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/admin/queue', label: 'Approval Queue', icon: FileCheck },
-    { path: '/admin/content', label: 'Content Manager', icon: ChefHat },
-    { path: '/admin/users', label: 'Users', icon: Users },
-    { path: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
+    { path: '/admin', label: t('sidebar.dashboard'), icon: LayoutDashboard },
+    { path: '/admin/queue', label: t('sidebar.approval_queue'), icon: FileCheck },
+    { path: '/admin/content', label: t('sidebar.content_manager'), icon: ChefHat },
+    { path: '/admin/users', label: t('sidebar.users'), icon: Users },
+    { path: '/admin/analytics', label: t('sidebar.analytics'), icon: BarChart3 },
   ];
 
   const menuItems = user?.role === 'moderator' ? moderatorMenuItems : userMenuItems;
@@ -47,7 +49,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
         <div className="flex-1 overflow-y-auto p-6">
           <div className="mb-6 flex items-center gap-2 text-lg font-bold text-orange-600 dark:text-orange-400">
             <ChefHat size={24} />
-            <span>{user?.role === 'moderator' ? 'Admin Panel' : 'My Kitchen'}</span>
+            <span>{user?.role === 'moderator' ? t('sidebar.admin_panel') : t('sidebar.my_kitchen')}</span>
           </div>
           <nav className="space-y-1">
             {menuItems.map((item) => {
@@ -74,7 +76,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
         {user && (
           <div className="mt-auto border-t border-gray-200 dark:border-gray-700 p-6">
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              <p className="font-semibold uppercase">Role</p>
+              <p className="font-semibold uppercase">{t('sidebar.role')}</p>
               <p className="mt-1 capitalize text-gray-600 dark:text-gray-300">{user.role}</p>
             </div>
           </div>
