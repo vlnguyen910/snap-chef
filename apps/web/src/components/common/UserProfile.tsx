@@ -254,7 +254,7 @@ export default function UserProfile() {
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-orange-500 border-t-transparent mx-auto"></div>
-          <p className="mt-4 text-gray-600">Đang tải...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Đang tải...</p>
         </div>
       </div>
     );
@@ -276,7 +276,7 @@ export default function UserProfile() {
   if (!userData) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-gray-600">Không tìm thấy thông tin người dùng</div>
+        <div className="text-gray-600 dark:text-gray-400">Không tìm thấy thông tin người dùng</div>
       </div>
     );
   }
@@ -293,10 +293,10 @@ export default function UserProfile() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
       <div className="w-full max-w-3xl">
         {/* Profile Card */}
-        <div className="rounded-2xl bg-white shadow-2xl overflow-hidden transform transition-all hover:shadow-3xl">
+        <div className="rounded-2xl bg-white dark:bg-gray-800 shadow-2xl overflow-hidden transform transition-all hover:shadow-3xl">
           {/* Header Background with Pattern */}
           <div className="h-40 bg-gradient-to-br from-orange-500 via-orange-600 to-pink-500 relative overflow-hidden">
             <div className="absolute inset-0 bg-black/5 backdrop-blur-sm"></div>
@@ -315,10 +315,10 @@ export default function UserProfile() {
                   <img
                     src={userData.avatar_url}
                     alt={userData.username}
-                    className="h-40 w-40 rounded-full border-8 border-white object-cover shadow-2xl ring-4 ring-orange-100"
+                    className="h-40 w-40 rounded-full border-8 border-white dark:border-gray-800 object-cover shadow-2xl ring-4 ring-orange-100 dark:ring-orange-900"
                   />
                 ) : (
-                  <div className="flex h-40 w-40 items-center justify-center rounded-full border-8 border-white bg-gradient-to-br from-orange-500 to-pink-500 text-5xl font-bold text-white shadow-2xl ring-4 ring-orange-100">
+                  <div className="flex h-40 w-40 items-center justify-center rounded-full border-8 border-white dark:border-gray-800 bg-gradient-to-br from-orange-500 to-pink-500 text-5xl font-bold text-white shadow-2xl ring-4 ring-orange-100 dark:ring-orange-900">
                     {getInitials()}
                   </div>
                 )}
@@ -354,29 +354,29 @@ export default function UserProfile() {
             {/* Profile Details */}
             <div className="mt-24 text-center">
               {/* Username */}
-              <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
+              <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                 {userData.username}
               </h1>
 
               {/* Contact Information */}
               <div className="mt-8 space-y-5">
                 {/* Email */}
-                <div className="flex items-center justify-center gap-3 text-gray-600">
-                  <div className="p-2 bg-orange-50 rounded-lg">
-                    <Mail className="h-5 w-5 text-orange-600" />
+                <div className="flex items-center justify-center gap-3 text-gray-600 dark:text-gray-400">
+                  <div className="p-2 bg-orange-50 dark:bg-orange-900/30 rounded-lg">
+                    <Mail className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                   </div>
                   <span className="text-base font-medium">{maskEmail(userData.email)}</span>
                 </div>
 
                 {/* Bio */}
-                <div className="flex items-center justify-center gap-3 text-gray-600">
-                  <div className="p-2 bg-orange-50 rounded-lg">
-                    <User className="h-5 w-5 text-orange-600" />
+                <div className="flex items-center justify-center gap-3 text-gray-600 dark:text-gray-400">
+                  <div className="p-2 bg-orange-50 dark:bg-orange-900/30 rounded-lg">
+                    <User className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                   </div>
                   {userData.bio ? (
                     <span className="text-base max-w-md">{userData.bio}</span>
                   ) : (
-                    <span className="text-base italic text-gray-400">
+                    <span className="text-base italic text-gray-400 dark:text-gray-500">
                       Thêm bio của bạn
                     </span>
                   )}
@@ -435,13 +435,13 @@ export default function UserProfile() {
         {/* Edit Profile Modal */}
         {isEditModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
               {/* Modal Header */}
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 ">Chỉnh sửa hồ sơ</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white ">Chỉnh sửa hồ sơ</h2>
                 <button
                   onClick={() => setIsEditModalOpen(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
                   <X className="h-6 w-6" />
                 </button>
@@ -451,28 +451,28 @@ export default function UserProfile() {
               <div className="space-y-4">
                 {/* Username Field */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Tên người dùng
                   </label>
                   <input
                     type="text"
                     value={editForm.username}
                     onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="Nhập tên người dùng"
                   />
                 </div>
 
                 {/* Bio Field */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Giới thiệu bản thân
                   </label>
                   <textarea
                     value={editForm.bio}
                     onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
                     rows={4}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="Viết vài dòng về bản thân bạn..."
                   />
                 </div>
@@ -509,42 +509,42 @@ export default function UserProfile() {
 
         {/* Additional Stats or Info Cards */}
         <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
-          <div className="rounded-xl bg-gradient-to-br from-orange-50 to-orange-100 p-6 shadow-lg border border-orange-200 text-center transform transition-all hover:scale-105">
-            <div className="text-4xl font-extrabold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
+          <div className="rounded-xl bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/30 p-6 shadow-lg border border-orange-200 dark:border-orange-800 text-center transform transition-all hover:scale-105">
+            <div className="text-4xl font-extrabold bg-gradient-to-r from-orange-600 to-pink-600 dark:from-orange-400 dark:to-pink-400 bg-clip-text text-transparent">
               {userData.recipes_count || 0}
             </div>
-            <div className="text-sm font-semibold text-gray-700 mt-2">Công thức</div>
+            <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-2">Công thức</div>
           </div>
           <button 
             onClick={() => navigate(`/users/${userIdFromUrl || currentUser?.id}/followers`)}
-            className="rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 p-6 shadow-lg border border-blue-200 text-center hover:scale-105 transform transition-all cursor-pointer"
+            className="rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 p-6 shadow-lg border border-blue-200 dark:border-blue-800 text-center hover:scale-105 transform transition-all cursor-pointer"
           >
-            <div className="text-4xl font-extrabold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+            <div className="text-4xl font-extrabold bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent">
               {userData.followers_count || 0}
             </div>
-            <div className="text-sm font-semibold text-gray-700 mt-2">Người theo dõi</div>
+            <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-2">Người theo dõi</div>
           </button>
           <button 
             onClick={() => navigate(`/users/${userIdFromUrl || currentUser?.id}/following`)}
-            className="rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 p-6 shadow-lg border border-purple-200 text-center hover:scale-105 transform transition-all cursor-pointer"
+            className="rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 p-6 shadow-lg border border-purple-200 dark:border-purple-800 text-center hover:scale-105 transform transition-all cursor-pointer"
           >
-            <div className="text-4xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <div className="text-4xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
               {userData.following_count || 0}
             </div>
-            <div className="text-sm font-semibold text-gray-700 mt-2">Đang theo dõi</div>
+            <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-2">Đang theo dõi</div>
           </button>
         </div>
 
         {/* Recipe Showcase Section */}
         <div className="mt-12">
           {/* Tabs */}
-          <div className="flex gap-4 border-b border-gray-200 mb-6">
+          <div className="flex gap-4 border-b border-gray-200 dark:border-gray-700 mb-6">
             <button
               onClick={() => setActiveTab('created')}
               className={`pb-3 px-6 text-base font-semibold transition-all relative ${
                 activeTab === 'created'
-                  ? 'text-orange-600 border-b-2 border-orange-600'
-                  : 'text-gray-500 hover:text-orange-500'
+                  ? 'text-orange-600 dark:text-orange-400 border-b-2 border-orange-600 dark:border-orange-400'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400'
               }`}
             >
               Công thức đã tạo
@@ -554,8 +554,8 @@ export default function UserProfile() {
                 onClick={() => setActiveTab('liked')}
                 className={`pb-3 px-6 text-base font-semibold transition-all relative ${
                   activeTab === 'liked'
-                    ? 'text-orange-600 border-b-2 border-orange-600'
-                    : 'text-gray-500 hover:text-orange-500'
+                    ? 'text-orange-600 dark:text-orange-400 border-b-2 border-orange-600 dark:border-orange-400'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400'
                 }`}
               >
                 Công thức đã thích
@@ -575,7 +575,7 @@ export default function UserProfile() {
                   <div
                     key={recipe.id}
                     onClick={() => navigate(`/recipes/${recipe.id}`)}
-                    className="group cursor-pointer rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 bg-white"
+                    className="group cursor-pointer rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 bg-white dark:bg-gray-800"
                   >
                     {/* Recipe Image */}
                     <div className="relative h-56 overflow-hidden">
@@ -595,8 +595,8 @@ export default function UserProfile() {
                     </div>
 
                     {/* Heart Count */}
-                    <div className="p-4 bg-white">
-                      <div className="flex items-center justify-center gap-2 text-gray-600">
+                    <div className="p-4 bg-white dark:bg-gray-800">
+                      <div className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400">
                         <Heart className="h-5 w-5 text-red-500 fill-red-500" />
                         <span className="text-sm font-semibold">
                           {recipe.likes_count || 0} lượt thích
@@ -607,8 +607,8 @@ export default function UserProfile() {
                 ))
               ) : (
                 <div className="col-span-3 text-center py-16">
-                  <Heart className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                  <p className="text-gray-500 text-lg">
+                  <Heart className="h-16 w-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+                  <p className="text-gray-500 dark:text-gray-400 text-lg">
                     {activeTab === 'created'
                       ? 'Chưa có công thức nào'
                       : 'Chưa có công thức yêu thích'}

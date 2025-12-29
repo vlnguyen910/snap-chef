@@ -42,10 +42,10 @@ export default function Sidebar({ className = '' }: SidebarProps) {
   const menuItems = user?.role === 'moderator' ? moderatorMenuItems : userMenuItems;
 
   return (
-    <aside className={`hidden w-64 border-r border-gray-200 bg-white md:block h-full ${className}`}>
+    <aside className={`hidden w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 md:block h-full ${className}`}>
       <div className="flex h-full flex-col">
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="mb-6 flex items-center gap-2 text-lg font-bold text-orange-600">
+          <div className="mb-6 flex items-center gap-2 text-lg font-bold text-orange-600 dark:text-orange-400">
             <ChefHat size={24} />
             <span>{user?.role === 'moderator' ? 'Admin Panel' : 'My Kitchen'}</span>
           </div>
@@ -72,10 +72,10 @@ export default function Sidebar({ className = '' }: SidebarProps) {
 
         {/* Footer */}
         {user && (
-          <div className="mt-auto border-t border-gray-200 p-6">
-            <div className="text-xs text-gray-500">
+          <div className="mt-auto border-t border-gray-200 dark:border-gray-700 p-6">
+            <div className="text-xs text-gray-500 dark:text-gray-400">
               <p className="font-semibold uppercase">Role</p>
-              <p className="mt-1 capitalize text-gray-600">{user.role}</p>
+              <p className="mt-1 capitalize text-gray-600 dark:text-gray-300">{user.role}</p>
             </div>
           </div>
         )}
