@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { User, Mail, Edit, Camera, Loader2, X, UserPlus, UserCheck, ChefHat } from 'lucide-react';
+import { User, Mail, Edit, Camera, Loader2, X, UserPlus, UserCheck, Heart } from 'lucide-react';
 import { api } from '@/lib/axios';
 import { maskEmail } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { uploadToCloudinary } from '@/services/cloudinaryService';
 import { toast } from 'sonner';
 import { useStore } from '@/lib/store';
 import { useMutation } from '@tanstack/react-query';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 interface UserProfileData {
   id: string;
@@ -27,11 +28,8 @@ interface UserProfileData {
 interface Recipe {
   id: string;
   title: string;
-  description?: string;
   thumbnail_url?: string;
-  cooking_time: number;
-  servings: number;
-  status: string;
+  likes_count: number;
 }
 
 export default function UserProfile() {
@@ -45,8 +43,8 @@ export default function UserProfile() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [editForm, setEditForm] = useState({ username: '', bio: '' });
-  const [activeTab, setActiveTab] = useState<'created' | 'liked'>('created');
   const [isFollowing, setIsFollowing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'created' | 'liked'>('created');
   const [userRecipes, setUserRecipes] = useState<Recipe[]>([]);
   const [likedRecipes, setLikedRecipes] = useState<Recipe[]>([]);
   const [loadingRecipes, setLoadingRecipes] = useState(false);
@@ -56,10 +54,13 @@ export default function UserProfile() {
   // Check if viewing own profile
   const isOwnProfile = currentUser?.id === userIdFromUrl;
 
+  // Update document title dynamically
+  useDocumentTitle(userData?.username ? `${userData.username}'s Profile` : 'Profile');
+
   useEffect(() => {
     fetchUserProfile();
     fetchUserRecipes();
-  }, [userIdFromUrl, currentUser?.id]);
+  }, [userIdFromUrl]);
 
   const fetchUserProfile = async () => {
     try {
@@ -396,33 +397,35 @@ export default function UserProfile() {
                   </Button>
                 ) : (
                   /* Follow Button - Only show for other users' profiles */
-                  <Button
-                    size="lg"
-                    onClick={handleFollowToggle}
-                    disabled={followMutation.isPending}
-                    className={`flex items-center gap-2 px-8 ${
-                      isFollowing
-                        ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        : 'bg-orange-600 text-white hover:bg-orange-700'
-                    }`}
-                  >
-                    {followMutation.isPending ? (
-                      <>
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        Đang xử lý...
-                      </>
-                    ) : isFollowing ? (
-                      <>
-                        <UserCheck className="h-5 w-5" />
-                        Đang theo dõi
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus className="h-5 w-5" />
-                        Theo dõi
-                      </>
-                    )}
-                  </Button>
+                  currentUser && userData && currentUser.id !== userData.id && (
+                    <Button
+                      size="lg"
+                      onClick={handleFollowToggle}
+                      disabled={followMutation.isPending}
+                      className={`flex items-center gap-2 px-8 ${
+                        isFollowing
+                          ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                          : 'bg-orange-600 text-white hover:bg-orange-700'
+                      }`}
+                    >
+                      {followMutation.isPending ? (
+                        <>
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          Đang xử lý...
+                        </>
+                      ) : isFollowing ? (
+                        <>
+                          <UserCheck className="h-5 w-5" />
+                          Đang theo dõi
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="h-5 w-5" />
+                          Theo dõi
+                        </>
+                      )}
+                    </Button>
+                  )
                 )}
               </div>
             </div>
@@ -532,128 +535,88 @@ export default function UserProfile() {
           </button>
         </div>
 
-        {/* Recipe Tabs */}
-        <div className="mt-8">
-          {/* Tab Headers */}
-          <div className="flex gap-4 border-b border-gray-200">
+        {/* Recipe Showcase Section */}
+        <div className="mt-12">
+          {/* Tabs */}
+          <div className="flex gap-4 border-b border-gray-200 mb-6">
             <button
               onClick={() => setActiveTab('created')}
-              className={`pb-3 px-4 text-sm font-medium transition-colors relative ${
+              className={`pb-3 px-6 text-base font-semibold transition-all relative ${
                 activeTab === 'created'
                   ? 'text-orange-600 border-b-2 border-orange-600'
-                  : 'text-gray-600 hover:text-orange-600'
+                  : 'text-gray-500 hover:text-orange-500'
               }`}
             >
               Công thức đã tạo
             </button>
-            <button
-              onClick={() => setActiveTab('liked')}
-              className={`pb-3 px-4 text-sm font-medium transition-colors relative ${
-                activeTab === 'liked'
-                  ? 'text-orange-600 border-b-2 border-orange-600'
-                  : 'text-gray-600 hover:text-orange-600'
-              }`}
-            >
-              Công thức đã thích
-            </button>
-          </div>
-
-          {/* Tab Content */}
-          <div className="mt-6">
-            {loadingRecipes ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="h-8 w-8 text-orange-500 animate-spin" />
-              </div>
-            ) : activeTab === 'created' ? (
-              userRecipes.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {userRecipes.map((recipe) => (
-                    <div
-                      key={recipe.id}
-                      onClick={() => navigate(`/recipes/${recipe.id}`)}
-                      className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all cursor-pointer overflow-hidden group"
-                    >
-                      <div className="relative h-48">
-                        <img
-                          src={recipe.thumbnail_url || 'https://via.placeholder.com/400x300'}
-                          alt={recipe.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                        <h3 className="absolute bottom-3 left-3 right-3 text-white font-bold text-lg line-clamp-2">
-                          {recipe.title}
-                        </h3>
-                      </div>
-                      <div className="p-4">
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <span className="flex items-center gap-1">
-                            <span className="text-orange-500">⏱️</span> {recipe.cooking_time}m
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <span className="text-blue-500">🍽️</span> {recipe.servings}
-                          </span>
-                        </div>
-                        {recipe.description && (
-                          <p className="mt-2 text-sm text-gray-500 line-clamp-2">
-                            {recipe.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12 text-gray-500">
-                  <ChefHat className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                  <p>Chưa có công thức nào</p>
-                </div>
-              )
-            ) : (
-              likedRecipes.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {likedRecipes.map((recipe) => (
-                    <div
-                      key={recipe.id}
-                      onClick={() => navigate(`/recipes/${recipe.id}`)}
-                      className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all cursor-pointer overflow-hidden group"
-                    >
-                      <div className="relative h-48">
-                        <img
-                          src={recipe.thumbnail_url || 'https://via.placeholder.com/400x300'}
-                          alt={recipe.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                        <h3 className="absolute bottom-3 left-3 right-3 text-white font-bold text-lg line-clamp-2">
-                          {recipe.title}
-                        </h3>
-                      </div>
-                      <div className="p-4">
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <span className="flex items-center gap-1">
-                            <span className="text-orange-500">⏱️</span> {recipe.cooking_time}m
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <span className="text-blue-500">🍽️</span> {recipe.servings}
-                          </span>
-                        </div>
-                        {recipe.description && (
-                          <p className="mt-2 text-sm text-gray-500 line-clamp-2">
-                            {recipe.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12 text-gray-500">
-                  <span className="text-6xl mb-4 block">❤️</span>
-                  <p>Chưa có công thức yêu thích</p>
-                </div>
-              )
+            {!userIdFromUrl && (
+              <button
+                onClick={() => setActiveTab('liked')}
+                className={`pb-3 px-6 text-base font-semibold transition-all relative ${
+                  activeTab === 'liked'
+                    ? 'text-orange-600 border-b-2 border-orange-600'
+                    : 'text-gray-500 hover:text-orange-500'
+                }`}
+              >
+                Công thức đã thích
+              </button>
             )}
           </div>
+
+          {/* Recipe Grid */}
+          {loadingRecipes ? (
+            <div className="flex justify-center py-16">
+              <Loader2 className="h-8 w-8 text-orange-500 animate-spin" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {(activeTab === 'created' ? userRecipes : likedRecipes).length > 0 ? (
+                (activeTab === 'created' ? userRecipes : likedRecipes).map((recipe) => (
+                  <div
+                    key={recipe.id}
+                    onClick={() => navigate(`/recipes/${recipe.id}`)}
+                    className="group cursor-pointer rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 bg-white"
+                  >
+                    {/* Recipe Image */}
+                    <div className="relative h-56 overflow-hidden">
+                      <img
+                        src={recipe.thumbnail_url || 'https://via.placeholder.com/400x300'}
+                        alt={recipe.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                      
+                      {/* Title Overlay */}
+                      <div className="absolute bottom-0 left-0 right-0 p-4">
+                        <h3 className="text-white font-bold text-lg line-clamp-2 drop-shadow-lg">
+                          {recipe.title}
+                        </h3>
+                      </div>
+                    </div>
+
+                    {/* Heart Count */}
+                    <div className="p-4 bg-white">
+                      <div className="flex items-center justify-center gap-2 text-gray-600">
+                        <Heart className="h-5 w-5 text-red-500 fill-red-500" />
+                        <span className="text-sm font-semibold">
+                          {recipe.likes_count || 0} lượt thích
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-3 text-center py-16">
+                  <Heart className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                  <p className="text-gray-500 text-lg">
+                    {activeTab === 'created'
+                      ? 'Chưa có công thức nào'
+                      : 'Chưa có công thức yêu thích'}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

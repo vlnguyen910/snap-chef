@@ -1,8 +1,10 @@
 import RecipeList from '@/features/recipes/components/RecipeList';
 import { useParams } from 'react-router-dom';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 export default function RecipesPage() {
   const { status } = useParams<{ status?: 'pending' | 'approved' }>();
+  useDocumentTitle(status === 'pending' ? 'Pending Recipes' : 'All Recipes');
 
   return (
     <div className="container mx-auto px-4 py-8">

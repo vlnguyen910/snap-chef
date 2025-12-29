@@ -12,6 +12,9 @@ import CreateRecipePage from '@/pages/CreateRecipePage';
 import NotFound from '@/pages/NotFound';
 import EditRecipePage from '@/pages/EditRecipePage';
 import FollowListPage from '@/pages/FollowListPage';
+import MyRecipesPage from '@/pages/MyRecipesPage';
+import FavoritesPage from '@/pages/FavoritesPage';
+import SettingsPage from '@/pages/SettingsPage';
 
 // Components
 import UserProfile from '@/components/common/UserProfile';
@@ -40,12 +43,12 @@ export default function AppRoutes() {
         <Route element={<MainLayout showSidebar={true} />}>
           <Route path="/create-recipe" element={<CreateRecipePage />} />
           <Route path="/profile" element={<UserProfile />} />
-          <Route path="/my-recipes" element={<RecipesPage />} />
+          <Route path="/my-recipes" element={<MyRecipesPage />} />
           <Route path="/recipes/create" element={<CreateRecipePage />} /> 
           <Route path="/recipes/:id/edit" element={<EditRecipePage />} />
           <Route path="/follow" element={<FollowListPage />} />
-          <Route path="/favorites" element={<div className="p-8"><h1 className="text-2xl font-bold">Favorites</h1></div>} />
-          <Route path="/settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Settings</h1></div>} />
+          <Route path="/favorites" element={<FavoritesPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Route>
 
