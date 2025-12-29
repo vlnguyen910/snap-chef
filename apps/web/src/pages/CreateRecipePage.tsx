@@ -7,6 +7,7 @@ import { uploadToCloudinary } from '@/services/cloudinaryService';
 import { recipeService } from '@/services/recipeService';
 import { useStore } from '@/lib/store';
 import { toast } from '@/lib/toast-store';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 // --- TYPES ---
 type Ingredient = {
@@ -319,6 +320,8 @@ const StepsSection = ({
 
 // --- MAIN PAGE COMPONENT ---
 export default function CreateRecipePage() {
+  useDocumentTitle('Create Recipe');
+  
   const methods = useForm<RecipeFormData>({
     defaultValues: {
       title: '',

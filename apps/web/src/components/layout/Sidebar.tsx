@@ -25,9 +25,9 @@ export default function Sidebar({ className = '' }: SidebarProps) {
   // User menu items
   const userMenuItems = [
     { path: '/profile', label: 'My Profile', icon: User },
-    { path: '/profile/recipes', label: 'My Recipes', icon: ChefHat },
-    { path: '/profile/favorites', label: 'Favorites', icon: Heart },
-    { path: '/profile/settings', label: 'Settings', icon: Settings },
+    { path: '/my-recipes', label: 'My Recipes', icon: ChefHat },
+    { path: '/favorites', label: 'Favorites', icon: Heart },
+    { path: '/settings', label: 'Settings', icon: Settings },
   ];
 
   // Moderator menu items
@@ -42,7 +42,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
   const menuItems = user?.role === 'moderator' ? moderatorMenuItems : userMenuItems;
 
   return (
-    <aside className={`hidden w-64 border-r border-gray-200 bg-white md:block ${className}`}>
+    <aside className={`hidden w-64 border-r border-gray-200 bg-white md:block h-full ${className}`}>
       <div className="flex h-full flex-col">
         <div className="flex-1 overflow-y-auto p-6">
           <div className="mb-6 flex items-center gap-2 text-lg font-bold text-orange-600">
@@ -72,7 +72,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
 
         {/* Footer */}
         {user && (
-          <div className="border-t border-gray-200 p-6">
+          <div className="mt-auto border-t border-gray-200 p-6">
             <div className="text-xs text-gray-500">
               <p className="font-semibold uppercase">Role</p>
               <p className="mt-1 capitalize text-gray-600">{user.role}</p>

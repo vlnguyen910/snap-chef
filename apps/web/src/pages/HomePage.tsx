@@ -2,9 +2,11 @@ import { Link } from 'react-router-dom';
 import { ChefHat, Search, Users, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 export default function HomePage() {
   const { isAuthenticated } = useStore();
+  useDocumentTitle('Home');
 
   return (
     <div className="min-h-screen bg-white">
@@ -33,10 +35,10 @@ export default function HomePage() {
                   Explore Recipes
                 </Button>
               </Link>
-              <Link to={isAuthenticated ? "/dashboard" : "/auth/signup"}>
+              <Link to={isAuthenticated ? "/profile" : "/auth/signup"}>
                 <Button size="lg" variant="outline" className="w-full sm:w-auto">
                   <ChefHat size={20} className="mr-2" />
-                  {isAuthenticated ? "Go to Dashboard" : "Start Cooking"}
+                  {isAuthenticated ? "Go to your profile" : "Start Cooking"}
                 </Button>
               </Link>
             </div>
@@ -121,9 +123,9 @@ export default function HomePage() {
           <p className="text-orange-100 text-lg mb-8 max-w-2xl mx-auto">
             Join thousands of home chefs sharing their passion for cooking
           </p>
-          <Link to={isAuthenticated ? "/dashboard" : "/auth/signup"}>
+          <Link to={isAuthenticated ? "/profile" : "/auth/signup"}>
             <Button size="lg" variant="outline" className="bg-white text-orange-600 hover:bg-orange-50 border-0">
-              {isAuthenticated ? "Go to Dashboard" : "Create Free Account"}
+              {isAuthenticated ? "Go to your profile" : "Create Free Account"}
             </Button>
           </Link>
         </div>

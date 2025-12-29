@@ -9,11 +9,11 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children, showSidebar = false }: MainLayoutProps) {
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
+    <div className="flex h-screen flex-col bg-gray-50 overflow-hidden">
       <Header />
-      <main className="flex flex-1">
+      <main className="flex flex-1 h-full overflow-hidden">
         {showSidebar && <SidebarComponent />}
-        <div className="flex-1">
+        <div className="flex-1 h-full overflow-y-auto">
           {children || <Outlet />}
         </div>
       </main>
