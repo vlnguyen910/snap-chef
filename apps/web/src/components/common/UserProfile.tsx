@@ -48,11 +48,13 @@ export default function UserProfile() {
   const [userRecipes, setUserRecipes] = useState<Recipe[]>([]);
   const [likedRecipes, setLikedRecipes] = useState<Recipe[]>([]);
   const [loadingRecipes, setLoadingRecipes] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const updateUser = useStore((state) => state.updateUser);
 
   // Check if viewing own profile
-  const isOwnProfile = currentUser?.id === userIdFromUrl;
+  // When viewing your own profile, userIdFromUrl is undefined, so check both conditions
+  const isOwnProfile = !userIdFromUrl || currentUser?.id === userIdFromUrl;
 
   // Update document title dynamically
   useDocumentTitle(userData?.username ? `${userData.username}'s Profile` : 'Profile');
@@ -172,6 +174,10 @@ export default function UserProfile() {
       return;
     }
 
+    // Create local preview URL
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarPreview(previewUrl);
+
     try {
       setIsUploadingAvatar(true);
       
@@ -200,6 +206,13 @@ export default function UserProfile() {
       toast.error(err?.message || 'Không thể tải ảnh lên. Vui lòng thử lại.');
     } finally {
       setIsUploadingAvatar(false);
+      
+      // Clean up preview URL
+      if (avatarPreview) {
+        URL.revokeObjectURL(avatarPreview);
+        setAvatarPreview(null);
+      }
+      
       // Reset input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -316,13 +329,14 @@ export default function UserProfile() {
 
           {/* Profile Content */}
           <div className="relative px-8 pb-10">
-            {/* Avatar */}
-            <div className="absolute -top-20 left-1/2 -translate-x-1/2">
-              <div className="relative group">
-                {userData.avatar_url ? (
+            {/* Avatar Container - Using Flexbox for proper layout */}
+            <div className="flex flex-col items-center pt-4">
+              {/* Avatar */}
+              <div className="relative group -mt-24 mb-6">
+                {(avatarPreview || userData.avatar_url) ? (
                   <img
-                    src={userData.avatar_url}
-                    alt={userData.username}
+                    src={avatarPreview || userData.avatar_url}
+                    alt={userData.username}   
                     className="h-40 w-40 rounded-full border-8 border-white dark:border-gray-800 object-cover shadow-2xl ring-4 ring-orange-100 dark:ring-orange-900"
                   />
                 ) : (
@@ -356,15 +370,30 @@ export default function UserProfile() {
                     />
                   </>
                 )}
+                
+                {/* Visible Camera Badge - Always visible for own profile */}
+                {isOwnProfile && (
+                  <button
+                    onClick={handleAvatarClick}
+                    disabled={isUploadingAvatar}
+                    className="absolute bottom-2 right-2 p-3 bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Thay đổi ảnh đại diện"
+                  >
+                    {isUploadingAvatar ? (
+                      <Loader2 className="h-5 w-5 text-white animate-spin" />
+                    ) : (
+                      <Camera className="h-5 w-5 text-white" />
+                    )}
+                  </button>
+                )}
               </div>
-            </div>
 
-            {/* Profile Details */}
-            <div className="mt-24 text-center">
-              {/* Username */}
-              <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                {userData.username}
-              </h1>
+              {/* Profile Details */}
+              <div className="text-center w-full">
+                {/* Username */}
+                <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                  {userData.username}
+                </h1>
 
               {/* Contact Information */}
               <div className="mt-8 space-y-5">
@@ -436,6 +465,7 @@ export default function UserProfile() {
                   )
                 )}
               </div>
+            </div>
             </div>
           </div>
         </div>
