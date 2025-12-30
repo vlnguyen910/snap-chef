@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Clock, Users, Heart, MessageCircle } from 'lucide-react';
 import { useState } from 'react';
 import type { Recipe } from '@/types';
@@ -6,6 +6,8 @@ import { useRecipeActions } from '../hooks/useRecipeActions';
 import { BookmarkButton } from '@/components/common/BookmarkButton';
 import { RatingDisplay } from '@/components/common/RatingDisplay';
 import { ShareButton } from '@/components/common/ShareButton';
+import { useStore } from '@/lib/store';
+import { toast } from 'sonner';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -13,6 +15,8 @@ interface RecipeCardProps {
 
 export default function RecipeCard({ recipe }: RecipeCardProps) {
   const { toggleFavorite, isFavorited, isLoading } = useRecipeActions();
+  const { isAuthenticated, user } = useStore();
+  const navigate = useNavigate();
   
   // Local state for like count - initialized from props
   const [likeCount, setLikeCount] = useState(recipe.favoriteCount || 0);
@@ -21,6 +25,13 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
   const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
+    
+    // Authentication check - prevent guest users from spamming
+    if (!isAuthenticated || !user) {
+      toast.error('Please login to like recipes');
+      navigate('/auth/signin');
+      return;
+    }
     
     // Immediately update the count based on current like state
     if (isFavorite) {
