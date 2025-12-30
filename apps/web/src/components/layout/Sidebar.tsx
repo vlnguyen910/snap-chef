@@ -72,15 +72,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
           </nav>
         </div>
 
-        {/* Footer */}
-        {user && (
-          <div className="mt-auto border-t border-gray-200 dark:border-gray-700 p-6">
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              <p className="font-semibold uppercase">{t('sidebar.role')}</p>
-              <p className="mt-1 capitalize text-gray-600 dark:text-gray-300">{user.role}</p>
-            </div>
-          </div>
-        )}
+        
       </div>
     </aside>
   );
