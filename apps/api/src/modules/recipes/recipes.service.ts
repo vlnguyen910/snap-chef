@@ -12,6 +12,8 @@ import { IngredientsService } from '../ingredients/ingredients.service';
 import { RecipeStatus } from 'src/generated/prisma/enums';
 import { Recipe, RecipeIngredient } from 'src/generated/prisma/client';
 import { UsersService } from '../users/users.service'
+import { contains } from 'class-validator';
+import { RecipeWhereInput } from 'src/generated/prisma/models/Recipe';
 
 @Injectable()
 export class RecipesService {
@@ -19,8 +21,8 @@ export class RecipesService {
     private prisma: PrismaService,
     private ingredientsService: IngredientsService,
     private userService: UsersService,
-  ) {}
-  
+  ) { }
+
   private readonly logger = new Logger(RecipesService.name);
 
   private validateOrderIndices(orderIndices: number[]): void {
@@ -107,24 +109,70 @@ export class RecipesService {
     });
   }
 
-  async findAll(): Promise<Recipe[]> {
-    return await this.prisma.recipe.findMany({
+  async findAll(params: {page: number; limit: number; search?: string}): Promise<Recipe[]> {
+    const { page, limit, search } = params;
+    const skip = (page - 1) * limit;
+    
+ const whereCondition: RecipeWhereInput = {
+    // status: 'PUBLISHED',
+  };
+
+  if (search) {
+    whereCondition.OR = [
+      {
+        title: { contains: search, mode: 'insensitive' },
+      },
+      {
+        ingredients: {
+          some: {
+            ingredient: { name: { contains: search, mode: 'insensitive' } },
+          },
+        },
+      },
+    ];
+  }
+    const recipes = await this.prisma.recipe.findMany({
+      where: whereCondition,
+      skip,
+      take: limit,
+      orderBy: { created_at: 'desc' },
       include: {
         user: {
           select: {
             username: true,
-            email:true,
+            email: true,
             avatar_url: true,
             role: true,
           }
         },
-        ingredients: true,
-      }
+        ingredients: {
+          select: {
+            quantity: true,
+            unit: true,
+            ingredient: true,
+          }
+        },
+        _count: {
+          select: {
+            comments: true,
+            likes: true,
+          }
+        }
+      },
+    });
+
+    return recipes.map((recipe) => {
+      const { _count, ...rest } = recipe;
+      return {
+        ...rest,
+        comments_count: _count.comments,
+        likes_count: _count.likes,
+      };
     });
   }
 
-  findOne(id: number): Promise<Recipe | null> {
-    return this.prisma.recipe.findUnique({
+  async findOne(id: number, user_id?: string | undefined) {
+    const recipe = await this.prisma.recipe.findUnique({
       where: { id },
       include: {
         user: {
@@ -135,17 +183,56 @@ export class RecipesService {
             role: true,
           },
         },
-        ingredients: true,
+        ingredients: {
+          select: {
+            quantity: true,
+            unit: true,
+            ingredient: true,
+          }
+        },
         steps: true,
+        _count: {
+          select: {
+            comments: true,
+            likes: true,
+          }
+        }
       }
     });
+
+    let isLiked = false;
+    if (user_id) {
+      const likedRecipe = await this.prisma.like.findUnique({
+        where: {
+          user_id_recipe_id: {
+            user_id,
+            recipe_id: id,
+          }
+        }
+      })
+
+      if (likedRecipe) isLiked = true;
+    }
+
+
+    if (!recipe) throw new NotFoundException('Recipe is not exist');
+    const { _count, ...recipeData } = recipe;
+
+    return {
+      ...recipeData,
+      is_liked: isLiked,
+      comments_count: _count.comments,
+      likes_count: _count.likes,
+    }
   }
 
-  async update(id: number, updateRecipeDto: UpdateRecipeDto) {
+  async update(id: number, user_id: string, updateRecipeDto: UpdateRecipeDto) {
     const { ingredients, steps, ...scalarFields } = updateRecipeDto;
-    
-    const oldRecipe = this.findOne(id);
+
+    const oldRecipe = await this.findOne(id);
     if (!oldRecipe) throw new NotFoundException('Recipe not found');
+    if (oldRecipe.author_id !== user_id) 
+      throw new UnauthorizedException('You have no right to perform this action');
 
     return await this.prisma.$transaction(async (tx) => {
       const updateRecipe = await tx.recipe.update({
@@ -156,12 +243,12 @@ export class RecipesService {
       if (ingredients && ingredients.length > 0) {
         this.logger.log(`Deleting ingredients of recipe: ${id}`);
         await tx.recipeIngredient.deleteMany({
-          where: {recipe_id: id}
+          where: { recipe_id: id }
         });
 
         for (const item of ingredients) {
           const ingredient = await this.ingredientsService.upsertByName(
-            item.name, 
+            item.name,
             tx
           );
 
@@ -197,10 +284,82 @@ export class RecipesService {
       return await tx.recipe.findUnique({
         where: { id },
         include: {
-          ingredients: { include: { ingredient: true } },
+          ingredients: {
+            select: {
+              quantity: true,
+              unit: true,
+              ingredient: true,
+            }
+          },
           steps: { orderBy: { order_index: 'asc' } },
         },
       });
     })
+  }
+
+  async likeRecipe(user_id: string, recipe_id: number) {
+    const recipe = await this.prisma.recipe.findUnique({
+      where: { id: recipe_id },
+      select: { author_id: true }
+    });
+
+    if (!recipe) throw new NotFoundException('Recipe not found');
+    if (recipe.author_id === user_id) 
+      throw new BadRequestException('You cannot like your own recipe');
+
+    const existingLike = await this.prisma.like.findUnique({
+      where: {
+        user_id_recipe_id: {
+          user_id,
+          recipe_id,
+        },
+      },
+    });
+
+    if (existingLike) {
+      await this.prisma.like.delete({
+        where: {
+          user_id_recipe_id: {
+            user_id,
+            recipe_id,
+          },
+        },
+      });
+      return { is_liked: false };
+    } else {
+      await this.prisma.like.create({
+        data: {
+          user_id,
+          recipe_id,
+        },
+      });
+      return { is_liked: true };
+    }
+  }
+
+  async getUserRecipes(user_id: string) {
+    const recipes = await this.prisma.recipe.findMany({
+      where: { author_id: user_id },
+      include: {
+        _count: {
+          select: {
+            comments: true,
+            likes: true,
+          }
+        }
+      },
+      orderBy: {
+        created_at: 'desc',
+      }
+    });
+
+    return recipes.map((recipe) => {
+      const { _count, ...recipeData } = recipe;
+      return {
+        ...recipeData,
+        comments_count: _count.comments,
+        likes_count: _count.likes,
+      };
+    });
   }
 }

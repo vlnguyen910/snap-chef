@@ -19,16 +19,22 @@ export default function UserMenu() {
   return (
     <Menu as="div" className="relative inline-block text-left">
       <div>
-        <Menu.Button className="inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 transition-colors">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 text-white font-semibold">
+        <Menu.Button className="inline-flex items-center gap-3 rounded-full px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none transition-all group">
+          {user.avatar ? (
+            <img 
+              src={user.avatar} 
+              alt={user.username || user.email}
+              className="h-9 w-9 rounded-full object-cover shadow-sm"
+            />
+          ) : (
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-600 text-white font-bold text-sm shadow-sm">
               {user.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
             </div>
-            <span className="max-w-[120px] truncate">
-              {user.username || user.email}
-            </span>
-          </div>
-          <ChevronDown className="h-4 w-4 text-gray-400" aria-hidden="true" />
+          )}
+          <span className="max-w-[100px] truncate font-medium">
+            {user.username || user.email}
+          </span>
+          <ChevronDown className="h-4 w-4 text-gray-500 group-hover:text-orange-600 transition-colors" aria-hidden="true" />
         </Menu.Button>
       </div>
 
@@ -49,10 +55,10 @@ export default function UserMenu() {
                   to="/profile"
                   className={`${
                     active ? 'bg-orange-50 text-orange-600' : 'text-gray-900'
-                  } group flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors`}
+                  } group flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors`}
                 >
                   <UserIcon className="h-5 w-5" aria-hidden="true" />
-                  Hồ sơ
+                  Profile
                 </Link>
               )}
             </Menu.Item>
@@ -65,10 +71,10 @@ export default function UserMenu() {
                   onClick={handleLogout}
                   className={`${
                     active ? 'bg-orange-50 text-orange-600' : 'text-gray-900'
-                  } group flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors`}
+                  } group flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors`}
                 >
                   <LogOut className="h-5 w-5" aria-hidden="true" />
-                  Đăng xuất
+                  Sign Out
                 </button>
               )}
             </Menu.Item>

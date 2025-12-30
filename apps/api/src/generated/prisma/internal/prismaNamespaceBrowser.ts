@@ -55,7 +55,10 @@ export const ModelName = {
   Recipe: 'Recipe',
   Ingredient: 'Ingredient',
   RecipeIngredient: 'RecipeIngredient',
-  Step: 'Step'
+  Step: 'Step',
+  Like: 'Like',
+  Comment: 'Comment',
+  Follow: 'Follow'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -133,6 +136,37 @@ export const StepScalarFieldEnum = {
 } as const
 
 export type StepScalarFieldEnum = (typeof StepScalarFieldEnum)[keyof typeof StepScalarFieldEnum]
+
+
+export const LikeScalarFieldEnum = {
+  user_id: 'user_id',
+  recipe_id: 'recipe_id',
+  created_at: 'created_at'
+} as const
+
+export type LikeScalarFieldEnum = (typeof LikeScalarFieldEnum)[keyof typeof LikeScalarFieldEnum]
+
+
+export const CommentScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  recipe_id: 'recipe_id',
+  content: 'content',
+  rating: 'rating',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+} as const
+
+export type CommentScalarFieldEnum = (typeof CommentScalarFieldEnum)[keyof typeof CommentScalarFieldEnum]
+
+
+export const FollowScalarFieldEnum = {
+  follower_id: 'follower_id',
+  following_id: 'following_id',
+  created_at: 'created_at'
+} as const
+
+export type FollowScalarFieldEnum = (typeof FollowScalarFieldEnum)[keyof typeof FollowScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -9,6 +9,7 @@ import {
   Clock,
   TrendingUp
 } from 'lucide-react';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 // Mock data
 const stats = [
@@ -113,6 +114,8 @@ const drafts = [
 ];
 
 export default function DashboardPage() {
+  useDocumentTitle('Dashboard');
+  
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">

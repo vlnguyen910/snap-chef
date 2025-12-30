@@ -7,7 +7,7 @@ export const recipeService = {
    */
   createRecipe: async (recipeData: {
     title: string;
-    description: string;
+    description?: string | null;
     cooking_time: number;
     servings: number; // ✅ Backend expects 'servings' (plural), not 'serving'
     thumbnail_url: string;
@@ -60,10 +60,41 @@ export const recipeService = {
     const recipes = Array.isArray(response) ? response : [];
     return recipes.map(normalizeRecipe);
   },
+
+  /**
+   * Get recipes with pagination and search
+   */
+  getRecipesWithPagination: async (params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }): Promise<Recipe[]> => {
+    const response = await api.get<any[]>('/recipes', {
+      params: {
+        page: params.page || 1,
+        limit: params.limit || 16,
+        search: params.search || undefined,
+      },
+    });
+    const recipes = Array.isArray(response) ? response : [];
+    return recipes.map(normalizeRecipe);
+  },
 };
 
 // Helper function to normalize recipe data
 function normalizeRecipe(data: any): Recipe {
+  // Calculate average rating from comments if available
+  let averageRating = 0;
+  let ratingsCount = 0;
+  
+  if (data.comments && Array.isArray(data.comments) && data.comments.length > 0) {
+    const ratings = data.comments.filter((c: any) => c.rating != null).map((c: any) => c.rating);
+    if (ratings.length > 0) {
+      averageRating = ratings.reduce((sum: number, r: number) => sum + r, 0) / ratings.length;
+      ratingsCount = ratings.length;
+    }
+  }
+  
   return {
     id: data.id?.toString() || '',
     title: data.title || '',
@@ -71,10 +102,16 @@ function normalizeRecipe(data: any): Recipe {
     imageUrl: data.thumbnail_url || data.image_url || '',
     userId: data.author_id || data.userId || '',
     authorId: data.author_id || data.authorId || '',
-    author: data.author || {
+    // Map user data from backend
+    user: data.user ? {
+      id: data.user.id || data.author_id || '',
+      name: data.user.username || 'Unknown',
+      avatar: data.user.avatar_url,
+    } : undefined,
+    author: data.author || data.user || {
       id: data.author_id || '',
-      username: 'Unknown',
-      avatar: undefined,
+      username: data.user?.username || 'Unknown',
+      avatar: data.user?.avatar_url,
     },
     cookingTime: data.cooking_time || data.cookingTime || 0,
     cookTime: data.cooking_time || data.cookTime || 0,
@@ -83,9 +120,11 @@ function normalizeRecipe(data: any): Recipe {
     status: (data.status || 'pending').toLowerCase(), // ✅ Chuẩn hóa về lowercase
     ingredients: data.ingredients || [],
     instructions: data.steps || data.instructions || [],
-    rating: data.rating || 0,
-    reviewCount: data.reviewCount || 0,
-    favoriteCount: data.favoriteCount || 0,
+    rating: data.rating || averageRating,
+    averageRating: data.average_rating || averageRating,
+    ratingsCount: data.ratings_count || ratingsCount,
+    reviewCount: data.reviewCount || data.comments_count || 0,
+    favoriteCount: data.favoriteCount || data.likes_count || 0,
     forkCount: data.forkCount || 0,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

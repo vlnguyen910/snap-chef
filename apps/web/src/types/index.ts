@@ -16,7 +16,7 @@ export interface User {
 export interface Recipe {
   id: string;
   title: string;
-  description: string;
+  description?: string | null;
   imageUrl?: string;
   userId: string;
   user?: {
@@ -89,6 +89,32 @@ export interface Rating {
   createdAt: string;
 }
 
+// Comment types
+export interface Comment {
+  id: string;
+  recipeId: string;
+  userId: string;
+  user?: {
+    id: string;
+    username: string;
+    avatar?: string;
+  };
+  content: string;
+  rating: number; // 0-5 stars
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCommentPayload {
+  content: string;
+  rating: number; // Must be 0-5
+}
+
+export interface UpdateCommentPayload {
+  content?: string;
+  rating?: number;
+}
+
 export interface ModerationQueue {
   id: string;
   recipeId: string;
@@ -139,4 +165,42 @@ export interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+}
+
+// User Profile & Search types
+export interface UserProfile {
+  id: string;
+  email: string;
+  username: string;
+  role: 'USER' | 'MODERATOR' | 'ADMIN';
+  avatar_url: string;
+  is_active: boolean;
+  bio: string;
+  create_at: string;
+  followers_count: number;
+  following_count: number;
+  recipes_count: number;
+  is_followed: boolean;
+}
+
+export interface FollowUser {
+  id: string;
+  username: string;
+  avatar_url: string;
+  bio?: string;
+}
+
+export interface SearchUsersParams {
+  q: string;
+  limit?: number;
+  offset?: number;
+}
+
+// Search User Result from API /users/search
+export interface SearchUserResult {
+  id: string;
+  email: string;
+  username: string;
+  avatar_url: string;
+  bio: string;
 }

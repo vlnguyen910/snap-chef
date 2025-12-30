@@ -25,7 +25,7 @@ type Step = {
 
 type RecipeFormData = {
   title: string;
-  description: string;
+  description?: string;
   cooking_time: number;
   serving: number;
   is_private: boolean;
@@ -120,7 +120,7 @@ const GeneralInfoSection = () => {
 
       {/* Description */}
       <textarea
-        {...register('description', { required: 'Description is required' })}
+        {...register('description')}
         rows={8}
         className="w-full rounded-lg border-none bg-gray-100 px-4 py-3 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
         placeholder="Hãy mô tả cho mọi người về món này..."

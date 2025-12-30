@@ -1,9 +1,9 @@
 import { Routes, Route } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import ProtectedRoute from './ProtectedRoute';
+import RootRedirect from './RootRedirect';
 
 // Pages
-import HomePage from '@/pages/HomePage';
 import AuthPage from '@/pages/AuthPage';
 import RecipesPage from '@/pages/RecipesPage';
 import RecipeDetailPage from '@/pages/RecipeDetailPage';
@@ -11,6 +11,10 @@ import ModerationPage from '@/pages/ModerationPage';
 import CreateRecipePage from '@/pages/CreateRecipePage';
 import NotFound from '@/pages/NotFound';
 import EditRecipePage from '@/pages/EditRecipePage';
+import FollowListPage from '@/pages/FollowListPage';
+import MyRecipesPage from '@/pages/MyRecipesPage';
+import FavoritesPage from '@/pages/FavoritesPage';
+import SettingsPage from '@/pages/SettingsPage';
 
 // Components
 import UserProfile from '@/components/common/UserProfile';
@@ -20,7 +24,8 @@ export default function AppRoutes() {
     <Routes>
       {/* Public Routes */}
       <Route element={<MainLayout showSidebar={false} />}>
-        <Route path="/" element={<HomePage />} />
+        {/* Root path with conditional redirect */}
+        <Route path="/" element={<RootRedirect />} />
         {/* Auth Routes */}
         <Route path='/auth'>
           <Route path="signin" element={<AuthPage />} />
@@ -28,6 +33,10 @@ export default function AppRoutes() {
         </Route>
         <Route path="/recipes" element={<RecipesPage />} />
         <Route path="/recipes/:id" element={<RecipeDetailPage />} />
+        {/* Public User Profile */}
+        <Route path="/users/:id/profile" element={<UserProfile />} />
+        <Route path="/users/:id/followers" element={<FollowListPage />} />
+        <Route path="/users/:id/following" element={<FollowListPage />} />
       </Route>
 
       {/* Protected User Routes */}
@@ -35,11 +44,12 @@ export default function AppRoutes() {
         <Route element={<MainLayout showSidebar={true} />}>
           <Route path="/create-recipe" element={<CreateRecipePage />} />
           <Route path="/profile" element={<UserProfile />} />
-          <Route path="/my-recipes" element={<RecipesPage />} />
+          <Route path="/my-recipes" element={<MyRecipesPage />} />
           <Route path="/recipes/create" element={<CreateRecipePage />} /> 
           <Route path="/recipes/:id/edit" element={<EditRecipePage />} />
-          <Route path="/favorites" element={<div className="p-8"><h1 className="text-2xl font-bold">Favorites</h1></div>} />
-          <Route path="/settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Settings</h1></div>} />
+          <Route path="/follow" element={<FollowListPage />} />
+          <Route path="/favorites" element={<FavoritesPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Route>
 

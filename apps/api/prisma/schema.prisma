@@ -26,7 +26,14 @@ model User {
   create_at  DateTime  @default(now())
 
   //Relations
-  recipe Recipe[]
+  recipe     Recipe[]
+  likes      Like[]
+  comments   Comment[]
+  following  Follow[]  @relation("followerRelation") // nguoi dang theo doi
+  followedBy Follow[]  @relation("followingRelation") // nguoi theo toi
+
+  //Indexes
+  @@index([username])
 }
 
 enum RecipeStatus {
@@ -49,18 +56,25 @@ model Recipe {
   updated_at    DateTime     @updatedAt
 
   //Relations
-  user  User @relation(fields: [author_id], references: [id])
-
+  user        User               @relation(fields: [author_id], references: [id])
   ingredients RecipeIngredient[]
+  steps       Step[]
+  likes       Like[]
+  comments    Comment[]
 
-  steps Step[]
+  //Indexes
+  @@index([title])
 }
 
 model Ingredient {
   id   Int    @id @default(autoincrement())
   name String @unique
 
+  //Relations
   recipeIngredients RecipeIngredient[]
+
+  //Indexes
+  @@index([name])
 }
 
 model RecipeIngredient {
@@ -84,4 +98,42 @@ model Step {
 
   //Relations
   recipe Recipe @relation(fields: [recipe_id], references: [id])
+}
+
+model Like {
+  user_id    String
+  recipe_id  Int
+  created_at DateTime @default(now())
+
+  //Relations
+  user   User   @relation(fields: [user_id], references: [id])
+  recipe Recipe @relation(fields: [recipe_id], references: [id])
+
+  @@id([user_id, recipe_id])
+}
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  user_id    String
+  recipe_id  Int
+  content    String?
+  rating     Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  //Relations
+  user   User   @relation(fields: [user_id], references: [id])
+  recipe Recipe @relation(fields: [recipe_id], references: [id])
+}
+
+model Follow {
+  follower_id  String //nguoi theo doi
+  following_id String //nguoi duoc theo doi
+  created_at   DateTime @default(now())
+
+  //Relations
+  follower  User @relation("followerRelation", fields: [follower_id], references: [id])
+  following User @relation("followingRelation", fields: [following_id], references: [id])
+
+  @@id([follower_id, following_id])
 }

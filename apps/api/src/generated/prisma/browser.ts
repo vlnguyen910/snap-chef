@@ -42,3 +42,18 @@ export type RecipeIngredient = Prisma.RecipeIngredientModel
  * 
  */
 export type Step = Prisma.StepModel
+/**
+ * Model Like
+ * 
+ */
+export type Like = Prisma.LikeModel
+/**
+ * Model Comment
+ * 
+ */
+export type Comment = Prisma.CommentModel
+/**
+ * Model Follow
+ * 
+ */
+export type Follow = Prisma.FollowModel
