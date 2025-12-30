@@ -1,142 +1,122 @@
-import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import RecipeCard from './RecipeCard';
 import Loading from '@/components/common/Loading';
 import ErrorState from '@/components/common/ErrorState';
-import { recipeService } from '@/services/recipeService';
-import { useDebounce } from '@/hooks/useDebounce';
-import type { Recipe } from '@/types';
+import SearchInput from '@/components/common/SearchInput';
+import { useRecipeSearch } from '@/hooks/useRecipeSearch';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface RecipeListProps {
   userId?: string;
-  // Nếu bạn muốn truyền status từ ngoài vào (như lỗi ở file RecipesPage.tsx lúc nãy)
-  // thì bỏ comment dòng dưới:
-  // status?: 'published' | 'pending'; 
 }
 
 export default function RecipeList({ userId }: RecipeListProps) {
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [allRecipes, setAllRecipes] = useState<Recipe[]>([]); // Chỉ giữ 1 cái này
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
-  // SỬA 1: Đổi tên thành searchTerm để khớp với bên dưới
-  const [searchTerm, setSearchTerm] = useState(''); 
-  
-  // SỬA 2: Thêm state cho filterStatus
-  const [filterStatus, setFilterStatus] = useState('all'); 
+  const {
+    recipes,
+    isLoading,
+    error,
+    page,
+    searchQuery,
+    hasMore,
+    setSearchQuery,
+    nextPage,
+    previousPage,
+    refetch,
+  } = useRecipeSearch();
 
-  const debouncedSearch = useDebounce(searchTerm, 500);
+  // Filter by userId if provided (for user-specific recipe lists)
+  const displayedRecipes = userId
+    ? recipes.filter((recipe) => recipe.userId === userId)
+    : recipes;
 
-  const fetchRecipes = async () => {
-    setIsLoading(true); // SỬA 3: Xóa chữ 'a' thừa
-    setError(null);
-    try {
-      const data = await recipeService.getAllRecipes();
-      setAllRecipes(data);
-      setRecipes(data);
-    } catch (err: any) {
-      console.error(err);
-      setError('Failed to load recipes');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  if (isLoading && page === 1) {
+    return <Loading />;
+  }
 
-  useEffect(() => {
-    fetchRecipes();
-  }, [userId]);
-
-  // ✅ THÊM: Refetch khi component được mount lại (quay lại từ trang khác)
-  useEffect(() => {
-    // Set up interval để tự động refetch mỗi khi user quay lại tab
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        fetchRecipes();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, []);
-
-  useEffect(() => {
-    // Nếu chưa có data thì không cần lọc
-    if (allRecipes.length === 0) return;
-
-    let filtered = [...allRecipes];
-
-    // Filter by search term
-    if (debouncedSearch) {
-      filtered = filtered.filter((recipe) =>
-        recipe.title.toLowerCase().includes(debouncedSearch.toLowerCase())
-      );
-    }
-
-    // Filter by status
-    if (filterStatus !== 'all') {
-      filtered = filtered.filter((recipe) => recipe.status === filterStatus);
-    }
-
-    // Filter by userId if provided
-    if (userId) {
-      filtered = filtered.filter((recipe) => recipe.userId === userId);
-    }
-
-    setRecipes(filtered);
-  }, [debouncedSearch, filterStatus, allRecipes, userId]);
-
-  if (isLoading) return <Loading />;
-  if (error) return <ErrorState message={error} onRetry={fetchRecipes} />;
+  if (error) {
+    return <ErrorState message={error} onRetry={refetch} />;
+  }
 
   return (
     <div className="space-y-6">
-      {/* Search and filters */}
+      {/* Search Bar */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <input
-          type="text"
+        <SearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
           placeholder="Search recipes..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="rounded-lg border border-gray-300 px-4 py-2 w-full sm:w-auto"
+          className="flex-1 max-w-md"
         />
-        
-        <div className="flex gap-2">
-          <Button
-            variant={filterStatus === 'all' ? 'default' : 'outline'}
-            onClick={() => setFilterStatus('all')}
-          >
-            All
-          </Button>
-          <Button
-            variant={filterStatus === 'published' ? 'default' : 'outline'}
-            onClick={() => setFilterStatus('published')}
-          >
-            Published
-          </Button>
-          <Button
-            variant={filterStatus === 'pending' ? 'default' : 'outline'}
-            onClick={() => setFilterStatus('pending')}
-          >
-            Pending
-          </Button>
+
+        {/* Results Info */}
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          {searchQuery && (
+            <span>
+              Found {displayedRecipes.length} recipe{displayedRecipes.length !== 1 ? 's' : ''}
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Recipe grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
-        {recipes.map((recipe) => (
-          <RecipeCard key={recipe.id} recipe={recipe} />
-        ))}
-      </div>
-
-      {recipes.length === 0 && (
-        <div className="py-12 text-center text-gray-500">
-          No recipes found
+      {/* Recipe Grid */}
+      {isLoading ? (
+        <div className="flex justify-center py-12">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-orange-500 border-t-transparent"></div>
         </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
+            {displayedRecipes.map((recipe) => (
+              <RecipeCard key={recipe.id} recipe={recipe} />
+            ))}
+          </div>
+
+          {/* Empty State */}
+          {displayedRecipes.length === 0 && (
+            <div className="py-16 text-center">
+              <div className="mx-auto w-24 h-24 mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                <Search className="h-12 w-12 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                No recipes found
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                {searchQuery
+                  ? `Try adjusting your search term "${searchQuery}"`
+                  : 'No recipes available at the moment'}
+              </p>
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {displayedRecipes.length > 0 && (
+            <div className="flex items-center justify-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <Button
+                onClick={previousPage}
+                disabled={page === 1}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+
+              <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                Page {page}
+              </span>
+
+              <Button
+                onClick={nextPage}
+                disabled={!hasMore}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

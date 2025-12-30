@@ -60,6 +60,25 @@ export const recipeService = {
     const recipes = Array.isArray(response) ? response : [];
     return recipes.map(normalizeRecipe);
   },
+
+  /**
+   * Get recipes with pagination and search
+   */
+  getRecipesWithPagination: async (params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }): Promise<Recipe[]> => {
+    const response = await api.get<any[]>('/recipes', {
+      params: {
+        page: params.page || 1,
+        limit: params.limit || 16,
+        search: params.search || undefined,
+      },
+    });
+    const recipes = Array.isArray(response) ? response : [];
+    return recipes.map(normalizeRecipe);
+  },
 };
 
 // Helper function to normalize recipe data
