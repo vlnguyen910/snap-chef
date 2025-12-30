@@ -4,6 +4,8 @@ import { useToggleFollow } from '@/hooks/useUser';
 import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/axios';
+import { useStore } from '@/lib/store';
+import { toast } from 'sonner';
 import type { FollowUser } from '@/types';
 
 type TabType = 'following' | 'followers';
@@ -12,6 +14,7 @@ export default function FollowListPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { id: targetUserId } = useParams<{ id: string }>();
+  const currentUser = useStore((state) => state.user);
   
   // Determine initial tab based on URL path
   const initialTab: TabType = location.pathname.includes('/followers') ? 'followers' : 'following';
@@ -69,10 +72,22 @@ export default function FollowListPage() {
   const currentList = activeTab === 'following' ? followingList : followersList;
 
   const handleUnfollow = (userId: string) => {
+    // Check authentication
+    if (!currentUser) {
+      toast.error('Vui lòng đăng nhập để thực hiện hành động này');
+      navigate('/auth/signin');
+      return;
+    }
     toggleFollow(userId, true); // true means currently following, so unfollow
   };
 
   const handleFollow = (userId: string) => {
+    // Check authentication
+    if (!currentUser) {
+      toast.error('Vui lòng đăng nhập để theo dõi người dùng');
+      navigate('/auth/signin');
+      return;
+    }
     toggleFollow(userId, false); // false means not following, so follow
   };
 

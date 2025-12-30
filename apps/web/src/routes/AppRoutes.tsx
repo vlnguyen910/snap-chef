@@ -1,9 +1,9 @@
 import { Routes, Route } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import ProtectedRoute from './ProtectedRoute';
+import RootRedirect from './RootRedirect';
 
 // Pages
-import HomePage from '@/pages/HomePage';
 import AuthPage from '@/pages/AuthPage';
 import RecipesPage from '@/pages/RecipesPage';
 import RecipeDetailPage from '@/pages/RecipeDetailPage';
@@ -24,7 +24,8 @@ export default function AppRoutes() {
     <Routes>
       {/* Public Routes */}
       <Route element={<MainLayout showSidebar={false} />}>
-        <Route path="/" element={<HomePage />} />
+        {/* Root path with conditional redirect */}
+        <Route path="/" element={<RootRedirect />} />
         {/* Auth Routes */}
         <Route path='/auth'>
           <Route path="signin" element={<AuthPage />} />

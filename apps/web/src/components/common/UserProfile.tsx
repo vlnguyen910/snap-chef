@@ -137,10 +137,18 @@ export default function UserProfile() {
   });
 
   const handleFollowToggle = () => {
-    if (!userData?.id || !currentUser) {
-      toast.error('Vui lòng đăng nhập');
+    // Check if user is logged in
+    if (!currentUser) {
+      toast.error('Vui lòng đăng nhập để theo dõi người dùng');
+      navigate('/auth/signin');
       return;
     }
+
+    if (!userData?.id) {
+      toast.error('Không thể thực hiện');
+      return;
+    }
+
     followMutation.mutate(userData.id);
   };
 
@@ -397,7 +405,7 @@ export default function UserProfile() {
                   </Button>
                 ) : (
                   /* Follow Button - Only show for other users' profiles */
-                  currentUser && userData && currentUser.id !== userData.id && (
+                  userData && currentUser?.id !== userData.id && (
                     <Button
                       size="lg"
                       onClick={handleFollowToggle}
