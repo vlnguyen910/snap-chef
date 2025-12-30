@@ -9,6 +9,7 @@ import { User } from 'src/generated/prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserWhereInput } from 'src/generated/prisma/models';
 import { UserPaginationDto } from 'src/common/dto/pagination.dto';
+import { fa } from '@faker-js/faker';
 
 @Injectable()
 export class UsersService {
@@ -47,7 +48,7 @@ export class UsersService {
       skip,
       take: limit,
       orderBy: {
-        followers: { _count: 'desc' }
+        followedBy: { _count: 'desc' }
       },
       select: {
         id: true,
@@ -133,7 +134,7 @@ export class UsersService {
       include: {
         _count: {
           select: {
-            followers: true,
+            followedBy: true,
             following: true,
             recipe: true,
           }
@@ -146,9 +147,8 @@ export class UsersService {
     const { password, _count, ...userData } = user;
     return {
       ...userData,
-      //Is it was is it
-      followers_count: _count.following,
-      following_count: _count.followers,
+      followers_count: _count.followedBy,
+      following_count: _count.following,
       recipes_count: _count.recipe,
     }
   }
@@ -171,9 +171,9 @@ export class UsersService {
       if (followingUser) isFollowed = true;
     }
 
-    const { email, role, ...userWithoutSensitiveInfo } = targetUser;
+    const { email, role, ...userData } = targetUser;
     return {
-      user: userWithoutSensitiveInfo,
+      user: userData,
       is_followed: isFollowed,
     }
   }
@@ -216,12 +216,35 @@ export class UsersService {
       take: limit,
       orderBy: { created_at: 'desc' },
       where: { following_id: profile_id },
-      include: {
-        follower: true,
-      }
+      select: {
+        follower: {
+          select: {
+            id: true,
+            username: true,
+            avatar_url: true,
+            followedBy: current_user_id ? {
+              where: { follower_id: current_user_id },
+              select: { follower_id: true },
+            } : false,
+          },
+        },
+      },
     });
 
-    return followers;
+    return followers.map((item) => {
+      const targetUser = item.follower;
+
+      const isFollowing = current_user_id
+        ? targetUser.followedBy.length > 0
+        : false;
+
+      const { followedBy, ...userData } = targetUser;
+
+      return {
+        ...userData,
+        is_following: isFollowing,
+      };
+    });
   }
 
   async getFollowing(
@@ -244,19 +267,34 @@ export class UsersService {
       take: limit,
       orderBy: { created_at: 'desc' },
       where: { follower_id: profile_id },
-      include: {
+      select: {
         following: {
           select: {
             id: true,
             username: true,
             avatar_url: true,
-          }
-        }
-      }
+            followedBy: current_user_id ? {
+              where: { follower_id: current_user_id },
+              select: { follower_id: true },
+            } : false,
+          },
+        },
+      },
     });
 
-    return following.map((item) => ({
-      following: item.following,
-    }))
+    return following.map((item) => {
+      const targetUser = item.following;
+
+      const isFollowing = current_user_id
+        ? targetUser.followedBy.length > 0
+        : false;
+
+      const { followedBy, ...userData } = targetUser;
+
+      return {
+        ...userData,
+        is_following: isFollowing,
+      };
+    });
   }
 }
