@@ -48,10 +48,8 @@ export default function Header() {
               SnapChef
             </Link>
             
-            {/* Global Search with mode toggle */}
-            {isAuthenticated && (
-              <GlobalSearch className="w-80" />
-            )}
+            {/* Global Search with mode toggle - Available to all users */}
+            <GlobalSearch className="w-80" />
           </div>
 
           {/* Center Section: Navigation Links */}

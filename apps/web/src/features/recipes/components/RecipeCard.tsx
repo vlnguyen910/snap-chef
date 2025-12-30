@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Clock, Users, Heart, MessageCircle } from 'lucide-react';
+import { useState } from 'react';
 import type { Recipe } from '@/types';
 import { useRecipeActions } from '../hooks/useRecipeActions';
 import { BookmarkButton } from '@/components/common/BookmarkButton';
@@ -12,11 +13,30 @@ interface RecipeCardProps {
 
 export default function RecipeCard({ recipe }: RecipeCardProps) {
   const { toggleFavorite, isFavorited, isLoading } = useRecipeActions();
-
+  
+  // Local state for like count - initialized from props
+  const [likeCount, setLikeCount] = useState(recipe.favoriteCount || 0);
   const isFavorite = isFavorited(recipe.id);
 
+  const handleLikeClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    // Immediately update the count based on current like state
+    if (isFavorite) {
+      // Currently liked -> clicking will unlike -> decrement
+      setLikeCount(prev => Math.max(0, prev - 1));
+    } else {
+      // Currently not liked -> clicking will like -> increment
+      setLikeCount(prev => prev + 1);
+    }
+    
+    // Toggle favorite in background
+    await toggleFavorite(recipe.id);
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
       <Link to={`/recipes/${recipe.id}`}>
         <div className="aspect-video bg-gray-200 relative overflow-hidden">
           {recipe.imageUrl ? (
@@ -44,7 +64,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         </div>
       </Link>
 
-      <div className="p-4 space-y-3">
+      <div className="p-4 space-y-3 flex-1 flex flex-col">
         <Link to={`/recipes/${recipe.id}`}>
           <h3 className="font-semibold text-lg text-gray-900 hover:text-orange-600 transition-colors line-clamp-2">
             {recipe.title}
@@ -81,7 +101,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
           <div className="flex items-center gap-1">
             {/* Like Button */}
             <button
-              onClick={() => toggleFavorite(recipe.id)}
+              onClick={handleLikeClick}
               disabled={isLoading}
               className="flex items-center gap-1 p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50 group"
               title="Like recipe"
@@ -90,9 +110,9 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                 size={18} 
                 className={isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-500 group-hover:text-red-500'}
               />
-              {(recipe.favoriteCount || 0) > 0 && (
+              {likeCount > 0 && (
                 <span className="text-xs text-gray-600">
-                  {recipe.favoriteCount}
+                  {likeCount}
                 </span>
               )}
             </button>
@@ -135,8 +155,9 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         <div className="flex items-center gap-2 text-xs text-gray-500">
           <span>by</span>
           <Link 
-            to={`/profile/${recipe.userId || recipe.authorId}`}
-            className="font-medium text-orange-600 hover:text-orange-700"
+            to={`/users/${recipe.userId || recipe.authorId}/profile`}
+            onClick={(e) => e.stopPropagation()}
+            className="font-medium text-orange-600 hover:text-orange-700 hover:underline transition-colors"
           >
             {recipe.user?.name || recipe.author?.username || 'Unknown'}
           </Link>

@@ -232,7 +232,7 @@ export default function RecipeDetailPage() {
 
       if (error.response?.status === 401) {
         toast.error('Please login to bookmark recipes');
-        navigate('/auth');
+        navigate('/auth/signin');
       } else {
         toast.error('Failed to update bookmark status');
       }
@@ -248,7 +248,7 @@ export default function RecipeDetailPage() {
     // Check if user is logged in
     if (!user) {
       toast.warning('Please login to follow users');
-      navigate('/auth');
+      navigate('/auth/signin');
       return;
     }
 
@@ -278,7 +278,7 @@ export default function RecipeDetailPage() {
 
       if (error.response?.status === 401) {
         toast.error('Please login to follow users');
-        navigate('/auth');
+        navigate('/auth/signin');
       } else if (error.response?.status === 404) {
         toast.error('User not found');
       } else {
@@ -471,10 +471,13 @@ export default function RecipeDetailPage() {
                     <span className="font-medium text-gray-800">{formatDate(recipe.created_at)}</span>
                   </div>
                   
-                  <div className="flex items-center gap-2 bg-orange-500 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
+                  <Link 
+                    to={`/users/${recipe.author_id}/profile`}
+                    className="flex items-center gap-2 bg-orange-500 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg hover:bg-orange-600 transition-colors group"
+                  >
                     <ChefHat className="text-white" size={20} />
-                    <span className="font-medium text-white">By {getAuthorName()}</span>
-                  </div>
+                    <span className="font-medium text-white group-hover:underline">By {getAuthorName()}</span>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -516,15 +519,18 @@ export default function RecipeDetailPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {/* Author Info with Follow Button */}
-                      <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-lg">
+                      <Link 
+                        to={`/users/${recipe.author_id}/profile`}
+                        className="flex items-center gap-3 group"
+                      >
+                        <div className="h-12 w-12 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-lg group-hover:bg-orange-600 transition-colors">
                           {getAuthorName()?.[0] || 'C'}
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900">{getAuthorName()}</p>
+                          <p className="font-semibold text-gray-900 group-hover:text-orange-600 group-hover:underline transition-colors">{getAuthorName()}</p>
                           <p className="text-sm text-gray-500">Recipe author</p>
                         </div>
-                      </div>
+                      </Link>
                       <Button
                         onClick={handleFollowAuthor}
                         disabled={isFollowLoading}
@@ -637,7 +643,7 @@ export default function RecipeDetailPage() {
                               <img 
                                 src={step.image_url} 
                                 alt={`Step ${step.order_index}`}
-                                className="rounded-lg shadow-md max-w-md w-full mt-3"
+                                className="rounded-lg shadow-md max-h-96 w-full md:w-auto object-contain mt-3"
                               />
                             )}
                           </div>
