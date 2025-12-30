@@ -21,11 +21,12 @@ import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt-auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserPaginationDto } from 'src/common/dto/pagination.dto';
+import { profile } from 'console';
 
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
@@ -50,11 +51,6 @@ export class UsersController {
     return this.usersService.getCurrentProfile(user.id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
-  }
-
   @Get(':id/profile')
   @UseGuards(OptionalJwtAuthGuard)
   getPublicProfile(
@@ -63,7 +59,32 @@ export class UsersController {
   ) {
     return this.usersService.getPublicProfile(target_id, user?.id);
   }
-  
+
+  @Get(':id/followers')
+  @UseGuards(OptionalJwtAuthGuard)
+  getFollowers(
+    @Param('id') profile_id: string,
+    @GetUser() current_user: User | undefined,
+    @Query() query: UserPaginationDto,
+  ) {
+    return this.usersService.getFollowers(profile_id, current_user?.id, query);
+  }
+
+  @Get(':id/following')
+  @UseGuards(JwtAuthGuard)
+  getFollowing(
+    @Param('id') profile_id: string,
+    @GetUser() current_user: User | undefined,
+    @Query() query: UserPaginationDto,
+  ) {
+    return this.usersService.getFollowing(profile_id, current_user?.id, query);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.usersService.findOne(id);
+  }
+
   @Get('me/likes')
   @UseGuards(JwtAuthGuard)
   getLikedRecipes(@GetUser() user: User) {
