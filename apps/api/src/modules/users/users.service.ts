@@ -1,4 +1,4 @@
-import { 
+import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -12,7 +12,7 @@ import { UserPaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(payload: CreateUserDto) {
     const user = await this.prisma.user.create({
@@ -23,7 +23,7 @@ export class UsersService {
   }
 
   async findAll(query: UserPaginationDto, current_user_id?: string | undefined) {
-    const { page, limit, search} = query;
+    const { page, limit, search } = query;
     const skip = (page - 1) * limit;
 
     const whereCondition: UserWhereInput = {
@@ -31,7 +31,7 @@ export class UsersService {
     }
 
     if (current_user_id) {
-      whereCondition.id = { not: current_user_id }; 
+      whereCondition.id = { not: current_user_id };
     }
 
     if (search) {
@@ -41,19 +41,19 @@ export class UsersService {
         },
       ];
     }
-    
+
     const users = await this.prisma.user.findMany({
       where: whereCondition,
       skip,
       take: limit,
-      orderBy: { 
-        followers: { _count: 'desc' } 
+      orderBy: {
+        followers: { _count: 'desc' }
       },
       select: {
         id: true,
         username: true,
         avatar_url: true,
-      } 
+      }
     })
 
     return users;
@@ -77,46 +77,46 @@ export class UsersService {
     const followingUser = this.findOne(following_id);
 
     if (!currentUser || !followingUser) throw new NotFoundException('User is not exist');
-    
+
 
     let isFollowed: boolean | null = null;
     const followedUser = await this.prisma.follow.findUnique({
-      where: { 
+      where: {
         follower_id_following_id: {
           follower_id: current_id,
           following_id,
         }
-      } 
+      }
     })
 
     if (!followedUser) {
       await this.prisma.follow.create({
-        data: { 
+        data: {
           follower_id: current_id,
           following_id,
         }
       })
 
       isFollowed = true;
-    } 
+    }
     else {
       await this.prisma.follow.delete({
-        where : {
+        where: {
           follower_id_following_id: {
             follower_id: current_id,
             following_id,
           }
         }
-      })  
+      })
       isFollowed = false;
     }
 
-    const message = isFollowed? 'You have followed this user' : 'You have unfollowed this user';
+    const message = isFollowed ? 'You have followed this user' : 'You have unfollowed this user';
     return {
-      message, 
+      message,
     }
   }
-  
+
   async getLikedRecipes(user_id: string) {
     const user = await this.findOne(user_id);
     if (!user) throw new NotFoundException('User is not exist');
@@ -129,7 +129,7 @@ export class UsersService {
 
   async getCurrentProfile(user_id: string) {
     const user = await this.prisma.user.findUnique({
-      where: {id: user_id}, 
+      where: { id: user_id },
       include: {
         _count: {
           select: {
@@ -142,12 +142,12 @@ export class UsersService {
     });
 
     if (!user) throw new NotFoundException('User not exist');
-    
-    const {password, _count, ...userData} = user;
+
+    const { password, _count, ...userData } = user;
     return {
       ...userData,
       //Is it was is it
-      followers_count: _count.following, 
+      followers_count: _count.following,
       following_count: _count.followers,
       recipes_count: _count.recipe,
     }
@@ -156,9 +156,9 @@ export class UsersService {
   async getPublicProfile(target_id: string, current_id: string | undefined) {
     const targetUser = await this.getCurrentProfile(target_id);
     if (!targetUser) throw new NotFoundException('User is not exist,');
-    
+
     let isFollowed = false;
-    if (current_id) { 
+    if (current_id) {
       const followingUser = await this.prisma.follow.findUnique({
         where: {
           follower_id_following_id: {
@@ -183,9 +183,9 @@ export class UsersService {
       where: { id },
       select: { id: true },
     });
-    
+
     if (!user) throw new NotFoundException('User is not exist');
-    if (user.id !== user_id) 
+    if (user.id !== user_id)
       throw new UnauthorizedException('You have no right to perform this action');
 
     const updatedUser = await this.prisma.user.update({
@@ -193,6 +193,70 @@ export class UsersService {
       data: { ...payload },
     });
 
-    return updatedUser;  
+    return updatedUser;
+  }
+
+  async getFollowers(
+    profile_id: string,
+    current_user_id: string | undefined,
+    query: UserPaginationDto
+  ) {
+    const profile = this.findOne(profile_id);
+    if (!profile) throw new NotFoundException('User is not exist');
+    if (current_user_id) {
+      const currentUser = this.findOne(current_user_id);
+      if (!currentUser) throw new NotFoundException('User is not exist');
+    }
+
+    const { page, limit } = query;
+    const skip = (page - 1) * limit;
+
+    const followers = await this.prisma.follow.findMany({
+      skip,
+      take: limit,
+      orderBy: { created_at: 'desc' },
+      where: { following_id: profile_id },
+      include: {
+        follower: true,
+      }
+    });
+
+    return followers;
+  }
+
+  async getFollowing(
+    profile_id: string,
+    current_user_id: string | undefined,
+    query: UserPaginationDto
+  ) {
+    const user = this.findOne(profile_id);
+    if (!user) throw new NotFoundException('User is not exist');
+    if (current_user_id) {
+      const currentUser = this.findOne(current_user_id);
+      if (!currentUser) throw new NotFoundException('User is not exist');
+    }
+
+    const { page, limit } = query;
+    const skip = (page - 1) * limit;
+
+    const following = await this.prisma.follow.findMany({
+      skip,
+      take: limit,
+      orderBy: { created_at: 'desc' },
+      where: { follower_id: profile_id },
+      include: {
+        following: {
+          select: {
+            id: true,
+            username: true,
+            avatar_url: true,
+          }
+        }
+      }
+    });
+
+    return following.map((item) => ({
+      following: item.following,
+    }))
   }
 }
