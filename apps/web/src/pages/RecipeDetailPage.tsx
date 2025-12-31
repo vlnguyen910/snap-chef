@@ -269,6 +269,7 @@ export default function RecipeDetailPage() {
     setIsFollowLoading(true);
 
     try {
+      // Backend handles toggle logic - always POST
       const response = await api.post<{ message: string }>(`/users/${recipe.author_id}/follow`);
       
       toast.success(newIsFollowing ? '✅ Following!' : 'Unfollowed');
@@ -425,13 +426,13 @@ export default function RecipeDetailPage() {
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
       {/* Back Button */}
       <div className="container mx-auto px-4 py-6 max-w-6xl">
-        <Link 
-          to="/recipes" 
+        <button 
+          onClick={() => navigate(-1)}
           className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 transition-colors font-medium"
         >
           <ArrowLeft size={20} />
-          Back to recipes
-        </Link>
+          Back
+        </button>
       </div>
 
       {/* Hero Section */}

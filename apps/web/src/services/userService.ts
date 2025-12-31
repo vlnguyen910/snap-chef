@@ -50,17 +50,17 @@ export async function getFollowers(): Promise<FollowUser[]> {
 }
 
 /**
- * Follow a user
+ * Follow a user (backend handles toggle)
  */
 export async function followUser(userId: string): Promise<void> {
   await api.post(`/users/${userId}/follow`);
 }
 
 /**
- * Unfollow a user
+ * Unfollow a user (backend handles toggle - same endpoint as follow)
  */
 export async function unfollowUser(userId: string): Promise<void> {
-  await api.delete(`/users/${userId}/follow`);
+  await api.post(`/users/${userId}/follow`);
 }
 
 /**

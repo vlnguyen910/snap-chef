@@ -121,16 +121,25 @@ export default function UserProfile() {
   // Follow/Unfollow mutation
   const followMutation = useMutation({
     mutationFn: async (userId: string) => {
-      if (isFollowing) {
-        await api.delete(`/users/${userId}/follow`);
-      } else {
-        await api.post(`/users/${userId}/follow`);
-      }
+      // Backend handles toggle logic - always POST
+      await api.post(`/users/${userId}/follow`);
     },
     onSuccess: async () => {
-      // Refetch profile to update follower count and follow status from backend
-      await fetchUserProfile();
-      toast.success(isFollowing ? 'Đã bỏ theo dõi' : 'Đã theo dõi');
+      // Update local state without refetching
+      const wasFollowing = isFollowing;
+      setIsFollowing(!wasFollowing);
+      
+      // Update follower count locally
+      if (userData) {
+        setUserData({
+          ...userData,
+          followers_count: wasFollowing 
+            ? (userData.followers_count || 1) - 1 
+            : (userData.followers_count || 0) + 1
+        });
+      }
+      
+      toast.success(wasFollowing ? 'Đã bỏ theo dõi' : 'Đã theo dõi');
     },
     onError: (error: any) => {
       console.error('Follow error:', error);
