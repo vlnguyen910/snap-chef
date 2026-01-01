@@ -13,8 +13,7 @@ import { RecipeStatus } from 'src/generated/prisma/enums';
 import { Recipe, RecipeIngredient } from 'src/generated/prisma/client';
 import { UsersService } from '../users/users.service'
 import { RecipeWhereInput } from 'src/generated/prisma/models/Recipe';
-import { InjectRedis } from '@nestjs-modules/ioredis';
-import Redis from 'ioredis';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class RecipesService {
@@ -22,7 +21,7 @@ export class RecipesService {
     private prisma: PrismaService,
     private ingredientsService: IngredientsService,
     private userService: UsersService,
-    @InjectRedis() private redis: Redis
+    private redis: RedisService,
   ) { }
 
   private readonly logger = new Logger(RecipesService.name);
@@ -175,77 +174,68 @@ export class RecipesService {
 
   async findOne(id: number, user_id?: string | undefined) {
     const cacheKey = `recipe:${id}`;
-    const cachedRecipe = await this.redis.get(cacheKey)
-    if (cachedRecipe) {
-      this.logger.log('Cache hit');
-      return JSON.parse(cachedRecipe);
-    }
 
-    const recipe = await this.prisma.recipe.findUnique({
-      where: { id },
-      include: {
-        user: {
-          select: {
-            username: true,
-            email: true,
-            avatar_url: true,
-            role: true,
+    let recipeData = await this.redis.getCache(cacheKey);
+    if (!recipeData) {
+      const recipe = await this.prisma.recipe.findUnique({
+        where: { id },
+        include: {
+          user: {
+            select: {
+              username: true,
+              email: true,
+              avatar_url: true,
+              role: true,
+            },
           },
-        },
-        ingredients: {
-          select: {
-            quantity: true,
-            unit: true,
-            ingredient: true,
-          }
-        },
-        steps: true,
-        _count: {
-          select: {
-            comments: true,
-            likes: true,
-          }
-        }
-      }
-    });
-
-    let isLiked = false;
-    if (user_id) {
-      const likedRecipe = await this.prisma.like.findUnique({
-        where: {
-          user_id_recipe_id: {
-            user_id,
-            recipe_id: id,
+          ingredients: {
+            select: {
+              quantity: true,
+              unit: true,
+              ingredient: true,
+            }
+          },
+          steps: true,
+          _count: {
+            select: {
+              comments: true,
+              likes: true,
+            }
           }
         }
-      })
+      });
 
-      if (likedRecipe) isLiked = true;
+      if (!recipe) throw new NotFoundException('Recipe is not exist');
+
+      const { _count, ...rest } = recipe;
+      recipeData = {
+        ...rest,
+        comments_count: _count.comments,
+        likes_count: _count.likes,
+      };
+
+      await this.redis.setCache(cacheKey, recipeData, 60);
     }
+    const is_liked = user_id ?
+      await this.checkUserLiked(user_id, id)
+      : false;
 
-
-    if (!recipe) throw new NotFoundException('Recipe is not exist');
-    const { _count, ...recipeData } = recipe;
-
-    const recipeRespone = {
+    return {
       ...recipeData,
-      is_liked: isLiked,
-      comments_count: _count.comments,
-      likes_count: _count.likes,
+      is_liked,
     }
-
-    await this.redis.set(cacheKey, JSON.stringify(recipeRespone), 'EX', 5);
-
-    return recipeRespone;
   }
 
   async update(id: number, user_id: string, updateRecipeDto: UpdateRecipeDto) {
     const { ingredients, steps, ...scalarFields } = updateRecipeDto;
+    const cacheKey = `recipe:id`;
 
     const oldRecipe = await this.findOne(id);
     if (!oldRecipe) throw new NotFoundException('Recipe not found');
     if (oldRecipe.author_id !== user_id)
       throw new UnauthorizedException('You have no right to perform this action');
+
+    await this.redis.delCache(cacheKey);
 
     return await this.prisma.$transaction(async (tx) => {
       const updateRecipe = await tx.recipe.update({
@@ -310,6 +300,17 @@ export class RecipesService {
     })
   }
 
+  private async checkUserLiked(user_id: string, recipe_id: number) {
+    const like = await this.prisma.like.findUnique({
+      where: {
+        user_id_recipe_id: { user_id, recipe_id },
+      },
+      select: { user_id: true },
+    });
+
+    return !!like;
+  }
+
   async likeRecipe(user_id: string, recipe_id: number) {
     const recipe = await this.prisma.recipe.findUnique({
       where: { id: recipe_id },
@@ -320,16 +321,8 @@ export class RecipesService {
     if (recipe.author_id === user_id)
       throw new BadRequestException('You cannot like your own recipe');
 
-    const existingLike = await this.prisma.like.findUnique({
-      where: {
-        user_id_recipe_id: {
-          user_id,
-          recipe_id,
-        },
-      },
-    });
-
-    if (existingLike) {
+    const isLiked = await this.checkUserLiked(user_id, recipe_id);
+    if (isLiked) {
       await this.prisma.like.delete({
         where: {
           user_id_recipe_id: {
