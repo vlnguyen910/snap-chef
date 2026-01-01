@@ -1,10 +1,12 @@
 import { InjectRedis } from "@nestjs-modules/ioredis";
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import Redis from "ioredis";
 
 @Injectable()
 export class RedisService {
   constructor(@InjectRedis() private client: Redis) { }
+
+  private logger = new Logger(RedisService.name);
 
   async setCache(key: string, data: any, ttl?: number) {
     const stringValue = JSON.stringify(data);
@@ -14,13 +16,13 @@ export class RedisService {
       await this.client.set(key, stringValue);
     }
 
-    console.log(`Cache key: ${key} has been set`);
+    this.logger.log(`Cache key ${key} has been set`);
   }
 
   async getCache(key: string) {
     const stringData = await this.client.get(key);
     if (stringData) {
-      console.log('Cache hit');
+      this.logger.log(`Cache key ${key} hit`);
       return JSON.parse(stringData);
     }
 
@@ -28,7 +30,7 @@ export class RedisService {
   }
 
   async delCache(key: string) {
-    console.log(`Cache ${key} is invalidate`);
+    this.logger.log(`Cache key ${key} is invalidate`);
     await this.client.del(key);
   }
 }
