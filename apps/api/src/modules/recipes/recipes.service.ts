@@ -12,8 +12,9 @@ import { IngredientsService } from '../ingredients/ingredients.service';
 import { RecipeStatus } from 'src/generated/prisma/enums';
 import { Recipe, RecipeIngredient } from 'src/generated/prisma/client';
 import { UsersService } from '../users/users.service'
-import { contains } from 'class-validator';
 import { RecipeWhereInput } from 'src/generated/prisma/models/Recipe';
+import { InjectRedis } from '@nestjs-modules/ioredis';
+import Redis from 'ioredis';
 
 @Injectable()
 export class RecipesService {
@@ -21,6 +22,7 @@ export class RecipesService {
     private prisma: PrismaService,
     private ingredientsService: IngredientsService,
     private userService: UsersService,
+    @InjectRedis() private redis: Redis
   ) { }
 
   private readonly logger = new Logger(RecipesService.name);
@@ -109,28 +111,28 @@ export class RecipesService {
     });
   }
 
-  async findAll(params: {page: number; limit: number; search?: string}): Promise<Recipe[]> {
+  async findAll(params: { page: number; limit: number; search?: string }): Promise<Recipe[]> {
     const { page, limit, search } = params;
     const skip = (page - 1) * limit;
-    
- const whereCondition: RecipeWhereInput = {
-    // status: 'PUBLISHED',
-  };
 
-  if (search) {
-    whereCondition.OR = [
-      {
-        title: { contains: search, mode: 'insensitive' },
-      },
-      {
-        ingredients: {
-          some: {
-            ingredient: { name: { contains: search, mode: 'insensitive' } },
+    const whereCondition: RecipeWhereInput = {
+      // status: 'PUBLISHED',
+    };
+
+    if (search) {
+      whereCondition.OR = [
+        {
+          title: { contains: search, mode: 'insensitive' },
+        },
+        {
+          ingredients: {
+            some: {
+              ingredient: { name: { contains: search, mode: 'insensitive' } },
+            },
           },
         },
-      },
-    ];
-  }
+      ];
+    }
     const recipes = await this.prisma.recipe.findMany({
       where: whereCondition,
       skip,
@@ -172,6 +174,13 @@ export class RecipesService {
   }
 
   async findOne(id: number, user_id?: string | undefined) {
+    const cacheKey = `recipe:${id}`;
+    const cachedRecipe = await this.redis.get(cacheKey)
+    if (cachedRecipe) {
+      this.logger.log('Cache hit');
+      return JSON.parse(cachedRecipe);
+    }
+
     const recipe = await this.prisma.recipe.findUnique({
       where: { id },
       include: {
@@ -218,12 +227,16 @@ export class RecipesService {
     if (!recipe) throw new NotFoundException('Recipe is not exist');
     const { _count, ...recipeData } = recipe;
 
-    return {
+    const recipeRespone = {
       ...recipeData,
       is_liked: isLiked,
       comments_count: _count.comments,
       likes_count: _count.likes,
     }
+
+    await this.redis.set(cacheKey, JSON.stringify(recipeRespone), 'EX', 5);
+
+    return recipeRespone;
   }
 
   async update(id: number, user_id: string, updateRecipeDto: UpdateRecipeDto) {
@@ -231,7 +244,7 @@ export class RecipesService {
 
     const oldRecipe = await this.findOne(id);
     if (!oldRecipe) throw new NotFoundException('Recipe not found');
-    if (oldRecipe.author_id !== user_id) 
+    if (oldRecipe.author_id !== user_id)
       throw new UnauthorizedException('You have no right to perform this action');
 
     return await this.prisma.$transaction(async (tx) => {
@@ -304,7 +317,7 @@ export class RecipesService {
     });
 
     if (!recipe) throw new NotFoundException('Recipe not found');
-    if (recipe.author_id === user_id) 
+    if (recipe.author_id === user_id)
       throw new BadRequestException('You cannot like your own recipe');
 
     const existingLike = await this.prisma.like.findUnique({
