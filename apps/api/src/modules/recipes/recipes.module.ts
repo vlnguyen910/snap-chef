@@ -9,6 +9,8 @@ import { jwtConfiguration } from 'src/common/config/jwt.config';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from '../users/users.module';
 import { CommentsModule } from '../comments/comments.module';
+import { RedisService } from 'src/redis/redis.service';
+import { w } from 'node_modules/@faker-js/faker/dist/airline-DF6RqYmq';
 
 @Module({
   imports: [
@@ -20,6 +22,6 @@ import { CommentsModule } from '../comments/comments.module';
     CommentsModule,
   ],
   controllers: [RecipesController],
-  providers: [RecipesService, JwtStrategy],
+  providers: [RecipesService, JwtStrategy, RedisService],
 })
-export class RecipesModule {}
+export class RecipesModule { }
