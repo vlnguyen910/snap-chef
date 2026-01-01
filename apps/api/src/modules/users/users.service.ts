@@ -10,10 +10,14 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserWhereInput } from 'src/generated/prisma/models';
 import { UserPaginationDto } from 'src/common/dto/pagination.dto';
 import { fa } from '@faker-js/faker';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    private redis: RedisService,
+  ) { }
 
   async create(payload: CreateUserDto) {
     const user = await this.prisma.user.create({
@@ -61,9 +65,17 @@ export class UsersService {
   }
 
   async findOne(id: string): Promise<User | null> {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-    });
+    const cacheKey = `user:${id}`;
+    let user = await this.redis.getCache(cacheKey);
+
+    if (!user) {
+      user = await this.prisma.user.findUnique({
+        where: { id },
+      });
+
+      await this.redis.setCache(cacheKey, user, 60);
+    }
+
     return user;
   }
 
@@ -179,14 +191,14 @@ export class UsersService {
   }
 
   async update(id: string, user_id: string, payload: UpdateUserDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-      select: { id: true },
-    });
+    const cacheKey = `user:id`;
+    const user = await this.findOne(id);
 
     if (!user) throw new NotFoundException('User is not exist');
     if (user.id !== user_id)
       throw new UnauthorizedException('You have no right to perform this action');
+
+    await this.redis.delCache(cacheKey);
 
     const updatedUser = await this.prisma.user.update({
       where: { id },
