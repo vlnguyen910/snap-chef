@@ -18,6 +18,15 @@ export const UserRoles = {
 export type UserRoles = (typeof UserRoles)[keyof typeof UserRoles]
 
 
+export const AuthProvider = {
+  LOCAL: 'LOCAL',
+  GOOGLE: 'GOOGLE',
+  FACEBOOK: 'FACEBOOK'
+} as const
+
+export type AuthProvider = (typeof AuthProvider)[keyof typeof AuthProvider]
+
+
 export const RecipeStatus = {
   DRAFT: 'DRAFT',
   PUBLISHED: 'PUBLISHED',

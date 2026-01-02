@@ -14,16 +14,29 @@ enum UserRoles {
   ADMIN
 }
 
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+  FACEBOOK
+}
+
 model User {
   id         String    @id @default(cuid())
   email      String    @unique
-  password   String
+  password   String?
   username   String
   role       UserRoles
   avatar_url String?
   is_active  Boolean   @default(true)
   bio        String?
   create_at  DateTime  @default(now())
+
+  //Email Verfiy
+  is_verified Boolean @default(false)
+
+  //OAuth2
+  provider    AuthProvider @default(LOCAL)
+  provider_id String?
 
   //Relations
   recipe     Recipe[]
