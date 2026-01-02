@@ -34,6 +34,9 @@ export type UserMinAggregateOutputType = {
   is_active: boolean | null
   bio: string | null
   create_at: Date | null
+  is_verified: boolean | null
+  provider: $Enums.AuthProvider | null
+  provider_id: string | null
 }
 
 export type UserMaxAggregateOutputType = {
@@ -46,6 +49,9 @@ export type UserMaxAggregateOutputType = {
   is_active: boolean | null
   bio: string | null
   create_at: Date | null
+  is_verified: boolean | null
+  provider: $Enums.AuthProvider | null
+  provider_id: string | null
 }
 
 export type UserCountAggregateOutputType = {
@@ -58,6 +64,9 @@ export type UserCountAggregateOutputType = {
   is_active: number
   bio: number
   create_at: number
+  is_verified: number
+  provider: number
+  provider_id: number
   _all: number
 }
 
@@ -72,6 +81,9 @@ export type UserMinAggregateInputType = {
   is_active?: true
   bio?: true
   create_at?: true
+  is_verified?: true
+  provider?: true
+  provider_id?: true
 }
 
 export type UserMaxAggregateInputType = {
@@ -84,6 +96,9 @@ export type UserMaxAggregateInputType = {
   is_active?: true
   bio?: true
   create_at?: true
+  is_verified?: true
+  provider?: true
+  provider_id?: true
 }
 
 export type UserCountAggregateInputType = {
@@ -96,6 +111,9 @@ export type UserCountAggregateInputType = {
   is_active?: true
   bio?: true
   create_at?: true
+  is_verified?: true
+  provider?: true
+  provider_id?: true
   _all?: true
 }
 
@@ -174,13 +192,16 @@ export type UserGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
 export type UserGroupByOutputType = {
   id: string
   email: string
-  password: string
+  password: string | null
   username: string
   role: $Enums.UserRoles
   avatar_url: string | null
   is_active: boolean
   bio: string | null
   create_at: Date
+  is_verified: boolean
+  provider: $Enums.AuthProvider
+  provider_id: string | null
   _count: UserCountAggregateOutputType | null
   _min: UserMinAggregateOutputType | null
   _max: UserMaxAggregateOutputType | null
@@ -207,13 +228,16 @@ export type UserWhereInput = {
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   id?: Prisma.StringFilter<"User"> | string
   email?: Prisma.StringFilter<"User"> | string
-  password?: Prisma.StringFilter<"User"> | string
+  password?: Prisma.StringNullableFilter<"User"> | string | null
   username?: Prisma.StringFilter<"User"> | string
   role?: Prisma.EnumUserRolesFilter<"User"> | $Enums.UserRoles
   avatar_url?: Prisma.StringNullableFilter<"User"> | string | null
   is_active?: Prisma.BoolFilter<"User"> | boolean
   bio?: Prisma.StringNullableFilter<"User"> | string | null
   create_at?: Prisma.DateTimeFilter<"User"> | Date | string
+  is_verified?: Prisma.BoolFilter<"User"> | boolean
+  provider?: Prisma.EnumAuthProviderFilter<"User"> | $Enums.AuthProvider
+  provider_id?: Prisma.StringNullableFilter<"User"> | string | null
   recipe?: Prisma.RecipeListRelationFilter
   likes?: Prisma.LikeListRelationFilter
   comments?: Prisma.CommentListRelationFilter
@@ -224,13 +248,16 @@ export type UserWhereInput = {
 export type UserOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
-  password?: Prisma.SortOrder
+  password?: Prisma.SortOrderInput | Prisma.SortOrder
   username?: Prisma.SortOrder
   role?: Prisma.SortOrder
   avatar_url?: Prisma.SortOrderInput | Prisma.SortOrder
   is_active?: Prisma.SortOrder
   bio?: Prisma.SortOrderInput | Prisma.SortOrder
   create_at?: Prisma.SortOrder
+  is_verified?: Prisma.SortOrder
+  provider?: Prisma.SortOrder
+  provider_id?: Prisma.SortOrderInput | Prisma.SortOrder
   recipe?: Prisma.RecipeOrderByRelationAggregateInput
   likes?: Prisma.LikeOrderByRelationAggregateInput
   comments?: Prisma.CommentOrderByRelationAggregateInput
@@ -244,13 +271,16 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   OR?: Prisma.UserWhereInput[]
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
-  password?: Prisma.StringFilter<"User"> | string
+  password?: Prisma.StringNullableFilter<"User"> | string | null
   username?: Prisma.StringFilter<"User"> | string
   role?: Prisma.EnumUserRolesFilter<"User"> | $Enums.UserRoles
   avatar_url?: Prisma.StringNullableFilter<"User"> | string | null
   is_active?: Prisma.BoolFilter<"User"> | boolean
   bio?: Prisma.StringNullableFilter<"User"> | string | null
   create_at?: Prisma.DateTimeFilter<"User"> | Date | string
+  is_verified?: Prisma.BoolFilter<"User"> | boolean
+  provider?: Prisma.EnumAuthProviderFilter<"User"> | $Enums.AuthProvider
+  provider_id?: Prisma.StringNullableFilter<"User"> | string | null
   recipe?: Prisma.RecipeListRelationFilter
   likes?: Prisma.LikeListRelationFilter
   comments?: Prisma.CommentListRelationFilter
@@ -261,13 +291,16 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
 export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
-  password?: Prisma.SortOrder
+  password?: Prisma.SortOrderInput | Prisma.SortOrder
   username?: Prisma.SortOrder
   role?: Prisma.SortOrder
   avatar_url?: Prisma.SortOrderInput | Prisma.SortOrder
   is_active?: Prisma.SortOrder
   bio?: Prisma.SortOrderInput | Prisma.SortOrder
   create_at?: Prisma.SortOrder
+  is_verified?: Prisma.SortOrder
+  provider?: Prisma.SortOrder
+  provider_id?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
   _min?: Prisma.UserMinOrderByAggregateInput
@@ -279,25 +312,31 @@ export type UserScalarWhereWithAggregatesInput = {
   NOT?: Prisma.UserScalarWhereWithAggregatesInput | Prisma.UserScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"User"> | string
   email?: Prisma.StringWithAggregatesFilter<"User"> | string
-  password?: Prisma.StringWithAggregatesFilter<"User"> | string
+  password?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   username?: Prisma.StringWithAggregatesFilter<"User"> | string
   role?: Prisma.EnumUserRolesWithAggregatesFilter<"User"> | $Enums.UserRoles
   avatar_url?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   is_active?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   bio?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   create_at?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
+  is_verified?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
+  provider?: Prisma.EnumAuthProviderWithAggregatesFilter<"User"> | $Enums.AuthProvider
+  provider_id?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
 }
 
 export type UserCreateInput = {
   id?: string
   email: string
-  password: string
+  password?: string | null
   username: string
   role: $Enums.UserRoles
   avatar_url?: string | null
   is_active?: boolean
   bio?: string | null
   create_at?: Date | string
+  is_verified?: boolean
+  provider?: $Enums.AuthProvider
+  provider_id?: string | null
   recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
   likes?: Prisma.LikeCreateNestedManyWithoutUserInput
   comments?: Prisma.CommentCreateNestedManyWithoutUserInput
@@ -308,13 +347,16 @@ export type UserCreateInput = {
 export type UserUncheckedCreateInput = {
   id?: string
   email: string
-  password: string
+  password?: string | null
   username: string
   role: $Enums.UserRoles
   avatar_url?: string | null
   is_active?: boolean
   bio?: string | null
   create_at?: Date | string
+  is_verified?: boolean
+  provider?: $Enums.AuthProvider
+  provider_id?: string | null
   recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
   likes?: Prisma.LikeUncheckedCreateNestedManyWithoutUserInput
   comments?: Prisma.CommentUncheckedCreateNestedManyWithoutUserInput
@@ -325,13 +367,16 @@ export type UserUncheckedCreateInput = {
 export type UserUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   username?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRolesFieldUpdateOperationsInput | $Enums.UserRoles
   avatar_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   create_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  provider_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
   likes?: Prisma.LikeUpdateManyWithoutUserNestedInput
   comments?: Prisma.CommentUpdateManyWithoutUserNestedInput
@@ -342,13 +387,16 @@ export type UserUpdateInput = {
 export type UserUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   username?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRolesFieldUpdateOperationsInput | $Enums.UserRoles
   avatar_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   create_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  provider_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
   likes?: Prisma.LikeUncheckedUpdateManyWithoutUserNestedInput
   comments?: Prisma.CommentUncheckedUpdateManyWithoutUserNestedInput
@@ -359,37 +407,46 @@ export type UserUncheckedUpdateInput = {
 export type UserCreateManyInput = {
   id?: string
   email: string
-  password: string
+  password?: string | null
   username: string
   role: $Enums.UserRoles
   avatar_url?: string | null
   is_active?: boolean
   bio?: string | null
   create_at?: Date | string
+  is_verified?: boolean
+  provider?: $Enums.AuthProvider
+  provider_id?: string | null
 }
 
 export type UserUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   username?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRolesFieldUpdateOperationsInput | $Enums.UserRoles
   avatar_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   create_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  provider_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   username?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRolesFieldUpdateOperationsInput | $Enums.UserRoles
   avatar_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   create_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  provider_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserCountOrderByAggregateInput = {
@@ -402,6 +459,9 @@ export type UserCountOrderByAggregateInput = {
   is_active?: Prisma.SortOrder
   bio?: Prisma.SortOrder
   create_at?: Prisma.SortOrder
+  is_verified?: Prisma.SortOrder
+  provider?: Prisma.SortOrder
+  provider_id?: Prisma.SortOrder
 }
 
 export type UserMaxOrderByAggregateInput = {
@@ -414,6 +474,9 @@ export type UserMaxOrderByAggregateInput = {
   is_active?: Prisma.SortOrder
   bio?: Prisma.SortOrder
   create_at?: Prisma.SortOrder
+  is_verified?: Prisma.SortOrder
+  provider?: Prisma.SortOrder
+  provider_id?: Prisma.SortOrder
 }
 
 export type UserMinOrderByAggregateInput = {
@@ -426,6 +489,9 @@ export type UserMinOrderByAggregateInput = {
   is_active?: Prisma.SortOrder
   bio?: Prisma.SortOrder
   create_at?: Prisma.SortOrder
+  is_verified?: Prisma.SortOrder
+  provider?: Prisma.SortOrder
+  provider_id?: Prisma.SortOrder
 }
 
 export type UserScalarRelationFilter = {
@@ -437,12 +503,12 @@ export type StringFieldUpdateOperationsInput = {
   set?: string
 }
 
-export type EnumUserRolesFieldUpdateOperationsInput = {
-  set?: $Enums.UserRoles
-}
-
 export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
+}
+
+export type EnumUserRolesFieldUpdateOperationsInput = {
+  set?: $Enums.UserRoles
 }
 
 export type BoolFieldUpdateOperationsInput = {
@@ -451,6 +517,10 @@ export type BoolFieldUpdateOperationsInput = {
 
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
+}
+
+export type EnumAuthProviderFieldUpdateOperationsInput = {
+  set?: $Enums.AuthProvider
 }
 
 export type UserCreateNestedOneWithoutRecipeInput = {
@@ -526,13 +596,16 @@ export type UserUpdateOneRequiredWithoutFollowedByNestedInput = {
 export type UserCreateWithoutRecipeInput = {
   id?: string
   email: string
-  password: string
+  password?: string | null
   username: string
   role: $Enums.UserRoles
   avatar_url?: string | null
   is_active?: boolean
   bio?: string | null
   create_at?: Date | string
+  is_verified?: boolean
+  provider?: $Enums.AuthProvider
+  provider_id?: string | null
   likes?: Prisma.LikeCreateNestedManyWithoutUserInput
   comments?: Prisma.CommentCreateNestedManyWithoutUserInput
   following?: Prisma.FollowCreateNestedManyWithoutFollowerInput
@@ -542,13 +615,16 @@ export type UserCreateWithoutRecipeInput = {
 export type UserUncheckedCreateWithoutRecipeInput = {
   id?: string
   email: string
-  password: string
+  password?: string | null
   username: string
   role: $Enums.UserRoles
   avatar_url?: string | null
   is_active?: boolean
   bio?: string | null
   create_at?: Date | string
+  is_verified?: boolean
+  provider?: $Enums.AuthProvider
+  provider_id?: string | null
   likes?: Prisma.LikeUncheckedCreateNestedManyWithoutUserInput
   comments?: Prisma.CommentUncheckedCreateNestedManyWithoutUserInput
   following?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowerInput
@@ -574,13 +650,16 @@ export type UserUpdateToOneWithWhereWithoutRecipeInput = {
 export type UserUpdateWithoutRecipeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   username?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRolesFieldUpdateOperationsInput | $Enums.UserRoles
   avatar_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   create_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  provider_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   likes?: Prisma.LikeUpdateManyWithoutUserNestedInput
   comments?: Prisma.CommentUpdateManyWithoutUserNestedInput
   following?: Prisma.FollowUpdateManyWithoutFollowerNestedInput
@@ -590,13 +669,16 @@ export type UserUpdateWithoutRecipeInput = {
 export type UserUncheckedUpdateWithoutRecipeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   username?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRolesFieldUpdateOperationsInput | $Enums.UserRoles
   avatar_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   create_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  provider_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   likes?: Prisma.LikeUncheckedUpdateManyWithoutUserNestedInput
   comments?: Prisma.CommentUncheckedUpdateManyWithoutUserNestedInput
   following?: Prisma.FollowUncheckedUpdateManyWithoutFollowerNestedInput
@@ -606,13 +688,16 @@ export type UserUncheckedUpdateWithoutRecipeInput = {
 export type UserCreateWithoutLikesInput = {
   id?: string
   email: string
-  password: string
+  password?: string | null
   username: string
   role: $Enums.UserRoles
   avatar_url?: string | null
   is_active?: boolean
   bio?: string | null
   create_at?: Date | string
+  is_verified?: boolean
+  provider?: $Enums.AuthProvider
+  provider_id?: string | null
   recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
   comments?: Prisma.CommentCreateNestedManyWithoutUserInput
   following?: Prisma.FollowCreateNestedManyWithoutFollowerInput
@@ -622,13 +707,16 @@ export type UserCreateWithoutLikesInput = {
 export type UserUncheckedCreateWithoutLikesInput = {
   id?: string
   email: string
-  password: string
+  password?: string | null
   username: string
   role: $Enums.UserRoles
   avatar_url?: string | null
   is_active?: boolean
   bio?: string | null
   create_at?: Date | string
+  is_verified?: boolean
+  provider?: $Enums.AuthProvider
+  provider_id?: string | null
   recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
   comments?: Prisma.CommentUncheckedCreateNestedManyWithoutUserInput
   following?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowerInput
@@ -654,13 +742,16 @@ export type UserUpdateToOneWithWhereWithoutLikesInput = {
 export type UserUpdateWithoutLikesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   username?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRolesFieldUpdateOperationsInput | $Enums.UserRoles
   avatar_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   create_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  provider_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
   comments?: Prisma.CommentUpdateManyWithoutUserNestedInput
   following?: Prisma.FollowUpdateManyWithoutFollowerNestedInput
@@ -670,13 +761,16 @@ export type UserUpdateWithoutLikesInput = {
 export type UserUncheckedUpdateWithoutLikesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   username?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRolesFieldUpdateOperationsInput | $Enums.UserRoles
   avatar_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   create_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  provider_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
   comments?: Prisma.CommentUncheckedUpdateManyWithoutUserNestedInput
   following?: Prisma.FollowUncheckedUpdateManyWithoutFollowerNestedInput
@@ -686,13 +780,16 @@ export type UserUncheckedUpdateWithoutLikesInput = {
 export type UserCreateWithoutCommentsInput = {
   id?: string
   email: string
-  password: string
+  password?: string | null
   username: string
   role: $Enums.UserRoles
   avatar_url?: string | null
   is_active?: boolean
   bio?: string | null
   create_at?: Date | string
+  is_verified?: boolean
+  provider?: $Enums.AuthProvider
+  provider_id?: string | null
   recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
   likes?: Prisma.LikeCreateNestedManyWithoutUserInput
   following?: Prisma.FollowCreateNestedManyWithoutFollowerInput
@@ -702,13 +799,16 @@ export type UserCreateWithoutCommentsInput = {
 export type UserUncheckedCreateWithoutCommentsInput = {
   id?: string
   email: string
-  password: string
+  password?: string | null
   username: string
   role: $Enums.UserRoles
   avatar_url?: string | null
   is_active?: boolean
   bio?: string | null
   create_at?: Date | string
+  is_verified?: boolean
+  provider?: $Enums.AuthProvider
+  provider_id?: string | null
   recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
   likes?: Prisma.LikeUncheckedCreateNestedManyWithoutUserInput
   following?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowerInput
@@ -734,13 +834,16 @@ export type UserUpdateToOneWithWhereWithoutCommentsInput = {
 export type UserUpdateWithoutCommentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   username?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRolesFieldUpdateOperationsInput | $Enums.UserRoles
   avatar_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   create_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  provider_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
   likes?: Prisma.LikeUpdateManyWithoutUserNestedInput
   following?: Prisma.FollowUpdateManyWithoutFollowerNestedInput
@@ -750,13 +853,16 @@ export type UserUpdateWithoutCommentsInput = {
 export type UserUncheckedUpdateWithoutCommentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   username?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRolesFieldUpdateOperationsInput | $Enums.UserRoles
   avatar_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   create_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  provider_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
   likes?: Prisma.LikeUncheckedUpdateManyWithoutUserNestedInput
   following?: Prisma.FollowUncheckedUpdateManyWithoutFollowerNestedInput
@@ -766,13 +872,16 @@ export type UserUncheckedUpdateWithoutCommentsInput = {
 export type UserCreateWithoutFollowingInput = {
   id?: string
   email: string
-  password: string
+  password?: string | null
   username: string
   role: $Enums.UserRoles
   avatar_url?: string | null
   is_active?: boolean
   bio?: string | null
   create_at?: Date | string
+  is_verified?: boolean
+  provider?: $Enums.AuthProvider
+  provider_id?: string | null
   recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
   likes?: Prisma.LikeCreateNestedManyWithoutUserInput
   comments?: Prisma.CommentCreateNestedManyWithoutUserInput
@@ -782,13 +891,16 @@ export type UserCreateWithoutFollowingInput = {
 export type UserUncheckedCreateWithoutFollowingInput = {
   id?: string
   email: string
-  password: string
+  password?: string | null
   username: string
   role: $Enums.UserRoles
   avatar_url?: string | null
   is_active?: boolean
   bio?: string | null
   create_at?: Date | string
+  is_verified?: boolean
+  provider?: $Enums.AuthProvider
+  provider_id?: string | null
   recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
   likes?: Prisma.LikeUncheckedCreateNestedManyWithoutUserInput
   comments?: Prisma.CommentUncheckedCreateNestedManyWithoutUserInput
@@ -803,13 +915,16 @@ export type UserCreateOrConnectWithoutFollowingInput = {
 export type UserCreateWithoutFollowedByInput = {
   id?: string
   email: string
-  password: string
+  password?: string | null
   username: string
   role: $Enums.UserRoles
   avatar_url?: string | null
   is_active?: boolean
   bio?: string | null
   create_at?: Date | string
+  is_verified?: boolean
+  provider?: $Enums.AuthProvider
+  provider_id?: string | null
   recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
   likes?: Prisma.LikeCreateNestedManyWithoutUserInput
   comments?: Prisma.CommentCreateNestedManyWithoutUserInput
@@ -819,13 +934,16 @@ export type UserCreateWithoutFollowedByInput = {
 export type UserUncheckedCreateWithoutFollowedByInput = {
   id?: string
   email: string
-  password: string
+  password?: string | null
   username: string
   role: $Enums.UserRoles
   avatar_url?: string | null
   is_active?: boolean
   bio?: string | null
   create_at?: Date | string
+  is_verified?: boolean
+  provider?: $Enums.AuthProvider
+  provider_id?: string | null
   recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
   likes?: Prisma.LikeUncheckedCreateNestedManyWithoutUserInput
   comments?: Prisma.CommentUncheckedCreateNestedManyWithoutUserInput
@@ -851,13 +969,16 @@ export type UserUpdateToOneWithWhereWithoutFollowingInput = {
 export type UserUpdateWithoutFollowingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   username?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRolesFieldUpdateOperationsInput | $Enums.UserRoles
   avatar_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   create_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  provider_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
   likes?: Prisma.LikeUpdateManyWithoutUserNestedInput
   comments?: Prisma.CommentUpdateManyWithoutUserNestedInput
@@ -867,13 +988,16 @@ export type UserUpdateWithoutFollowingInput = {
 export type UserUncheckedUpdateWithoutFollowingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   username?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRolesFieldUpdateOperationsInput | $Enums.UserRoles
   avatar_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   create_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  provider_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
   likes?: Prisma.LikeUncheckedUpdateManyWithoutUserNestedInput
   comments?: Prisma.CommentUncheckedUpdateManyWithoutUserNestedInput
@@ -894,13 +1018,16 @@ export type UserUpdateToOneWithWhereWithoutFollowedByInput = {
 export type UserUpdateWithoutFollowedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   username?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRolesFieldUpdateOperationsInput | $Enums.UserRoles
   avatar_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   create_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  provider_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
   likes?: Prisma.LikeUpdateManyWithoutUserNestedInput
   comments?: Prisma.CommentUpdateManyWithoutUserNestedInput
@@ -910,13 +1037,16 @@ export type UserUpdateWithoutFollowedByInput = {
 export type UserUncheckedUpdateWithoutFollowedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   username?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRolesFieldUpdateOperationsInput | $Enums.UserRoles
   avatar_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   create_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  provider_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
   likes?: Prisma.LikeUncheckedUpdateManyWithoutUserNestedInput
   comments?: Prisma.CommentUncheckedUpdateManyWithoutUserNestedInput
@@ -1000,6 +1130,9 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   is_active?: boolean
   bio?: boolean
   create_at?: boolean
+  is_verified?: boolean
+  provider?: boolean
+  provider_id?: boolean
   recipe?: boolean | Prisma.User$recipeArgs<ExtArgs>
   likes?: boolean | Prisma.User$likesArgs<ExtArgs>
   comments?: boolean | Prisma.User$commentsArgs<ExtArgs>
@@ -1018,6 +1151,9 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   is_active?: boolean
   bio?: boolean
   create_at?: boolean
+  is_verified?: boolean
+  provider?: boolean
+  provider_id?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1030,6 +1166,9 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   is_active?: boolean
   bio?: boolean
   create_at?: boolean
+  is_verified?: boolean
+  provider?: boolean
+  provider_id?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectScalar = {
@@ -1042,9 +1181,12 @@ export type UserSelectScalar = {
   is_active?: boolean
   bio?: boolean
   create_at?: boolean
+  is_verified?: boolean
+  provider?: boolean
+  provider_id?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "username" | "role" | "avatar_url" | "is_active" | "bio" | "create_at", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "username" | "role" | "avatar_url" | "is_active" | "bio" | "create_at" | "is_verified" | "provider" | "provider_id", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   recipe?: boolean | Prisma.User$recipeArgs<ExtArgs>
   likes?: boolean | Prisma.User$likesArgs<ExtArgs>
@@ -1068,13 +1210,16 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     email: string
-    password: string
+    password: string | null
     username: string
     role: $Enums.UserRoles
     avatar_url: string | null
     is_active: boolean
     bio: string | null
     create_at: Date
+    is_verified: boolean
+    provider: $Enums.AuthProvider
+    provider_id: string | null
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -1512,6 +1657,9 @@ export interface UserFieldRefs {
   readonly is_active: Prisma.FieldRef<"User", 'Boolean'>
   readonly bio: Prisma.FieldRef<"User", 'String'>
   readonly create_at: Prisma.FieldRef<"User", 'DateTime'>
+  readonly is_verified: Prisma.FieldRef<"User", 'Boolean'>
+  readonly provider: Prisma.FieldRef<"User", 'AuthProvider'>
+  readonly provider_id: Prisma.FieldRef<"User", 'String'>
 }
     
 
