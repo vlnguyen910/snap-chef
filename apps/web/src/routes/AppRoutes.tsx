@@ -15,6 +15,7 @@ import FollowListPage from '@/pages/FollowListPage';
 import MyRecipesPage from '@/pages/MyRecipesPage';
 import FavoritesPage from '@/pages/FavoritesPage';
 import SettingsPage from '@/pages/SettingsPage';
+import UserSearchPage from '@/pages/UserSearchPage';
 
 // Components
 import UserProfile from '@/components/common/UserProfile';
@@ -37,6 +38,8 @@ export default function AppRoutes() {
         <Route path="/users/:id/profile" element={<UserProfile />} />
         <Route path="/users/:id/followers" element={<FollowListPage />} />
         <Route path="/users/:id/following" element={<FollowListPage />} />
+        {/* Public User Search */}
+        <Route path="/users/search" element={<UserSearchPage />} />
       </Route>
 
       {/* Protected User Routes */}

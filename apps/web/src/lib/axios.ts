@@ -1,7 +1,7 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse, type AxiosError } from 'axios';
 
 // 1. Lấy URL từ biến môi trường (Đã chuẩn)
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 const API_TIMEOUT = 120000; // ✅ 120 seconds (2 minutes) for Render cold start
 
 const apiClient: AxiosInstance = axios.create({
@@ -34,7 +34,15 @@ apiClient.interceptors.response.use(
     return response.data; 
   },
   (error: AxiosError) => {
-    // Xử lý 401 Unauthorized - but only redirect if user is already logged in
+    // Handle network errors - backend not responding
+    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+      console.error('❌ Network Error: Backend server is not responding at', API_BASE_URL);
+      console.error('   Make sure your backend is running on port 8080');
+      // Don't retry - let the component handle the error
+      return Promise.reject(error);
+    }
+
+    // Handle 401 Unauthorized - but only redirect if user is already logged in
     // Don't redirect on login page to allow error messages to show
     if (error.response?.status === 401) {
       const currentPath = window.location.pathname;

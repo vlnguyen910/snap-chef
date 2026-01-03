@@ -1,14 +1,15 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { User, Mail, Edit, Camera, Loader2, X, UserPlus, UserCheck, Heart } from 'lucide-react';
+import { User, Mail, Edit, Camera, Loader2, X, Heart } from 'lucide-react';
 import { api } from '@/lib/axios';
 import { maskEmail } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { uploadToCloudinary } from '@/services/cloudinaryService';
 import { toast } from 'sonner';
 import { useStore } from '@/lib/store';
-import { useMutation } from '@tanstack/react-query';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import FollowersFollowingModal from '@/components/common/FollowersFollowingModal';
+import FollowButton from '@/components/common/FollowButton';
 
 interface UserProfileData {
   id: string;
@@ -44,6 +45,8 @@ export default function UserProfile() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [editForm, setEditForm] = useState({ username: '', bio: '' });
   const [isFollowing, setIsFollowing] = useState(false);
+  const [followModalOpen, setFollowModalOpen] = useState(false);
+  const [followModalTab, setFollowModalTab] = useState<'followers' | 'following'>('followers');
   const [activeTab, setActiveTab] = useState<'created' | 'liked'>('created');
   const [userRecipes, setUserRecipes] = useState<Recipe[]>([]);
   const [likedRecipes, setLikedRecipes] = useState<Recipe[]>([]);
@@ -116,51 +119,6 @@ export default function UserProfile() {
     } finally {
       setLoadingRecipes(false);
     }
-  };
-
-  // Follow/Unfollow mutation
-  const followMutation = useMutation({
-    mutationFn: async (userId: string) => {
-      // Backend handles toggle logic - always POST
-      await api.post(`/users/${userId}/follow`);
-    },
-    onSuccess: async () => {
-      // Update local state without refetching
-      const wasFollowing = isFollowing;
-      setIsFollowing(!wasFollowing);
-      
-      // Update follower count locally
-      if (userData) {
-        setUserData({
-          ...userData,
-          followers_count: wasFollowing 
-            ? (userData.followers_count || 1) - 1 
-            : (userData.followers_count || 0) + 1
-        });
-      }
-      
-      toast.success(wasFollowing ? 'Đã bỏ theo dõi' : 'Đã theo dõi');
-    },
-    onError: (error: any) => {
-      console.error('Follow error:', error);
-      toast.error(error?.response?.data?.message || 'Không thể thực hiện');
-    },
-  });
-
-  const handleFollowToggle = () => {
-    // Check if user is logged in
-    if (!currentUser) {
-      toast.error('Vui lòng đăng nhập để theo dõi người dùng');
-      navigate('/auth/signin');
-      return;
-    }
-
-    if (!userData?.id) {
-      toast.error('Không thể thực hiện');
-      return;
-    }
-
-    followMutation.mutate(userData.id);
   };
 
   const handleAvatarClick = () => {
@@ -443,34 +401,25 @@ export default function UserProfile() {
                   </Button>
                 ) : (
                   /* Follow Button - Only show for other users' profiles */
-                  userData && currentUser?.id !== userData.id && (
-                    <Button
+                  userData && (
+                    <FollowButton
+                      userId={userData.id}
+                      initialIsFollowed={isFollowing}
+                      onFollowChange={(followed) => {
+                        setIsFollowing(followed);
+                        // Update follower count locally
+                        if (userData) {
+                          setUserData({
+                            ...userData,
+                            followers_count: followed 
+                              ? (userData.followers_count || 0) + 1 
+                              : (userData.followers_count || 1) - 1
+                          });
+                        }
+                      }}
                       size="lg"
-                      onClick={handleFollowToggle}
-                      disabled={followMutation.isPending}
-                      className={`flex items-center gap-2 px-8 ${
-                        isFollowing
-                          ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                          : 'bg-orange-600 text-white hover:bg-orange-700'
-                      }`}
-                    >
-                      {followMutation.isPending ? (
-                        <>
-                          <Loader2 className="h-5 w-5 animate-spin" />
-                          Đang xử lý...
-                        </>
-                      ) : isFollowing ? (
-                        <>
-                          <UserCheck className="h-5 w-5" />
-                          Đang theo dõi
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="h-5 w-5" />
-                          Theo dõi
-                        </>
-                      )}
-                    </Button>
+                      className="px-8"
+                    />
                   )
                 )}
               </div>
@@ -563,7 +512,10 @@ export default function UserProfile() {
             <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-2">Công thức</div>
           </div>
           <button 
-            onClick={() => navigate(`/users/${userIdFromUrl || currentUser?.id}/followers`)}
+            onClick={() => {
+              setFollowModalTab('followers');
+              setFollowModalOpen(true);
+            }}
             className="rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 p-6 shadow-lg border border-blue-200 dark:border-blue-800 text-center hover:scale-105 transform transition-all cursor-pointer"
           >
             <div className="text-4xl font-extrabold bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent">
@@ -572,7 +524,10 @@ export default function UserProfile() {
             <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-2">Người theo dõi</div>
           </button>
           <button 
-            onClick={() => navigate(`/users/${userIdFromUrl || currentUser?.id}/following`)}
+            onClick={() => {
+              setFollowModalTab('following');
+              setFollowModalOpen(true);
+            }}
             className="rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 p-6 shadow-lg border border-purple-200 dark:border-purple-800 text-center hover:scale-105 transform transition-all cursor-pointer"
           >
             <div className="text-4xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
@@ -665,6 +620,15 @@ export default function UserProfile() {
             </div>
           )}
         </div>
+
+        {/* Followers/Following Modal */}
+        {followModalOpen && userData && (
+          <FollowersFollowingModal
+            userId={userIdFromUrl || currentUser?.id || ''}
+            initialTab={followModalTab}
+            onClose={() => setFollowModalOpen(false)}
+          />
+        )}
       </div>
     </div>
   );

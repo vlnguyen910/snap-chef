@@ -21,3 +21,34 @@ async function bootstrap() {
   await app.listen(appPort);
 }
 void bootstrap();
+
+
+// import { NestFactory } from '@nestjs/core';
+// import { AppModule } from './app.module';
+// import { ValidationPipe, Logger } from '@nestjs/common';
+// import { getAppConfig } from './common/config/app.config';
+
+// getAppConfig()
+// async function bootstrap() {
+//   const app = await NestFactory.create(AppModule);
+//   const { appName, appPort } = getAppConfig();
+//   const logger = new Logger('Bootstrap');
+
+//   app.useGlobalPipes(
+//     new ValidationPipe({
+//       transform: true,
+//       whitelist: true,
+//       forbidNonWhitelisted: false,
+//     }),
+//   );
+
+//   app.enableCors();
+//   app.setGlobalPrefix('api');
+//   await app.listen(appPort);
+  
+//   // ✅ Confirm server is running
+//   logger.log(`✅ ${appName} is running on: http://localhost:${appPort}/api`);
+// }
+// void bootstrap();
+
+
