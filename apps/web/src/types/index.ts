@@ -195,7 +195,8 @@ export interface UserSummary {
   id: string;
   username: string;
   avatar_url: string;
-  is_followed?: boolean; // Optional: present in followers/following lists when auth token is sent
+  is_following?: boolean; // Whether I am following this user
+  is_followed?: boolean;  // Whether this user is following me (for "Follow Back" logic)
 }
 
 export interface SearchUsersParams {
