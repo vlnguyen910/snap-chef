@@ -47,7 +47,7 @@ export default function FollowersFollowingModal({
   const [following, setFollowing] = useState<UserSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [followingInProgress, setFollowingInProgress] = useState<Set<string>>(new Set());
+  const [loadingState, setLoadingState] = useState<Record<string, boolean>>({});
   const [pagination, setPagination] = useState<PaginationState>({
     followers: { page: 1, hasMore: true, isLoadingMore: false },
     following: { page: 1, hasMore: true, isLoadingMore: false },
@@ -67,9 +67,42 @@ export default function FollowersFollowingModal({
   // Debounce ref for scroll events
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Initialize/reset state when component mounts or userId changes
   useEffect(() => {
+    setIsLoading(true);
+    setError(null);
+    setActiveTab(initialTab);
+    setPagination({
+      followers: { page: 1, hasMore: true, isLoadingMore: false },
+      following: { page: 1, hasMore: true, isLoadingMore: false },
+    });
+    cacheRef.current = {
+      followers: null,
+      following: null,
+    };
+    
     loadData();
-  }, [userId]); // Only load when userId changes, not activeTab
+  }, [userId]); // Reset when userId changes
+
+  // Handle tab switching with proper state reset
+  useEffect(() => {
+    setError(null);
+    setIsLoading(false);
+    
+    // If switching tabs, show cached data or reset for fresh fetch
+    const isCached = activeTab === 'followers' ? cacheRef.current.followers !== null : cacheRef.current.following !== null;
+    
+    if (isCached) {
+      const data = activeTab === 'followers' ? cacheRef.current.followers : cacheRef.current.following;
+      if (data) {
+        if (activeTab === 'followers') {
+          setFollowers(data);
+        } else {
+          setFollowing(data);
+        }
+      }
+    }
+  }, [activeTab]); // Reset error state when tab changes
 
   // Cleanup scroll timeout on unmount
   useEffect(() => {
@@ -100,38 +133,39 @@ export default function FollowersFollowingModal({
     setError(null);
     
     try {
-      // Load followers if not cached
-      if (cacheRef.current.followers === null) {
-        const followersData = await fetchFollowers(1);
-        cacheRef.current.followers = followersData;
-        setFollowers(followersData);
-        setPagination((prev) => ({
-          ...prev,
-          followers: {
-            page: 2,
-            hasMore: followersData.length >= LIMIT,
-            isLoadingMore: false,
-          },
-        }));
+      // Load the appropriate tab's data
+      if (tabToLoad === 'followers') {
+        if (cacheRef.current.followers === null) {
+          const followersData = await fetchFollowers(1);
+          cacheRef.current.followers = followersData;
+          setFollowers(followersData);
+          setPagination((prev) => ({
+            ...prev,
+            followers: {
+              page: 2,
+              hasMore: followersData.length >= LIMIT,
+              isLoadingMore: false,
+            },
+          }));
+        } else {
+          setFollowers(cacheRef.current.followers);
+        }
       } else {
-        setFollowers(cacheRef.current.followers);
-      }
-
-      // Load following if not cached
-      if (cacheRef.current.following === null) {
-        const followingData = await fetchFollowing(1);
-        cacheRef.current.following = followingData;
-        setFollowing(followingData);
-        setPagination((prev) => ({
-          ...prev,
-          following: {
-            page: 2,
-            hasMore: followingData.length >= LIMIT,
-            isLoadingMore: false,
-          },
-        }));
-      } else {
-        setFollowing(cacheRef.current.following);
+        if (cacheRef.current.following === null) {
+          const followingData = await fetchFollowing(1);
+          cacheRef.current.following = followingData;
+          setFollowing(followingData);
+          setPagination((prev) => ({
+            ...prev,
+            following: {
+              page: 2,
+              hasMore: followingData.length >= LIMIT,
+              isLoadingMore: false,
+            },
+          }));
+        } else {
+          setFollowing(cacheRef.current.following);
+        }
       }
     } catch (err: any) {
       console.error('Error loading user network:', err);
@@ -147,73 +181,22 @@ export default function FollowersFollowingModal({
 
   const fetchFollowers = async (page: number) => {
     const response = await getUserFollowers(userId, page, LIMIT);
-    return Array.isArray(response) ? response : [];
+    const data = Array.isArray(response) ? response : [];
+    console.log('📋 Followers API Response:', data); // DEBUG: Log API response
+    return data;
   };
 
   const fetchFollowing = async (page: number) => {
     const response = await getUserFollowing(userId, page, LIMIT);
-    return Array.isArray(response) ? response : [];
+    const data = Array.isArray(response) ? response : [];
+    console.log('📋 Following API Response:', data); // DEBUG: Log API response
+    return data;
   };
 
-  // Handle tab switching with cached data
+  // Handle tab switching - just update the active tab
+  // The useEffect watching [activeTab] will handle state reset and data loading
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
-    
-    // If switching to a cached tab, show data immediately
-    const isCached = tab === 'followers' ? cacheRef.current.followers !== null : cacheRef.current.following !== null;
-    
-    if (isCached) {
-      const data = tab === 'followers' ? cacheRef.current.followers : cacheRef.current.following;
-      if (data) {
-        if (tab === 'followers') {
-          setFollowers(data);
-        } else {
-          setFollowing(data);
-        }
-      }
-    } else {
-      // If not cached, fetch the data
-      setIsLoading(true);
-      setError(null);
-      
-      (tab === 'followers' ? fetchFollowers(1) : fetchFollowing(1))
-        .then((data) => {
-          if (tab === 'followers') {
-            cacheRef.current.followers = data;
-            setFollowers(data);
-            setPagination((prev) => ({
-              ...prev,
-              followers: {
-                page: 2,
-                hasMore: data.length >= LIMIT,
-                isLoadingMore: false,
-              },
-            }));
-          } else {
-            cacheRef.current.following = data;
-            setFollowing(data);
-            setPagination((prev) => ({
-              ...prev,
-              following: {
-                page: 2,
-                hasMore: data.length >= LIMIT,
-                isLoadingMore: false,
-              },
-            }));
-          }
-        })
-        .catch((err: any) => {
-          console.error('Error loading user network:', err);
-          if (err.response?.status === 404) {
-            setError('User not found');
-          } else {
-            setError('Failed to load users. Please try again.');
-          }
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    }
   };
 
   // Handle infinite scroll with debouncing and loading guard
@@ -302,19 +285,19 @@ export default function FollowersFollowingModal({
     }, 100); // 100ms debounce
   };
 
-  const handleFollowToggle = async (targetUserId: string, currentlyFollowed: boolean) => {
+  const handleFollowToggle = async (targetUserId: string, currentIsFollowing: boolean) => {
     if (!user) {
       // Redirect to login if not authenticated
       window.location.href = '/auth/signin';
       return;
     }
 
-    // Optimistic UI update
-    setFollowingInProgress((prev) => new Set(prev).add(targetUserId));
+    // Set loading state for this specific user
+    setLoadingState((prev) => ({ ...prev, [targetUserId]: true }));
 
     const updateUserList = (users: UserSummary[]) =>
       users.map((u) =>
-        u.id === targetUserId ? { ...u, is_followed: !currentlyFollowed } : u
+        u.id === targetUserId ? { ...u, is_following: !currentIsFollowing } : u
       );
 
     // Update local state and cache optimistically
@@ -329,7 +312,7 @@ export default function FollowersFollowingModal({
     }
 
     try {
-      if (currentlyFollowed) {
+      if (currentIsFollowing) {
         await unfollowUser(targetUserId);
       } else {
         await followUser(targetUserId);
@@ -347,10 +330,11 @@ export default function FollowersFollowingModal({
         cacheRef.current.following = reverted;
       }
     } finally {
-      setFollowingInProgress((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(targetUserId);
-        return newSet;
+      // Clear loading state for this user
+      setLoadingState((prev) => {
+        const newState = { ...prev };
+        delete newState[targetUserId];
+        return newState;
       });
     }
   };
@@ -428,49 +412,57 @@ export default function FollowersFollowingModal({
             </div>
           ) : (
             <>
-              <div className="space-y-3">
-                {currentUsers.map((targetUser) => (
-                  <div
+              <div className="space-y-2">
+                {currentUsers.map((targetUser) => {
+                  // DEBUG: Log each user object to see what fields are available
+                  console.log(`User: ${targetUser.username}, is_following: ${targetUser.is_following}, is_followed: ${(targetUser as any).is_followed}, Keys:`, Object.keys(targetUser));
+                  
+                  return (
+                  <Link
                     key={targetUser.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    to={`/users/${targetUser.id}/profile`}
+                    onClick={onClose}
+                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer group"
                   >
-                    <Link
-                      to={`/profile/${targetUser.id}`}
-                      className="flex items-center gap-3 flex-1 min-w-0"
-                      onClick={onClose}
-                    >
+                    {/* User Info - Avatar & Username */}
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
                       <img
                         src={targetUser.avatar_url || '/default-avatar.png'}
                         alt={targetUser.username}
-                        className="h-10 w-10 rounded-full object-cover flex-shrink-0"
+                        className="h-10 w-10 rounded-full object-cover flex-shrink-0 group-hover:ring-2 group-hover:ring-orange-400 transition-all"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
                           {targetUser.username}
                         </p>
                       </div>
-                    </Link>
+                    </div>
 
-                    {/* Follow Button - only show if is_followed is defined and not viewing own profile */}
-                    {user && user.id !== targetUser.id && targetUser.is_followed !== undefined && (
+                    {/* Follow/Unfollow Button - only show if is_following is defined and not viewing own profile */}
+                    {user && user.id !== targetUser.id && targetUser.is_following !== undefined && (
                       <Button
                         size="sm"
-                        variant={targetUser.is_followed ? 'outline' : 'default'}
-                        onClick={() =>
-                          handleFollowToggle(targetUser.id, targetUser.is_followed!)
-                        }
-                        disabled={followingInProgress.has(targetUser.id)}
+                        variant={targetUser.is_following ? 'outline' : 'default'}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleFollowToggle(targetUser.id, targetUser.is_following!);
+                        }}
+                        disabled={loadingState[targetUser.id] === true}
                         className="ml-3 flex-shrink-0"
                       >
-                        {followingInProgress.has(targetUser.id)
+                        {loadingState[targetUser.id]
                           ? 'Loading...'
-                          : targetUser.is_followed
+                          : targetUser.is_following
                           ? 'Unfollow'
+                          : targetUser.is_followed
+                          ? 'Follow Back'
                           : 'Follow'}
                       </Button>
                     )}
-                  </div>
-                ))}
+                  </Link>
+                  );
+                })}
               </div>
 
               {/* Load More Spinner */}

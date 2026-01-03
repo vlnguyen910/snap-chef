@@ -122,7 +122,7 @@ export default function FollowListPage() {
                   : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
-              Following ({followingList.length})
+              Following 
             </button>
             <button
               onClick={() => setActiveTab('followers')}
@@ -132,7 +132,7 @@ export default function FollowListPage() {
                   : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
-              Followers ({followersList.length})
+              Followers
             </button>
           </div>
 
