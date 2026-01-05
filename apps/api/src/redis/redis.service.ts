@@ -11,12 +11,12 @@ export class RedisService {
   async setCache(key: string, data: any, ttl?: number) {
     const stringValue = JSON.stringify(data);
     if (ttl) {
-      await this.client.set(key, stringValue, 'EX', ttl);
+      await this.client.setex(key, ttl * 60, stringValue);
     } else {
       await this.client.set(key, stringValue);
     }
 
-    this.logger.log(`Cache key ${key} has been set`);
+    this.logger.log(`Cache key ${key} has been set with TTL ${ttl || 'none'} minutes`);
   }
 
   async getCache(key: string) {
@@ -26,6 +26,7 @@ export class RedisService {
       return JSON.parse(stringData);
     }
 
+    this.logger.log(`Cache key ${key} miss`);
     return null;
   }
 

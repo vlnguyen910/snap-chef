@@ -6,6 +6,7 @@ export class TokenPayload {
   email!: string;
   username!: string;
   role!: UserRoles;
+  is_verified!: boolean;
   type!: JwtTokenType;
   jti!: string;
 }
