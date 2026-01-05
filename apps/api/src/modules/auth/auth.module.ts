@@ -3,8 +3,10 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigType } from '@nestjs/config';
+import { ConfigType } from '@nestjs/config';
 import { jwtConfiguration } from 'src/common/config/jwt.config';
+import { RedisModule } from 'src/redis/redis.module';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { jwtConfiguration } from 'src/common/config/jwt.config';
       }),
     }),
     UsersModule,
+    RedisModule,
+    MailModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],
