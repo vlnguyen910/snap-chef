@@ -76,6 +76,23 @@ export class AuthService {
     return { message: 'Check your mail to get otp code' };
   }
 
+  async verifyEmail(payload: VerifyEmailDto) {
+    const { id, token } = payload;
+    const cacheKey = `verify_email:${id}`;
+    const cacheToken = await this.redis.getCache(cacheKey);
+
+    if (!cacheToken || cacheToken !== token)
+      throw new BadRequestException('Invalid Token');
+
+    await this.userService.update(id, id, {
+      is_verified: true,
+    })
+
+    await this.redis.delCache(cacheKey);
+
+    return { message: 'Your email has been verified' };
+  }
+
   async refreshToken(
     userPayload: TokenPayload,
   ): Promise<RefreshTokenResponseDto> {
@@ -86,6 +103,19 @@ export class AuthService {
     );
 
     return { access_token };
+  }
+
+  async logout(jti: string): Promise<void> {
+    const blacklistKey = `blacklist:${jti}`;
+    
+    const ttlInDays = 30;
+    await this.redis.setCache(blacklistKey, 'true', ttlInDays * 24 * 60);
+  }
+
+  async isTokenBlacklisted(jti: string): Promise<boolean> {
+    const blacklistKey = `blacklist:${jti}`;
+    const isBlacklisted = await this.redis.getCache(blacklistKey);
+    return !!isBlacklisted;
   }
 
   private async manageUserToken(user: User) {
@@ -113,23 +143,6 @@ export class AuthService {
     ]);
 
     return { access_token, refresh_token };
-  }
-
-  async verifyEmail(payload: VerifyEmailDto) {
-    const { id, token } = payload;
-    const cacheKey = `verify_email:${id}`;
-    const cacheToken = await this.redis.getCache(cacheKey);
-
-    if (!cacheToken || cacheToken !== token)
-      throw new BadRequestException('Invalid Token');
-
-    await this.userService.update(id, id, {
-      is_verified: true,
-    })
-
-    await this.redis.delCache(cacheKey);
-
-    return { message: 'Your email has been verified' };
   }
 
   private async generateToken(

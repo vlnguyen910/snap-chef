@@ -8,6 +8,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import { redisConfiguration } from './common/config/redis.config';
 import { jwtConfiguration } from './common/config/jwt.config';
+import { cookieConfiguration } from './common/config/cookie.config';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { jwtConfiguration } from './common/config/jwt.config';
       load: [
         jwtConfiguration,
         redisConfiguration,
+        cookieConfiguration,
       ],
     }),
     RedisModule.forRootAsync({
