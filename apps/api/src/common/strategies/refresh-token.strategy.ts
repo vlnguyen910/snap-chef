@@ -4,10 +4,11 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { jwtConfiguration } from '../config/jwt.config';
 import { TokenPayload } from '../interfaces/auth.interface';
 import type { ConfigType } from '@nestjs/config';
+import { JwtTokenType } from '../enums/jwt.enum';
 import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   constructor(
     @Inject(jwtConfiguration.KEY)
     private readonly jwtConfig: ConfigType<typeof jwtConfiguration>,
@@ -16,7 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request) => {
-          return request?.cookies?.access_token;
+          return request?.cookies?.refresh_token;
         },
         ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]),
@@ -26,6 +27,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: TokenPayload) {
+    if (payload.type !== JwtTokenType.RefreshToken) {
+      throw new UnauthorizedException('Invalid token type');
+    }
+
+    // Kiểm tra token có bị blacklist không
     const blacklistKey = `blacklist:${payload.jti}`;
     const isBlacklisted = await this.redisService.getCache(blacklistKey);
     

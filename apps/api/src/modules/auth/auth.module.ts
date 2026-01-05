@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
@@ -7,6 +7,8 @@ import { ConfigType } from '@nestjs/config';
 import { jwtConfiguration } from 'src/common/config/jwt.config';
 import { RedisModule } from 'src/redis/redis.module';
 import { MailModule } from '../mail/mail.module';
+import { RefreshTokenStrategy } from 'src/common/strategies/refresh-token.strategy';
+import { JwtStrategy } from 'src/common/strategies/jwt.strategy';
 
 @Module({
   imports: [
@@ -22,7 +24,7 @@ import { MailModule } from '../mail/mail.module';
     MailModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, JwtStrategy, RefreshTokenStrategy],
   exports: [AuthService],
 })
 export class AuthModule { }
