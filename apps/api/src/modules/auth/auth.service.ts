@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
@@ -11,7 +12,7 @@ import argon2 from 'argon2';
 import { TokenPayload } from '../../common/interfaces/auth.interface';
 import { JwtTokenType } from '../../common/enums/jwt.enum';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
-import { User, UserRoles } from 'src/generated/prisma/client';
+import { AuthProvider, User, UserRoles } from 'src/generated/prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import type { ConfigType } from '@nestjs/config';
 import { jwtConfiguration } from 'src/common/config/jwt.config';
@@ -64,6 +65,7 @@ export class AuthService {
       username,
       password: hashedPassword,
       avatar_url,
+      provider: AuthProvider.LOCAL,
       role: UserRoles.USER,
     });
 
@@ -107,9 +109,35 @@ export class AuthService {
 
   async logout(jti: string): Promise<void> {
     const blacklistKey = `blacklist:${jti}`;
-    
+
     const ttlInDays = 30;
     await this.redis.setCache(blacklistKey, 'true', ttlInDays * 24 * 60);
+  }
+
+  async googleLogin(req) {
+    if (!req.user) throw new NotFoundException('No user from Google found');
+
+    const { email, firstName, lastName, picture } = req.user;
+
+    const exsitingUser = await this.userService.findByEmail(email);
+    if (exsitingUser)
+      throw new ForbiddenException('Email is already in use');
+
+    const newUser = await this.userService.create({
+      email,
+      username: firstName + " " + lastName,
+      password: null,
+      avatar_url: picture,
+      provider: AuthProvider.GOOGLE,
+      provider_id: req.user.id,
+      role: UserRoles.USER,
+      is_verified: true,
+    })
+
+    const cacheKey = `user:${newUser.id}`
+    await this.redis.setCache(cacheKey, newUser, 60);
+
+    return this.manageUserToken(newUser);
   }
 
   async isTokenBlacklisted(jti: string): Promise<boolean> {

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Post, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Post, Query, Res, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/request/login.dto';
 import { LoginResponseDto } from './dto/respone/login-respone.dto';
@@ -12,6 +12,7 @@ import { RefreshTokenResponseDto } from './dto/respone/refresh-token-respone.dto
 import { cookieConfiguration } from 'src/common/config/cookie.config';
 import type { ConfigType } from '@nestjs/config';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import { GoogleOAuthGuard } from 'src/common/guards/google-oauth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -100,5 +101,35 @@ export class AuthController {
     @Query() payload: VerifyEmailDto,
   ): Promise<{ message: string }> {
     return await this.authService.verifyEmail(payload);
+  }
+
+  @Get('google')
+  @UseGuards(GoogleOAuthGuard)
+  async googleAuth(@Request() req) { }
+
+  @Get('google-redirect')
+  @UseGuards(GoogleOAuthGuard)
+  async googleAuthRedirect(
+    @Request() req: any,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const data = await this.authService.googleLogin(req);
+
+    res.cookie('access_token', data.access_token, {
+      httpOnly: this.cookieConfig.httpOnly,
+      secure: this.cookieConfig.secure,
+      sameSite: this.cookieConfig.sameSite,
+      maxAge: this.cookieConfig.accessTokenMaxAge,
+    });
+
+    res.cookie('refresh_token', data.refresh_token, {
+      httpOnly: this.cookieConfig.httpOnly,
+      secure: this.cookieConfig.secure,
+      sameSite: this.cookieConfig.sameSite,
+      maxAge: this.cookieConfig.refreshTokenMaxAge,
+      path: '/auth/refresh'
+    });
+
+    return data;
   }
 }
