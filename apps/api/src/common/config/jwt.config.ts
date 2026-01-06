@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { registerAs } from '@nestjs/config';
 import { APP_DEFAULTS } from '../constants/app.constrant';
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 export const jwtConfiguration = registerAs('jwt', () => ({
   secret: process.env.JWT_SECRET!,
   accessTokenExpiresIn:

@@ -9,6 +9,7 @@ import { ConfigModule, ConfigType } from '@nestjs/config';
 import { redisConfiguration } from './common/config/redis.config';
 import { jwtConfiguration } from './common/config/jwt.config';
 import { cookieConfiguration } from './common/config/cookie.config';
+import { googleConfiguration } from './common/config/google.config';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { cookieConfiguration } from './common/config/cookie.config';
         jwtConfiguration,
         redisConfiguration,
         cookieConfiguration,
+        googleConfiguration,
       ],
     }),
     RedisModule.forRootAsync({
