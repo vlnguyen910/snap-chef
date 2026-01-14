@@ -1,78 +1,106 @@
-# 👨‍💻 Quy Trình Làm Việc Git Rebase trên GitHub (Dev Branch)
+# � Quy Chế Đóng Góp (Contributing Guidelines)
 
-Quy trình này nhằm mục đích tạo ra một **lịch sử commit tuyến tính, sạch sẽ** (`linear, clean history`) trên nhánh chính (`dev`) bằng cách sử dụng `git rebase` cục bộ và tính năng **Rebase and Merge** của GitHub.
-
----
-
-## ⚠️ Nguyên Tắc Vàng
-
-**KHÔNG BAO GIỜ** rebase một nhánh đã được chia sẻ công khai (`dev` hoặc bất kỳ nhánh nào đồng đội đã clone). Chúng ta chỉ rebase **nhánh tính năng cục bộ** (`feature-branch`) của mình.
+Chào mừng bạn đến với dự án Snap Chef! Tài liệu này mô tả quy trình làm việc để đảm bảo code sạch sẽ, chất lượng và thống nhất.
 
 ---
 
-## 🚀 Các Bước Thực Hiện
+## 🛠️ I. Thiết Lập Môi Trường (Setup)
 
-### I. Chuẩn Bị và Phát Triển
+1.  **Yêu cầu tiên quyết:**
+    -   Node.js (>= 18)
+    -   pnpm (>= 9)
 
+2.  **Cài đặt:**
+    ```bash
+    git clone ...
+    cd snap-chef
+    pnpm install
+    ```
+
+3.  **Biến môi trường:**
+    -   Copy file `.env-example` thành `.env` trong các thư mục ứng dụng tương ứng (`apps/api`, `apps/web`...) và cấu hình các giá trị cần thiết.
+
+---
+
+## ✅ II. Kiểm Tra Chất Lượng (Verification)
+
+**Trước khi tạo Pull Request**, bạn BẮT BUỘC phải đảm bảo code của mình vượt qua các bài kiểm tra tự động. CI/CD pipeline sẽ tự động chạy các bước này, nhưng bạn nên chạy cục bộ để tiết kiệm thời gian.
+
+Tại thư mục gốc (root):
+
+1.  **Kiểm tra Type (TypeScript):**
+    ```bash
+    pnpm check-types
+    ```
+2.  **Kiểm tra Lint:**
+    ```bash
+    pnpm lint
+    ```
+3.  **Chạy Test:**
+    ```bash
+    pnpm test
+    ```
+
+---
+
+## 🔄 III. Quy Trình Git & Rebase
+
+Chúng ta sử dụng quy trình **Rebase** để giữ lịch sử commit tuyến tính và sạch sẽ trên nhánh `dev`.
+
+### 1. Nguyên Tắc Vàng ⚠️
+**KHÔNG BAO GIỜ** rebase một nhánh đã được chia sẻ công khai (`dev` hoặc bất kỳ nhánh nào đồng đội đã clone). Chỉ rebase **nhánh tính năng cục bộ** của bạn.
+
+### 2. Các Bước Thực Hiện
+
+#### A. Chuẩn Bị và Phát Triển
 1.  **Đồng bộ hóa nhánh `dev`:**
     ```bash
     git checkout dev
-    git pull origin dev 
+    git pull origin dev
     ```
-    *(Đảm bảo nhánh dev cục bộ của bạn là mới nhất.)*
-
 2.  **Tạo nhánh tính năng:**
+    Đặt tên theo format `loại/tên-tính-năng`. Ví dụ: `feat/group-chat`, `fix/login-bug`.
     ```bash
-    git checkout -b ten-tinh-nang
+    git checkout -b feat/ten-tinh-nang
     ```
-
 3.  **Phát triển và Commit:**
-    *(Thực hiện công việc và commit thường xuyên.)*
+    *Khuyến khích sử dụng Conventional Commits (ví dụ: `feat: add login`, `fix: header layout`).*
     ```bash
     git add .
-    git commit -m "Thêm tính năng A"
-    # ...
+    git commit -m "feat: mô tả công việc"
     ```
 
-### II. Làm Sạch Lịch Sử (Rebase Cục Bộ)
+#### B. Làm Sạch Lịch Sử (Rebase Cục Bộ)
+Trước khi push hoặc mở PR, hãy cập nhật nhánh của bạn với code mới nhất từ `dev` để tránh xung đột sau này.
 
-Trước khi mở Pull Request (PR) hoặc sau khi PR đã chạy được một thời gian và nhánh `dev` đã có các commit mới, bạn cần rebase nhánh tính năng của mình.
-
-1.  **Lấy các thay đổi mới nhất từ remote `dev`:**
+1.  **Lấy code mới nhất:**
     ```bash
     git checkout dev
     git fetch origin dev
+    git pull origin dev
     ```
-
 2.  **Thực hiện Rebase:**
     ```bash
-    git checkout ten-tinh-nang
-    git rebase origin/dev
+    git checkout feat/ten-tinh-nang
+    git rebase dev
     ```
-    * 💡 **Hành động:** Git sẽ dỡ bỏ các commit của bạn và áp dụng lại chúng lên trên commit mới nhất của `origin/dev`.
-    * 💥 **Giải quyết xung đột:** Nếu có xung đột (`conflict`), Git sẽ tạm dừng. Bạn cần giải quyết xung đột, sau đó chạy:
-      ```bash
-      git add .
-      git rebase --continue
-      ```
-
-3.  **Đẩy Cưỡng Bức (Force Push) lên GitHub:**
-    Vì `rebase` đã viết lại lịch sử commit của nhánh tính năng, bạn cần sử dụng **force push** để cập nhật PR trên GitHub.
+    *   *Nếu có xung đột (`conflict`):* Giải quyết file conflict -> `git add .` -> `git rebase --continue`.
+3.  **Đẩy code (Push):**
+    Nếu bạn đã push nhánh này trước đó, sau khi rebase bạn cần force push.
     ```bash
-    git push origin ten-tinh-nang --force-with-lease
+    git push origin feat/ten-tinh-nang --force-with-lease
     ```
-    * 🛡️ **`--force-with-lease`** an toàn hơn `--force` vì nó kiểm tra xem bạn có vô tình ghi đè công việc của người khác lên cùng một nhánh không.
-
-### III. Hợp Nhất (Merge) trên GitHub
-
-Sau khi PR được review và phê duyệt, bạn sẽ sử dụng giao diện GitHub để hợp nhất nó.
-
-* **Tại giao diện Pull Request:** Chọn tùy chọn **`Rebase and Merge`**.
-
-    | Tùy chọn | Mục đích | Lịch sử `dev` |
-    | :--- | :--- | :--- |
-    | **Rebase and Merge** (Ưu tiên) | Lấy từng commit trên nhánh tính năng và áp dụng chúng lên `dev` một cách tuần tự. | **Tuyến tính, Sạch sẽ, Giữ nguyên Commit** |
-    | **Squash and Merge** | Nén tất cả commit trên nhánh tính năng thành **một commit DUY NHẤT** trước khi hợp nhất vào `dev`. | **Rất Sạch, Một Commit/Tính năng, Mất lịch sử chi tiết** |
-    | **Create a Merge Commit** | Tạo một commit hợp nhất (thường được gọi là "3-way merge"). | **Lịch sử lộn xộn (merge commit), Không ưu tiên trong quy trình Rebase** |
 
 ---
+
+## 🔀 IV. Quy Trình Pull Request (PR)
+
+1.  Tạo Pull Request trên GitHub hướng vào nhánh `dev`.
+2.  **Tiêu đề PR:** Rõ ràng, mô tả ngắn gọn tính năng (VD: `[Feat] Group Management`).
+3.  **Checklist:**
+    -   [ ] Code đã được format và lint.
+    -   [ ] Đã chạy `pnpm check-types` và `pnpm test` thành công.
+    -   [ ] Đã tự review code của mình.
+4.  **Hợp nhất (Merge):**
+    -   Người review (hoặc bạn nếu được phép) sẽ chọn **`Rebase and Merge`** để đưa code vào `dev`.
+    -   *Lý do:* Giữ lịch sử `dev` thẳng hàng, không tạo ra các "merge commit" thừa thãi.
