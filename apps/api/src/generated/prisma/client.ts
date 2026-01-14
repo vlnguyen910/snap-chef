@@ -43,6 +43,11 @@ export { Prisma }
  */
 export type User = Prisma.UserModel
 /**
+ * Model OauthAccount
+ * 
+ */
+export type OauthAccount = Prisma.OauthAccountModel
+/**
  * Model Recipe
  * 
  */
