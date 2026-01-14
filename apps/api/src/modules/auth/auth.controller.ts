@@ -1,4 +1,16 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Post, Query, Res, UseGuards, Request } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Inject,
+  Post,
+  Query,
+  Res,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/request/login.dto';
 import { LoginResponseDto } from './dto/respone/login-respone.dto';
@@ -20,7 +32,7 @@ export class AuthController {
     private readonly authService: AuthService,
     @Inject(cookieConfiguration.KEY)
     private readonly cookieConfig: ConfigType<typeof cookieConfiguration>,
-  ) { }
+  ) {}
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
@@ -42,7 +54,7 @@ export class AuthController {
       secure: this.cookieConfig.secure,
       sameSite: this.cookieConfig.sameSite,
       maxAge: this.cookieConfig.refreshTokenMaxAge,
-      path: '/auth/refresh'
+      path: '/auth/refresh',
     });
 
     return data;
@@ -96,7 +108,7 @@ export class AuthController {
     return { message: 'Logged out successfully' };
   }
 
-  @Get("verify-email")
+  @Get('verify-email')
   async verifyUser(
     @Query() payload: VerifyEmailDto,
   ): Promise<{ message: string }> {
@@ -105,7 +117,7 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(GoogleOAuthGuard)
-  async googleAuth(@Request() req) { }
+  async googleAuth() {}
 
   @Get('google-redirect')
   @UseGuards(GoogleOAuthGuard)
@@ -113,6 +125,7 @@ export class AuthController {
     @Request() req: any,
     @Res({ passthrough: true }) res: Response,
   ) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const data = await this.authService.googleLogin(req);
 
     res.cookie('access_token', data.access_token, {
@@ -127,7 +140,7 @@ export class AuthController {
       secure: this.cookieConfig.secure,
       sameSite: this.cookieConfig.sameSite,
       maxAge: this.cookieConfig.refreshTokenMaxAge,
-      path: '/auth/refresh'
+      path: '/auth/refresh',
     });
 
     return data;

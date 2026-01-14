@@ -1,5 +1,5 @@
-import { IsEnum, IsNotEmpty, IsString } from "class-validator";
-import { OAuthProvider } from "src/generated/prisma/enums";
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { OAuthProvider } from 'src/generated/prisma/enums';
 
 export class CreateOauthAccountDto {
   @IsNotEmpty()

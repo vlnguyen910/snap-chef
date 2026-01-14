@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 @Module({
   imports: [
     MailerModule.forRootAsync({
-      useFactory: async (config: ConfigService) => ({
+      useFactory: (config: ConfigService) => ({
         transport: {
           host: config.get('MAIL_HOST'),
           secure: false,
@@ -34,5 +34,4 @@ import { ConfigService } from '@nestjs/config';
   providers: [MailerService],
   exports: [MailerService],
 })
-export class MailModule { }
-
+export class MailModule {}

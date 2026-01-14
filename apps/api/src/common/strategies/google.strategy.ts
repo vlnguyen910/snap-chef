@@ -4,6 +4,16 @@ import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { googleConfiguration } from '../config/google.config';
 import type { ConfigType } from '@nestjs/config';
 
+interface GoogleProfile {
+  id: string;
+  name: {
+    givenName: string;
+    familyName: string;
+  };
+  emails: { value: string }[];
+  photos: { value: string }[];
+}
+
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(
@@ -14,16 +24,16 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       clientID: googleConfig.clientID!,
       clientSecret: googleConfig.clientSerect!,
       callbackURL: googleConfig.callbackURL!,
-      scope: googleConfig.scope!,
+      scope: googleConfig.scope,
     });
   }
 
-  async validate(
+  validate(
     accessToken: string,
     refreshToken: string,
-    profile: any,
+    profile: GoogleProfile,
     done: VerifyCallback,
-  ): Promise<any> {
+  ): any {
     const { name, emails, photos } = profile;
 
     if (!emails?.[0]?.value) {
@@ -34,9 +44,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       email: emails[0].value,
       firstName: name.givenName,
       lastName: name.familyName,
-      picture: photos[0].value,
-      provider_id: profile.id
+      picture: photos?.[0]?.value,
+      provider_id: profile.id,
     };
-    return user;
+    return done(null, user);
   }
 }

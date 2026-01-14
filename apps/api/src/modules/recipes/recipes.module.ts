@@ -9,7 +9,7 @@ import { jwtConfiguration } from 'src/common/config/jwt.config';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from '../users/users.module';
 import { CommentsModule } from '../comments/comments.module';
-import { RedisModule } from 'src/redis/redis.module'
+import { RedisModule } from 'src/redis/redis.module';
 
 @Module({
   imports: [
@@ -24,4 +24,4 @@ import { RedisModule } from 'src/redis/redis.module'
   controllers: [RecipesController],
   providers: [RecipesService, JwtStrategy],
 })
-export class RecipesModule { }
+export class RecipesModule {}
