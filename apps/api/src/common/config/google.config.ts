@@ -5,4 +5,4 @@ export const googleConfiguration = registerAs('google', () => ({
   clientSerect: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: process.env.GOOOGLE_CALLBACK_URL,
   scope: ['email', 'profile'],
-}))
+}));

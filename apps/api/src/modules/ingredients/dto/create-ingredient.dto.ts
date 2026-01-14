@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsPositive, IsString, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
 
 export class CreateIngredientDto {
   @IsNotEmpty()
@@ -10,8 +10,8 @@ export class IngredientItemDto {
   @IsString()
   name!: string;
 
-  @IsNumber() 
-  @IsPositive({ message: "Quantity must be a greater than 0" })
+  @IsNumber()
+  @IsPositive({ message: 'Quantity must be a greater than 0' })
   quantity!: number;
 
   @IsString()

@@ -3,15 +3,10 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
-  Delete,
   UseGuards,
-  ParseIntPipe,
   Put,
-  UnauthorizedException,
   Query,
-  DefaultValuePipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,12 +16,10 @@ import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt-auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserPaginationDto } from 'src/common/dto/pagination.dto';
-import { profile } from 'console';
-
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
@@ -35,14 +28,8 @@ export class UsersController {
 
   @Get()
   @UseGuards(OptionalJwtAuthGuard)
-  findAll(
-    @Query() query: UserPaginationDto,
-    @GetUser() user?: User | undefined,
-  ) {
-    return this.usersService.findAll(
-      query,
-      user?.id
-    );
+  findAll(@Query() query: UserPaginationDto, @GetUser() user?: User) {
+    return this.usersService.findAll(query, user?.id);
   }
 
   @Get('/me')
@@ -93,10 +80,7 @@ export class UsersController {
 
   @Post(':id/follow')
   @UseGuards(JwtAuthGuard)
-  followUser(
-    @GetUser() user: User,
-    @Param('id') following_id: string,
-  ) {
+  followUser(@GetUser() user: User, @Param('id') following_id: string) {
     return this.usersService.followUser(user.id, following_id);
   }
 

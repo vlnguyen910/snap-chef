@@ -8,7 +8,10 @@ import { JwtTokenType } from '../enums/jwt.enum';
 import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
-export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
+export class RefreshTokenStrategy extends PassportStrategy(
+  Strategy,
+  'jwt-refresh',
+) {
   constructor(
     @Inject(jwtConfiguration.KEY)
     private readonly jwtConfig: ConfigType<typeof jwtConfiguration>,
@@ -16,7 +19,8 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'jwt-refres
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        (request) => {
+        (request: any) => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
           return request?.cookies?.refresh_token;
         },
         ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -34,7 +38,7 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'jwt-refres
     // Kiểm tra token có bị blacklist không
     const blacklistKey = `blacklist:${payload.jti}`;
     const isBlacklisted = await this.redisService.getCache(blacklistKey);
-    
+
     if (isBlacklisted) {
       throw new UnauthorizedException('Token has been revoked');
     }

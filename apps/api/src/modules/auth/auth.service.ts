@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ConflictException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -24,7 +23,14 @@ import { RedisService } from 'src/redis/redis.service';
 import { MailerService } from '../mail/mail.service';
 import { VerifyEmailDto } from './dto/request/verify-email.dto';
 import { OauthService } from '../oauth-accounts/oauth.service';
-import { log } from 'node:console';
+
+interface GoogleUser {
+  email: string;
+  firstName: string;
+  lastName: string;
+  picture: string;
+  provider_id: string;
+}
 
 @Injectable()
 export class AuthService {
@@ -36,7 +42,7 @@ export class AuthService {
     private redis: RedisService,
     private mailService: MailerService,
     private oauthService: OauthService,
-  ) { }
+  ) {}
 
   async login(body: LoginDto): Promise<LoginResponseDto> {
     const { email, password } = body;
@@ -73,7 +79,9 @@ export class AuthService {
     });
 
     const cacheKey = `verify_email:${newUser.id}`;
-    const token: string = Math.floor(100000 + Math.random() * 900000).toString();
+    const token: string = Math.floor(
+      100000 + Math.random() * 900000,
+    ).toString();
     await this.redis.setCache(cacheKey, token, 10);
 
     await this.mailService.sendUserConfirmation(newUser, token);
@@ -84,14 +92,14 @@ export class AuthService {
   async verifyEmail(payload: VerifyEmailDto) {
     const { id, token } = payload;
     const cacheKey = `verify_email:${id}`;
-    const cacheToken = await this.redis.getCache(cacheKey);
+    const cacheToken = await this.redis.getCache<string>(cacheKey);
 
     if (!cacheToken || cacheToken !== token)
       throw new BadRequestException('Invalid Token');
 
     await this.userService.update(id, id, {
       is_verified: true,
-    })
+    });
 
     await this.redis.delCache(cacheKey);
 
@@ -117,7 +125,7 @@ export class AuthService {
     await this.redis.setCache(blacklistKey, 'true', ttlInDays * 24 * 60);
   }
 
-  async googleLogin(req: any): Promise<LoginResponseDto> {
+  async googleLogin(req: { user: GoogleUser }): Promise<LoginResponseDto> {
     if (!req.user) throw new NotFoundException('No user from Google found');
 
     const { email, firstName, lastName, picture, provider_id } = req.user;
@@ -170,13 +178,14 @@ export class AuthService {
 
   private async manageUserToken(user: User) {
     const jti = uuidv4();
-    const tokenPayload = {
+    const tokenPayload: TokenPayload = {
       sub: user.id,
       jti,
       username: user.username,
       email: user.email,
       role: user.role,
       is_verified: user.is_verified,
+      type: JwtTokenType.AccessToken, // Placeholder, type is overwritten by generateToken
     };
 
     const [access_token, refresh_token] = await Promise.all([
@@ -196,18 +205,13 @@ export class AuthService {
   }
 
   private async generateToken(
-    payload: Partial<TokenPayload>,
+    payload: TokenPayload,
     type: JwtTokenType,
     expiresIn: number | string,
   ) {
     const tokenPayload: TokenPayload = {
-      sub: payload.sub!,
-      email: payload.email!,
-      username: payload.username!,
-      role: payload.role!,
-      is_verified: payload.is_verified!,
+      ...payload,
       type,
-      jti: payload.jti!,
     };
 
     const options: Partial<JwtSignOptions> = {

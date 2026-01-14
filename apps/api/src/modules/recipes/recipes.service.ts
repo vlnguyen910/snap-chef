@@ -3,7 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
   NotFoundException,
-  Logger
+  Logger,
 } from '@nestjs/common';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
@@ -11,7 +11,7 @@ import { PrismaService } from 'src/db/prisma.service';
 import { IngredientsService } from '../ingredients/ingredients.service';
 import { RecipeStatus } from 'src/generated/prisma/enums';
 import { Recipe, RecipeIngredient } from 'src/generated/prisma/client';
-import { UsersService } from '../users/users.service'
+import { UsersService } from '../users/users.service';
 import { RecipeWhereInput } from 'src/generated/prisma/models/Recipe';
 import { RedisService } from 'src/redis/redis.service';
 
@@ -22,7 +22,7 @@ export class RecipesService {
     private ingredientsService: IngredientsService,
     private userService: UsersService,
     private redis: RedisService,
-  ) { }
+  ) {}
 
   private readonly logger = new Logger(RecipesService.name);
 
@@ -49,7 +49,7 @@ export class RecipesService {
   }
 
   async create(user_id: string, dto: CreateRecipeDto) {
-    const user = this.userService.findOne(user_id);
+    const user = await this.userService.findOne(user_id);
     if (!user) throw new BadRequestException('User is not exist');
 
     const orderIndices = dto.steps.map((step) => step.order_index);
@@ -110,7 +110,11 @@ export class RecipesService {
     });
   }
 
-  async findAll(params: { page: number; limit: number; search?: string }): Promise<Recipe[]> {
+  async findAll(params: {
+    page: number;
+    limit: number;
+    search?: string;
+  }): Promise<Recipe[]> {
     const { page, limit, search } = params;
     const skip = (page - 1) * limit;
 
@@ -144,21 +148,21 @@ export class RecipesService {
             email: true,
             avatar_url: true,
             role: true,
-          }
+          },
         },
         ingredients: {
           select: {
             quantity: true,
             unit: true,
             ingredient: true,
-          }
+          },
         },
         _count: {
           select: {
             comments: true,
             likes: true,
-          }
-        }
+          },
+        },
       },
     });
 
@@ -172,10 +176,11 @@ export class RecipesService {
     });
   }
 
-  async findOne(id: number, user_id?: string | undefined) {
+  async findOne(id: number, user_id?: string): Promise<any> {
     const cacheKey = `recipe:${id}`;
 
-    let recipeData = await this.redis.getCache(cacheKey);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    let recipeData = await this.redis.getCache<any>(cacheKey);
     if (!recipeData) {
       const recipe = await this.prisma.recipe.findUnique({
         where: { id },
@@ -193,16 +198,16 @@ export class RecipesService {
               quantity: true,
               unit: true,
               ingredient: true,
-            }
+            },
           },
           steps: true,
           _count: {
             select: {
               comments: true,
               likes: true,
-            }
-          }
-        }
+            },
+          },
+        },
       });
 
       if (!recipe) throw new NotFoundException('Recipe is not exist');
@@ -216,29 +221,31 @@ export class RecipesService {
 
       await this.redis.setCache(cacheKey, recipeData, 60);
     }
-    const is_liked = user_id ?
-      await this.checkUserLiked(user_id, id)
-      : false;
+    const is_liked = user_id ? await this.checkUserLiked(user_id, id) : false;
 
     return {
       ...recipeData,
       is_liked,
-    }
+    };
   }
 
   async update(id: number, user_id: string, updateRecipeDto: UpdateRecipeDto) {
     const { ingredients, steps, ...scalarFields } = updateRecipeDto;
     const cacheKey = `recipe:id`;
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const oldRecipe = await this.findOne(id);
     if (!oldRecipe) throw new NotFoundException('Recipe not found');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (oldRecipe.author_id !== user_id)
-      throw new UnauthorizedException('You have no right to perform this action');
+      throw new UnauthorizedException(
+        'You have no right to perform this action',
+      );
 
     await this.redis.delCache(cacheKey);
 
     return await this.prisma.$transaction(async (tx) => {
-      const updateRecipe = await tx.recipe.update({
+      await tx.recipe.update({
         where: { id },
         data: scalarFields,
       });
@@ -246,13 +253,13 @@ export class RecipesService {
       if (ingredients && ingredients.length > 0) {
         this.logger.log(`Deleting ingredients of recipe: ${id}`);
         await tx.recipeIngredient.deleteMany({
-          where: { recipe_id: id }
+          where: { recipe_id: id },
         });
 
         for (const item of ingredients) {
           const ingredient = await this.ingredientsService.upsertByName(
             item.name,
-            tx
+            tx,
           );
 
           await tx.recipeIngredient.create({
@@ -270,7 +277,7 @@ export class RecipesService {
       if (steps && steps.length > 0) {
         this.logger.log(`Deleting steps of recipe: ${id}`);
         await tx.step.deleteMany({
-          where: { recipe_id: id }
+          where: { recipe_id: id },
         });
 
         await tx.step.createMany({
@@ -292,12 +299,12 @@ export class RecipesService {
               quantity: true,
               unit: true,
               ingredient: true,
-            }
+            },
           },
           steps: { orderBy: { order_index: 'asc' } },
         },
       });
-    })
+    });
   }
 
   private async checkUserLiked(user_id: string, recipe_id: number) {
@@ -314,7 +321,7 @@ export class RecipesService {
   async likeRecipe(user_id: string, recipe_id: number) {
     const recipe = await this.prisma.recipe.findUnique({
       where: { id: recipe_id },
-      select: { author_id: true }
+      select: { author_id: true },
     });
 
     if (!recipe) throw new NotFoundException('Recipe not found');
@@ -351,12 +358,12 @@ export class RecipesService {
           select: {
             comments: true,
             likes: true,
-          }
-        }
+          },
+        },
       },
       orderBy: {
         created_at: 'desc',
-      }
+      },
     });
 
     return recipes.map((recipe) => {

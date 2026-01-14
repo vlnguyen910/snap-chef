@@ -30,16 +30,16 @@ import { UsersModule } from './modules/users/users.module';
         options: {
           host: redisConfig.host,
           port: redisConfig.port,
-        }
+        },
       }),
     }),
     UsersModule,
     CommentsModule,
     RecipesModule,
     IngredientsModule,
-    AuthModule
+    AuthModule,
   ],
   controllers: [],
   providers: [PrismaService],
 })
-export class AppModule { }
+export class AppModule {}

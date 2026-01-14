@@ -3,12 +3,9 @@ import { PrismaModule } from 'src/db/prisma.module';
 import { CommentsService } from './comments.service';
 
 @Module({
-  imports: [
-    PrismaModule,
-  ],
+  imports: [PrismaModule],
   controllers: [],
   providers: [CommentsService],
   exports: [CommentsService],
 })
-
 export class CommentsModule {}
