@@ -385,6 +385,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   User: 'User',
+  OauthAccount: 'OauthAccount',
   Recipe: 'Recipe',
   Ingredient: 'Ingredient',
   RecipeIngredient: 'RecipeIngredient',
@@ -407,7 +408,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "recipe" | "ingredient" | "recipeIngredient" | "step" | "like" | "comment" | "follow"
+    modelProps: "user" | "oauthAccount" | "recipe" | "ingredient" | "recipeIngredient" | "step" | "like" | "comment" | "follow"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -482,6 +483,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.UserCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.UserCountAggregateOutputType> | number
+        }
+      }
+    }
+    OauthAccount: {
+      payload: Prisma.$OauthAccountPayload<ExtArgs>
+      fields: Prisma.OauthAccountFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OauthAccountFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OauthAccountPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OauthAccountFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OauthAccountPayload>
+        }
+        findFirst: {
+          args: Prisma.OauthAccountFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OauthAccountPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OauthAccountFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OauthAccountPayload>
+        }
+        findMany: {
+          args: Prisma.OauthAccountFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OauthAccountPayload>[]
+        }
+        create: {
+          args: Prisma.OauthAccountCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OauthAccountPayload>
+        }
+        createMany: {
+          args: Prisma.OauthAccountCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OauthAccountCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OauthAccountPayload>[]
+        }
+        delete: {
+          args: Prisma.OauthAccountDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OauthAccountPayload>
+        }
+        update: {
+          args: Prisma.OauthAccountUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OauthAccountPayload>
+        }
+        deleteMany: {
+          args: Prisma.OauthAccountDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OauthAccountUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OauthAccountUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OauthAccountPayload>[]
+        }
+        upsert: {
+          args: Prisma.OauthAccountUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OauthAccountPayload>
+        }
+        aggregate: {
+          args: Prisma.OauthAccountAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOauthAccount>
+        }
+        groupBy: {
+          args: Prisma.OauthAccountGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OauthAccountGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OauthAccountCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OauthAccountCountAggregateOutputType> | number
         }
       }
     }
@@ -1052,12 +1127,21 @@ export const UserScalarFieldEnum = {
   is_active: 'is_active',
   bio: 'bio',
   create_at: 'create_at',
-  is_verified: 'is_verified',
-  provider: 'provider',
-  provider_id: 'provider_id'
+  is_verified: 'is_verified'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const OauthAccountScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  provider: 'provider',
+  provider_id: 'provider_id',
+  created_at: 'created_at'
+} as const
+
+export type OauthAccountScalarFieldEnum = (typeof OauthAccountScalarFieldEnum)[keyof typeof OauthAccountScalarFieldEnum]
 
 
 export const RecipeScalarFieldEnum = {
@@ -1217,20 +1301,6 @@ export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaM
 
 
 /**
- * Reference to a field of type 'AuthProvider'
- */
-export type EnumAuthProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuthProvider'>
-    
-
-
-/**
- * Reference to a field of type 'AuthProvider[]'
- */
-export type ListEnumAuthProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuthProvider[]'>
-    
-
-
-/**
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -1241,6 +1311,20 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'OAuthProvider'
+ */
+export type EnumOAuthProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OAuthProvider'>
+    
+
+
+/**
+ * Reference to a field of type 'OAuthProvider[]'
+ */
+export type ListEnumOAuthProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OAuthProvider[]'>
     
 
 
@@ -1367,6 +1451,7 @@ export type PrismaClientOptions = ({
 }
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
+  oauthAccount?: Prisma.OauthAccountOmit
   recipe?: Prisma.RecipeOmit
   ingredient?: Prisma.IngredientOmit
   recipeIngredient?: Prisma.RecipeIngredientOmit

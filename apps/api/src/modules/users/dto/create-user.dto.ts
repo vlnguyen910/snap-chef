@@ -8,8 +8,8 @@ import {
   IsUrl,
   MinLength,
 } from 'class-validator';
-import { AuthProvider, UserRoles } from 'src/generated/prisma/enums';
 import { Exclude, Expose } from 'class-transformer';
+import { UserRoles } from 'src/generated/prisma/enums';
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -31,14 +31,6 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsEnum(UserRoles)
   role!: UserRoles;
-
-  @IsNotEmpty()
-  @IsEnum(AuthProvider)
-  provider!: AuthProvider;
-
-  @IsOptional()
-  @IsString()
-  provider_id?: string;
 
   @IsOptional()
   @IsBoolean()

@@ -5,12 +5,12 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'src/db/prisma.service';
-import { User } from 'src/generated/prisma/client';
+import { OauthAccount, OAuthProvider, User } from 'src/generated/prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserWhereInput } from 'src/generated/prisma/models';
 import { UserPaginationDto } from 'src/common/dto/pagination.dto';
-import { fa } from '@faker-js/faker';
 import { RedisService } from 'src/redis/redis.service';
+import { CreateOauthAccountDto } from './dto/create-oauth-account.dto';
 
 @Injectable()
 export class UsersService {
@@ -82,6 +82,45 @@ export class UsersService {
   async findByEmail(email: string): Promise<User | null> {
     return await this.prisma.user.findFirst({
       where: { email },
+    });
+  }
+
+  async update(id: string, user_id: string, payload: UpdateUserDto) {
+    const cacheKey = `user:id`;
+    const user = await this.findOne(id);
+
+    if (!user) throw new NotFoundException('User is not exist');
+    if (user.id !== user_id)
+      throw new UnauthorizedException('You have no right to perform this action');
+
+    await this.redis.delCache(cacheKey);
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: { ...payload },
+    });
+
+    return updatedUser;
+  }
+
+  async createOauthAccount(dto: CreateOauthAccountDto) {
+    const oauthAccount = await this.prisma.oauthAccount.create({
+      data: {
+        user_id: dto.user_id,
+        provider: dto.provider,
+        provider_id: dto.provider_id,
+      },
+    })
+
+    return oauthAccount;
+  }
+
+  async findOauthAccount(user_id: string, provider: OAuthProvider): Promise<OauthAccount | null> {
+    return await this.prisma.oauthAccount.findFirst({
+      where: {
+        user_id,
+        provider
+      }
     });
   }
 
@@ -188,24 +227,6 @@ export class UsersService {
       user: userData,
       is_followed: isFollowed,
     }
-  }
-
-  async update(id: string, user_id: string, payload: UpdateUserDto) {
-    const cacheKey = `user:id`;
-    const user = await this.findOne(id);
-
-    if (!user) throw new NotFoundException('User is not exist');
-    if (user.id !== user_id)
-      throw new UnauthorizedException('You have no right to perform this action');
-
-    await this.redis.delCache(cacheKey);
-
-    const updatedUser = await this.prisma.user.update({
-      where: { id },
-      data: { ...payload },
-    });
-
-    return updatedUser;
   }
 
   async getFollowers(

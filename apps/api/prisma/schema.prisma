@@ -14,39 +14,47 @@ enum UserRoles {
   ADMIN
 }
 
-enum AuthProvider {
+enum OAuthProvider {
   LOCAL
   GOOGLE
   FACEBOOK
 }
 
 model User {
-  id         String    @id @default(cuid())
-  email      String    @unique
-  password   String?
-  username   String
-  role       UserRoles
-  avatar_url String?
-  is_active  Boolean   @default(true)
-  bio        String?
-  create_at  DateTime  @default(now())
-
-  //Email Verfiy
-  is_verified Boolean @default(false)
-
-  //OAuth2
-  provider    AuthProvider @default(LOCAL)
-  provider_id String?
+  id          String    @id @default(cuid())
+  email       String    @unique
+  password    String?
+  username    String
+  role        UserRoles
+  avatar_url  String?
+  is_active   Boolean   @default(true)
+  bio         String?
+  create_at   DateTime  @default(now())
+  is_verified Boolean   @default(false) //Email Verify
 
   //Relations
   recipe     Recipe[]
   likes      Like[]
   comments   Comment[]
-  following  Follow[]  @relation("followerRelation") // nguoi dang theo doi
-  followedBy Follow[]  @relation("followingRelation") // nguoi theo toi
+  following  Follow[]       @relation("followerRelation") // nguoi dang theo doi
+  followedBy Follow[]       @relation("followingRelation") // nguoi theo toi
+  account    OauthAccount[]
 
   //Indexes
   @@index([username])
+}
+
+model OauthAccount {
+  id          Int           @id @default(autoincrement())
+  user_id     String
+  provider    OAuthProvider
+  provider_id String
+  created_at  DateTime      @default(now())
+
+  //Relations
+  user User @relation(fields: [user_id], references: [id])
+
+  @@unique([provider, provider_id])
 }
 
 enum RecipeStatus {

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -12,7 +13,7 @@ import argon2 from 'argon2';
 import { TokenPayload } from '../../common/interfaces/auth.interface';
 import { JwtTokenType } from '../../common/enums/jwt.enum';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
-import { AuthProvider, User, UserRoles } from 'src/generated/prisma/client';
+import { OAuthProvider, User, UserRoles } from 'src/generated/prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import type { ConfigType } from '@nestjs/config';
 import { jwtConfiguration } from 'src/common/config/jwt.config';
@@ -65,7 +66,6 @@ export class AuthService {
       username,
       password: hashedPassword,
       avatar_url,
-      provider: AuthProvider.LOCAL,
       role: UserRoles.USER,
     });
 
@@ -114,33 +114,40 @@ export class AuthService {
     await this.redis.setCache(blacklistKey, 'true', ttlInDays * 24 * 60);
   }
 
-  async googleLogin(req) {
+  async googleLogin(req: any): Promise<LoginResponseDto> {
     if (!req.user) throw new NotFoundException('No user from Google found');
 
-    const { email, firstName, lastName, picture } = req.user;
+    const { email, firstName, lastName, picture, provider_id } = req.user;
 
-    const exsitingUser = await this.userService.findByEmail(email);
-    if (exsitingUser)
-      throw new ForbiddenException('Email is already in use');
+    //Check user is registered with this email
+    const user = await this.userService.findByEmail(email);
+    if (user)
+      throw new ConflictException('This email is already used');
 
+    //Create new user
     const newUser = await this.userService.create({
       email,
-      username: firstName + " " + lastName,
       password: null,
+      username: `${firstName} ${lastName}`,
       avatar_url: picture,
-      provider: AuthProvider.GOOGLE,
-      provider_id: req.user.id,
       role: UserRoles.USER,
       is_verified: true,
+    })
+
+    //Create new link to Oauth Account
+    await this.userService.createOauthAccount({
+      user_id: newUser.id,
+      provider: OAuthProvider.GOOGLE,
+      provider_id,
     })
 
     const cacheKey = `user:${newUser.id}`
     await this.redis.setCache(cacheKey, newUser, 60);
 
-    return this.manageUserToken(newUser);
+    return this.manageUserToken(newUser!);
   }
 
-  async isTokenBlacklisted(jti: string): Promise<boolean> {
+  async isTokenABlacklisted(jti: string): Promise<boolean> {
     const blacklistKey = `blacklist:${jti}`;
     const isBlacklisted = await this.redis.getCache(blacklistKey);
     return !!isBlacklisted;
