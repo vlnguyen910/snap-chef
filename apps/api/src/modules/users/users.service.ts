@@ -10,7 +10,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserWhereInput } from 'src/generated/prisma/models';
 import { UserPaginationDto } from 'src/common/dto/pagination.dto';
 import { RedisService } from 'src/redis/redis.service';
-import { CreateOauthAccountDto } from './dto/create-oauth-account.dto';
 
 @Injectable()
 export class UsersService {
@@ -101,27 +100,6 @@ export class UsersService {
     });
 
     return updatedUser;
-  }
-
-  async createOauthAccount(dto: CreateOauthAccountDto) {
-    const oauthAccount = await this.prisma.oauthAccount.create({
-      data: {
-        user_id: dto.user_id,
-        provider: dto.provider,
-        provider_id: dto.provider_id,
-      },
-    })
-
-    return oauthAccount;
-  }
-
-  async findOauthAccount(user_id: string, provider: OAuthProvider): Promise<OauthAccount | null> {
-    return await this.prisma.oauthAccount.findFirst({
-      where: {
-        user_id,
-        provider
-      }
-    });
   }
 
   async followUser(current_id: string, following_id: string) {
