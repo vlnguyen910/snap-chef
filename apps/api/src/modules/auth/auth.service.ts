@@ -23,6 +23,8 @@ import { RefreshTokenResponseDto } from './dto/respone/refresh-token-respone.dto
 import { RedisService } from 'src/redis/redis.service';
 import { MailerService } from '../mail/mail.service';
 import { VerifyEmailDto } from './dto/request/verify-email.dto';
+import { OauthService } from '../oauth-accounts/oauth.service';
+import { log } from 'node:console';
 
 @Injectable()
 export class AuthService {
@@ -33,6 +35,7 @@ export class AuthService {
     private readonly jwtConfig: ConfigType<typeof jwtConfiguration>,
     private redis: RedisService,
     private mailService: MailerService,
+    private oauthService: OauthService,
   ) { }
 
   async login(body: LoginDto): Promise<LoginResponseDto> {
@@ -119,32 +122,44 @@ export class AuthService {
 
     const { email, firstName, lastName, picture, provider_id } = req.user;
 
-    //Check user is registered with this email
-    const user = await this.userService.findByEmail(email);
-    if (user)
-      throw new ConflictException('This email is already used');
+    // Check user is registered with this email
+    let user = await this.userService.findByEmail(email);
 
-    //Create new user
-    const newUser = await this.userService.create({
-      email,
-      password: null,
-      username: `${firstName} ${lastName}`,
-      avatar_url: picture,
-      role: UserRoles.USER,
-      is_verified: true,
-    })
+    if (!user) {
+      user = await this.userService.create({
+        email,
+        password: null,
+        username: `${firstName} ${lastName}`,
+        avatar_url: picture,
+        role: UserRoles.USER,
+        is_verified: true,
+      });
 
-    //Create new link to Oauth Account
-    await this.userService.createOauthAccount({
-      user_id: newUser.id,
-      provider: OAuthProvider.GOOGLE,
-      provider_id,
-    })
+      await this.oauthService.createOauthAccount({
+        provider: OAuthProvider.GOOGLE,
+        provider_id,
+        user_id: user.id,
+      });
+    } else {
+      // Check is link with Google
+      const oauthAccount = await this.oauthService.findOauthAccount(
+        user.id,
+        OAuthProvider.GOOGLE,
+      );
 
-    const cacheKey = `user:${newUser.id}`
-    await this.redis.setCache(cacheKey, newUser, 60);
+      if (!oauthAccount) {
+        await this.oauthService.createOauthAccount({
+          provider: OAuthProvider.GOOGLE,
+          provider_id,
+          user_id: user.id,
+        });
+      }
+    }
 
-    return this.manageUserToken(newUser!);
+    const cacheKey = `user:${user.id}`;
+    await this.redis.setCache(cacheKey, user, 60);
+
+    return this.manageUserToken(user);
   }
 
   async isTokenABlacklisted(jti: string): Promise<boolean> {

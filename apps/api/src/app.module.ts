@@ -10,6 +10,7 @@ import { redisConfiguration } from './common/config/redis.config';
 import { jwtConfiguration } from './common/config/jwt.config';
 import { cookieConfiguration } from './common/config/cookie.config';
 import { googleConfiguration } from './common/config/google.config';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { googleConfiguration } from './common/config/google.config';
         }
       }),
     }),
+    UsersModule,
     CommentsModule,
     RecipesModule,
     IngredientsModule,
