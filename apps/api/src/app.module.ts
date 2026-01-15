@@ -11,6 +11,7 @@ import { jwtConfiguration } from './common/config/jwt.config';
 import { cookieConfiguration } from './common/config/cookie.config';
 import { googleConfiguration } from './common/config/google.config';
 import { UsersModule } from './modules/users/users.module';
+import { CollectionModule } from './modules/collections/colleciton.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { UsersModule } from './modules/users/users.module';
     RecipesModule,
     IngredientsModule,
     AuthModule,
+    CollectionModule,
   ],
   controllers: [],
   providers: [PrismaService],

@@ -162,16 +162,15 @@ model Follow {
 }
 
 model Colleciton {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
   name        String
   description String?
   thumbnail   String?
-  is_public   Boolean @default(false)
+  is_public   Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
-  owner_id   String
-  user       User     @relation(fields: [owner_id], references: [id])
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  recipe     Recipe?  @relation(fields: [recipeId], references: [id])
-  recipeId   Int?
+  owner_id String
+  user     User     @relation(fields: [owner_id], references: [id])
+  recipe   Recipe[]
 }
