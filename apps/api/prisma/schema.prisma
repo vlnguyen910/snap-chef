@@ -39,6 +39,7 @@ model User {
   following  Follow[]       @relation("followerRelation") // nguoi dang theo doi
   followedBy Follow[]       @relation("followingRelation") // nguoi theo toi
   account    OauthAccount[]
+  collection Colleciton[]
 
   //Indexes
   @@index([username])
@@ -82,6 +83,7 @@ model Recipe {
   steps       Step[]
   likes       Like[]
   comments    Comment[]
+  collection  Colleciton[]
 
   //Indexes
   @@index([title])
@@ -157,4 +159,19 @@ model Follow {
   following User @relation("followingRelation", fields: [following_id], references: [id])
 
   @@id([follower_id, following_id])
+}
+
+model Colleciton {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  thumbnail   String?
+  is_public   Boolean @default(false)
+
+  owner_id   String
+  user       User     @relation(fields: [owner_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  recipe     Recipe?  @relation(fields: [recipeId], references: [id])
+  recipeId   Int?
 }
