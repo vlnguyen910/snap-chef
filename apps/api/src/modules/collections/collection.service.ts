@@ -1,15 +1,16 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/db/prisma.service';
 import { CreateCollectionDto } from './dto/create-collection';
-import { Collection } from 'src/generated/prisma/client';
+import { Collection, User } from 'src/generated/prisma/client';
 import { UsersService } from '../users/users.service';
-import { tr } from '@faker-js/faker';
+import { RecipesService } from '../recipes/recipes.service';
 
 @Injectable()
 export class CollectionService {
   constructor(
     private prisma: PrismaService,
     private userServicer: UsersService,
+    private recipeService: RecipesService,
   ) { }
 
   async create(
@@ -65,5 +66,31 @@ export class CollectionService {
       throw new ForbiddenException('Collection is not exist or you have no right to see this');
 
     return collection;
+  }
+
+  async addRecipe(collection_id: string, recipe_id: number, currentUser: User) {
+    const collection = await this.findOne(collection_id);
+    if (!collection)
+      throw new NotFoundException('This collection is not found');
+
+    const recipe = await this.recipeService.findOne(recipe_id);
+    if (!recipe)
+      throw new NotFoundException('This recipe is not found');
+
+    if (collection.owner_id !== currentUser.id)
+      throw new ForbiddenException('You have no right to edit this!');
+
+    await this.prisma.collection.update({
+      where: { id: collection_id },
+      data: {
+        recipe: {
+          connect: { id: recipe_id },
+        }
+      }
+    })
+
+    return {
+      message: `${recipe.title} has been added to ${collection.name}`
+    }
   }
 }
