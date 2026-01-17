@@ -59,6 +59,8 @@ export class CollectionService {
       },
     })
 
+    if (!collection)
+      throw new NotFoundException('This collection is not exist');
     if (collection && !collection.is_public && current_user_id !== collection?.owner_id)
       throw new ForbiddenException('Collection is not exist or you have no right to see this');
 
