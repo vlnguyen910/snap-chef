@@ -228,7 +228,7 @@ export type UserWhereInput = {
   following?: Prisma.FollowListRelationFilter
   followedBy?: Prisma.FollowListRelationFilter
   account?: Prisma.OauthAccountListRelationFilter
-  collection?: Prisma.CollecitonListRelationFilter
+  collection?: Prisma.CollectionListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -248,7 +248,7 @@ export type UserOrderByWithRelationInput = {
   following?: Prisma.FollowOrderByRelationAggregateInput
   followedBy?: Prisma.FollowOrderByRelationAggregateInput
   account?: Prisma.OauthAccountOrderByRelationAggregateInput
-  collection?: Prisma.CollecitonOrderByRelationAggregateInput
+  collection?: Prisma.CollectionOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -271,7 +271,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   following?: Prisma.FollowListRelationFilter
   followedBy?: Prisma.FollowListRelationFilter
   account?: Prisma.OauthAccountListRelationFilter
-  collection?: Prisma.CollecitonListRelationFilter
+  collection?: Prisma.CollectionListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -323,7 +323,7 @@ export type UserCreateInput = {
   following?: Prisma.FollowCreateNestedManyWithoutFollowerInput
   followedBy?: Prisma.FollowCreateNestedManyWithoutFollowingInput
   account?: Prisma.OauthAccountCreateNestedManyWithoutUserInput
-  collection?: Prisma.CollecitonCreateNestedManyWithoutUserInput
+  collection?: Prisma.CollectionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -343,7 +343,7 @@ export type UserUncheckedCreateInput = {
   following?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowerInput
   followedBy?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowingInput
   account?: Prisma.OauthAccountUncheckedCreateNestedManyWithoutUserInput
-  collection?: Prisma.CollecitonUncheckedCreateNestedManyWithoutUserInput
+  collection?: Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -363,7 +363,7 @@ export type UserUpdateInput = {
   following?: Prisma.FollowUpdateManyWithoutFollowerNestedInput
   followedBy?: Prisma.FollowUpdateManyWithoutFollowingNestedInput
   account?: Prisma.OauthAccountUpdateManyWithoutUserNestedInput
-  collection?: Prisma.CollecitonUpdateManyWithoutUserNestedInput
+  collection?: Prisma.CollectionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -383,7 +383,7 @@ export type UserUncheckedUpdateInput = {
   following?: Prisma.FollowUncheckedUpdateManyWithoutFollowerNestedInput
   followedBy?: Prisma.FollowUncheckedUpdateManyWithoutFollowingNestedInput
   account?: Prisma.OauthAccountUncheckedUpdateManyWithoutUserNestedInput
-  collection?: Prisma.CollecitonUncheckedUpdateManyWithoutUserNestedInput
+  collection?: Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -603,7 +603,7 @@ export type UserCreateWithoutAccountInput = {
   comments?: Prisma.CommentCreateNestedManyWithoutUserInput
   following?: Prisma.FollowCreateNestedManyWithoutFollowerInput
   followedBy?: Prisma.FollowCreateNestedManyWithoutFollowingInput
-  collection?: Prisma.CollecitonCreateNestedManyWithoutUserInput
+  collection?: Prisma.CollectionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountInput = {
@@ -622,7 +622,7 @@ export type UserUncheckedCreateWithoutAccountInput = {
   comments?: Prisma.CommentUncheckedCreateNestedManyWithoutUserInput
   following?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowerInput
   followedBy?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowingInput
-  collection?: Prisma.CollecitonUncheckedCreateNestedManyWithoutUserInput
+  collection?: Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountInput = {
@@ -657,7 +657,7 @@ export type UserUpdateWithoutAccountInput = {
   comments?: Prisma.CommentUpdateManyWithoutUserNestedInput
   following?: Prisma.FollowUpdateManyWithoutFollowerNestedInput
   followedBy?: Prisma.FollowUpdateManyWithoutFollowingNestedInput
-  collection?: Prisma.CollecitonUpdateManyWithoutUserNestedInput
+  collection?: Prisma.CollectionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountInput = {
@@ -676,7 +676,7 @@ export type UserUncheckedUpdateWithoutAccountInput = {
   comments?: Prisma.CommentUncheckedUpdateManyWithoutUserNestedInput
   following?: Prisma.FollowUncheckedUpdateManyWithoutFollowerNestedInput
   followedBy?: Prisma.FollowUncheckedUpdateManyWithoutFollowingNestedInput
-  collection?: Prisma.CollecitonUncheckedUpdateManyWithoutUserNestedInput
+  collection?: Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutRecipeInput = {
@@ -695,7 +695,7 @@ export type UserCreateWithoutRecipeInput = {
   following?: Prisma.FollowCreateNestedManyWithoutFollowerInput
   followedBy?: Prisma.FollowCreateNestedManyWithoutFollowingInput
   account?: Prisma.OauthAccountCreateNestedManyWithoutUserInput
-  collection?: Prisma.CollecitonCreateNestedManyWithoutUserInput
+  collection?: Prisma.CollectionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutRecipeInput = {
@@ -714,7 +714,7 @@ export type UserUncheckedCreateWithoutRecipeInput = {
   following?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowerInput
   followedBy?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowingInput
   account?: Prisma.OauthAccountUncheckedCreateNestedManyWithoutUserInput
-  collection?: Prisma.CollecitonUncheckedCreateNestedManyWithoutUserInput
+  collection?: Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutRecipeInput = {
@@ -749,7 +749,7 @@ export type UserUpdateWithoutRecipeInput = {
   following?: Prisma.FollowUpdateManyWithoutFollowerNestedInput
   followedBy?: Prisma.FollowUpdateManyWithoutFollowingNestedInput
   account?: Prisma.OauthAccountUpdateManyWithoutUserNestedInput
-  collection?: Prisma.CollecitonUpdateManyWithoutUserNestedInput
+  collection?: Prisma.CollectionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRecipeInput = {
@@ -768,7 +768,7 @@ export type UserUncheckedUpdateWithoutRecipeInput = {
   following?: Prisma.FollowUncheckedUpdateManyWithoutFollowerNestedInput
   followedBy?: Prisma.FollowUncheckedUpdateManyWithoutFollowingNestedInput
   account?: Prisma.OauthAccountUncheckedUpdateManyWithoutUserNestedInput
-  collection?: Prisma.CollecitonUncheckedUpdateManyWithoutUserNestedInput
+  collection?: Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutLikesInput = {
@@ -787,7 +787,7 @@ export type UserCreateWithoutLikesInput = {
   following?: Prisma.FollowCreateNestedManyWithoutFollowerInput
   followedBy?: Prisma.FollowCreateNestedManyWithoutFollowingInput
   account?: Prisma.OauthAccountCreateNestedManyWithoutUserInput
-  collection?: Prisma.CollecitonCreateNestedManyWithoutUserInput
+  collection?: Prisma.CollectionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutLikesInput = {
@@ -806,7 +806,7 @@ export type UserUncheckedCreateWithoutLikesInput = {
   following?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowerInput
   followedBy?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowingInput
   account?: Prisma.OauthAccountUncheckedCreateNestedManyWithoutUserInput
-  collection?: Prisma.CollecitonUncheckedCreateNestedManyWithoutUserInput
+  collection?: Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutLikesInput = {
@@ -841,7 +841,7 @@ export type UserUpdateWithoutLikesInput = {
   following?: Prisma.FollowUpdateManyWithoutFollowerNestedInput
   followedBy?: Prisma.FollowUpdateManyWithoutFollowingNestedInput
   account?: Prisma.OauthAccountUpdateManyWithoutUserNestedInput
-  collection?: Prisma.CollecitonUpdateManyWithoutUserNestedInput
+  collection?: Prisma.CollectionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutLikesInput = {
@@ -860,7 +860,7 @@ export type UserUncheckedUpdateWithoutLikesInput = {
   following?: Prisma.FollowUncheckedUpdateManyWithoutFollowerNestedInput
   followedBy?: Prisma.FollowUncheckedUpdateManyWithoutFollowingNestedInput
   account?: Prisma.OauthAccountUncheckedUpdateManyWithoutUserNestedInput
-  collection?: Prisma.CollecitonUncheckedUpdateManyWithoutUserNestedInput
+  collection?: Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCommentsInput = {
@@ -879,7 +879,7 @@ export type UserCreateWithoutCommentsInput = {
   following?: Prisma.FollowCreateNestedManyWithoutFollowerInput
   followedBy?: Prisma.FollowCreateNestedManyWithoutFollowingInput
   account?: Prisma.OauthAccountCreateNestedManyWithoutUserInput
-  collection?: Prisma.CollecitonCreateNestedManyWithoutUserInput
+  collection?: Prisma.CollectionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCommentsInput = {
@@ -898,7 +898,7 @@ export type UserUncheckedCreateWithoutCommentsInput = {
   following?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowerInput
   followedBy?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowingInput
   account?: Prisma.OauthAccountUncheckedCreateNestedManyWithoutUserInput
-  collection?: Prisma.CollecitonUncheckedCreateNestedManyWithoutUserInput
+  collection?: Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCommentsInput = {
@@ -933,7 +933,7 @@ export type UserUpdateWithoutCommentsInput = {
   following?: Prisma.FollowUpdateManyWithoutFollowerNestedInput
   followedBy?: Prisma.FollowUpdateManyWithoutFollowingNestedInput
   account?: Prisma.OauthAccountUpdateManyWithoutUserNestedInput
-  collection?: Prisma.CollecitonUpdateManyWithoutUserNestedInput
+  collection?: Prisma.CollectionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCommentsInput = {
@@ -952,7 +952,7 @@ export type UserUncheckedUpdateWithoutCommentsInput = {
   following?: Prisma.FollowUncheckedUpdateManyWithoutFollowerNestedInput
   followedBy?: Prisma.FollowUncheckedUpdateManyWithoutFollowingNestedInput
   account?: Prisma.OauthAccountUncheckedUpdateManyWithoutUserNestedInput
-  collection?: Prisma.CollecitonUncheckedUpdateManyWithoutUserNestedInput
+  collection?: Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutFollowingInput = {
@@ -971,7 +971,7 @@ export type UserCreateWithoutFollowingInput = {
   comments?: Prisma.CommentCreateNestedManyWithoutUserInput
   followedBy?: Prisma.FollowCreateNestedManyWithoutFollowingInput
   account?: Prisma.OauthAccountCreateNestedManyWithoutUserInput
-  collection?: Prisma.CollecitonCreateNestedManyWithoutUserInput
+  collection?: Prisma.CollectionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutFollowingInput = {
@@ -990,7 +990,7 @@ export type UserUncheckedCreateWithoutFollowingInput = {
   comments?: Prisma.CommentUncheckedCreateNestedManyWithoutUserInput
   followedBy?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowingInput
   account?: Prisma.OauthAccountUncheckedCreateNestedManyWithoutUserInput
-  collection?: Prisma.CollecitonUncheckedCreateNestedManyWithoutUserInput
+  collection?: Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutFollowingInput = {
@@ -1014,7 +1014,7 @@ export type UserCreateWithoutFollowedByInput = {
   comments?: Prisma.CommentCreateNestedManyWithoutUserInput
   following?: Prisma.FollowCreateNestedManyWithoutFollowerInput
   account?: Prisma.OauthAccountCreateNestedManyWithoutUserInput
-  collection?: Prisma.CollecitonCreateNestedManyWithoutUserInput
+  collection?: Prisma.CollectionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutFollowedByInput = {
@@ -1033,7 +1033,7 @@ export type UserUncheckedCreateWithoutFollowedByInput = {
   comments?: Prisma.CommentUncheckedCreateNestedManyWithoutUserInput
   following?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowerInput
   account?: Prisma.OauthAccountUncheckedCreateNestedManyWithoutUserInput
-  collection?: Prisma.CollecitonUncheckedCreateNestedManyWithoutUserInput
+  collection?: Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutFollowedByInput = {
@@ -1068,7 +1068,7 @@ export type UserUpdateWithoutFollowingInput = {
   comments?: Prisma.CommentUpdateManyWithoutUserNestedInput
   followedBy?: Prisma.FollowUpdateManyWithoutFollowingNestedInput
   account?: Prisma.OauthAccountUpdateManyWithoutUserNestedInput
-  collection?: Prisma.CollecitonUpdateManyWithoutUserNestedInput
+  collection?: Prisma.CollectionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutFollowingInput = {
@@ -1087,7 +1087,7 @@ export type UserUncheckedUpdateWithoutFollowingInput = {
   comments?: Prisma.CommentUncheckedUpdateManyWithoutUserNestedInput
   followedBy?: Prisma.FollowUncheckedUpdateManyWithoutFollowingNestedInput
   account?: Prisma.OauthAccountUncheckedUpdateManyWithoutUserNestedInput
-  collection?: Prisma.CollecitonUncheckedUpdateManyWithoutUserNestedInput
+  collection?: Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutFollowedByInput = {
@@ -1117,7 +1117,7 @@ export type UserUpdateWithoutFollowedByInput = {
   comments?: Prisma.CommentUpdateManyWithoutUserNestedInput
   following?: Prisma.FollowUpdateManyWithoutFollowerNestedInput
   account?: Prisma.OauthAccountUpdateManyWithoutUserNestedInput
-  collection?: Prisma.CollecitonUpdateManyWithoutUserNestedInput
+  collection?: Prisma.CollectionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutFollowedByInput = {
@@ -1136,7 +1136,7 @@ export type UserUncheckedUpdateWithoutFollowedByInput = {
   comments?: Prisma.CommentUncheckedUpdateManyWithoutUserNestedInput
   following?: Prisma.FollowUncheckedUpdateManyWithoutFollowerNestedInput
   account?: Prisma.OauthAccountUncheckedUpdateManyWithoutUserNestedInput
-  collection?: Prisma.CollecitonUncheckedUpdateManyWithoutUserNestedInput
+  collection?: Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCollectionInput = {
@@ -1312,7 +1312,7 @@ export type UserCountOutputTypeCountAccountArgs<ExtArgs extends runtime.Types.Ex
  * UserCountOutputType without action
  */
 export type UserCountOutputTypeCountCollectionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.CollecitonWhereInput
+  where?: Prisma.CollectionWhereInput
 }
 
 
@@ -1399,7 +1399,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     following: Prisma.$FollowPayload<ExtArgs>[]
     followedBy: Prisma.$FollowPayload<ExtArgs>[]
     account: Prisma.$OauthAccountPayload<ExtArgs>[]
-    collection: Prisma.$CollecitonPayload<ExtArgs>[]
+    collection: Prisma.$CollectionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1812,7 +1812,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   following<T extends Prisma.User$followingArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$followingArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FollowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   followedBy<T extends Prisma.User$followedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$followedByArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FollowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   account<T extends Prisma.User$accountArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OauthAccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  collection<T extends Prisma.User$collectionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$collectionArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CollecitonPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  collection<T extends Prisma.User$collectionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$collectionArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CollectionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2388,23 +2388,23 @@ export type User$accountArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
  */
 export type User$collectionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the Colleciton
+   * Select specific fields to fetch from the Collection
    */
-  select?: Prisma.CollecitonSelect<ExtArgs> | null
+  select?: Prisma.CollectionSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the Colleciton
+   * Omit specific fields from the Collection
    */
-  omit?: Prisma.CollecitonOmit<ExtArgs> | null
+  omit?: Prisma.CollectionOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.CollecitonInclude<ExtArgs> | null
-  where?: Prisma.CollecitonWhereInput
-  orderBy?: Prisma.CollecitonOrderByWithRelationInput | Prisma.CollecitonOrderByWithRelationInput[]
-  cursor?: Prisma.CollecitonWhereUniqueInput
+  include?: Prisma.CollectionInclude<ExtArgs> | null
+  where?: Prisma.CollectionWhereInput
+  orderBy?: Prisma.CollectionOrderByWithRelationInput | Prisma.CollectionOrderByWithRelationInput[]
+  cursor?: Prisma.CollectionWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.CollecitonScalarFieldEnum | Prisma.CollecitonScalarFieldEnum[]
+  distinct?: Prisma.CollectionScalarFieldEnum | Prisma.CollectionScalarFieldEnum[]
 }
 
 /**

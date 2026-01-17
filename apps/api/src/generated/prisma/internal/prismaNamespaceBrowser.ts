@@ -60,7 +60,7 @@ export const ModelName = {
   Like: 'Like',
   Comment: 'Comment',
   Follow: 'Follow',
-  Colleciton: 'Colleciton'
+  Collection: 'Collection'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -183,7 +183,7 @@ export const FollowScalarFieldEnum = {
 export type FollowScalarFieldEnum = (typeof FollowScalarFieldEnum)[keyof typeof FollowScalarFieldEnum]
 
 
-export const CollecitonScalarFieldEnum = {
+export const CollectionScalarFieldEnum = {
   id: 'id',
   name: 'name',
   description: 'description',
@@ -194,7 +194,7 @@ export const CollecitonScalarFieldEnum = {
   owner_id: 'owner_id'
 } as const
 
-export type CollecitonScalarFieldEnum = (typeof CollecitonScalarFieldEnum)[keyof typeof CollecitonScalarFieldEnum]
+export type CollectionScalarFieldEnum = (typeof CollectionScalarFieldEnum)[keyof typeof CollectionScalarFieldEnum]
 
 
 export const SortOrder = {

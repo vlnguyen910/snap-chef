@@ -39,7 +39,7 @@ model User {
   following  Follow[]       @relation("followerRelation") // nguoi dang theo doi
   followedBy Follow[]       @relation("followingRelation") // nguoi theo toi
   account    OauthAccount[]
-  collection Colleciton[]
+  collection Collection[]
 
   //Indexes
   @@index([username])
@@ -83,7 +83,7 @@ model Recipe {
   steps       Step[]
   likes       Like[]
   comments    Comment[]
-  collection  Colleciton[]
+  collection  Collection[]
 
   //Indexes
   @@index([title])
@@ -161,7 +161,7 @@ model Follow {
   @@id([follower_id, following_id])
 }
 
-model Colleciton {
+model Collection {
   id          String   @id @default(cuid())
   name        String
   description String?
