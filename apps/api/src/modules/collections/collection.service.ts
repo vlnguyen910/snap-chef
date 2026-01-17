@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/db/prisma.service';
 import { CreateCollectionDto } from './dto/create-collection';
-import { Colleciton } from 'src/generated/prisma/client';
+import { Collection } from 'src/generated/prisma/client';
 import { UsersService } from '../users/users.service';
+import { tr } from '@faker-js/faker';
 
 @Injectable()
 export class CollectionService {
@@ -14,8 +15,8 @@ export class CollectionService {
   async create(
     user_id: string,
     payload: CreateCollectionDto,
-  ): Promise<Colleciton> {
-    return await this.prisma.colleciton.create({
+  ): Promise<Collection> {
+    return await this.prisma.collection.create({
       data: {
         ...payload,
         owner_id: user_id,
@@ -35,12 +36,32 @@ export class CollectionService {
 
     const isOwner = owner_id === current_user_id;
 
-    return await this.prisma.colleciton.findMany({
+    return await this.prisma.collection.findMany({
       where: {
         owner_id,
         ...(isOwner ? {} : { is_public: true }),
       },
       orderBy: { updated_at: 'desc' },
     })
+  }
+
+  async findOne(id: string, current_user_id?: string | null) {
+    const collection = await this.prisma.collection.findUnique({
+      where: { id },
+      include: {
+        recipe: {
+          select: {
+            id: true,
+            title: true,
+            thumbnail_url: true,
+          }
+        }
+      },
+    })
+
+    if (collection && !collection.is_public && current_user_id !== collection?.owner_id)
+      throw new ForbiddenException('Collection is not exist or you have no right to see this');
+
+    return collection;
   }
 }

@@ -63,7 +63,7 @@ export type Comment = Prisma.CommentModel
  */
 export type Follow = Prisma.FollowModel
 /**
- * Model Colleciton
+ * Model Collection
  * 
  */
-export type Colleciton = Prisma.CollecitonModel
+export type Collection = Prisma.CollectionModel
