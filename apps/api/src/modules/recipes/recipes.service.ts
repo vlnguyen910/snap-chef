@@ -14,6 +14,7 @@ import { Recipe, RecipeIngredient } from 'src/generated/prisma/client';
 import { UsersService } from '../users/users.service';
 import { RecipeWhereInput } from 'src/generated/prisma/models/Recipe';
 import { RedisService } from 'src/redis/redis.service';
+import { RecipeDetail } from './dto/recipe-detail.dto';
 
 @Injectable()
 export class RecipesService {
@@ -176,11 +177,11 @@ export class RecipesService {
     });
   }
 
-  async findOne(id: number, user_id?: string): Promise<any> {
+  async findOne(id: number, user_id?: string): Promise<RecipeDetail | null> {
     const cacheKey = `recipe:${id}`;
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    let recipeData = await this.redis.getCache<any>(cacheKey);
+    let recipeData =
+      await this.redis.getCache<Omit<RecipeDetail, 'is_liked'>>(cacheKey);
     if (!recipeData) {
       const recipe = await this.prisma.recipe.findUnique({
         where: { id },
@@ -217,7 +218,7 @@ export class RecipesService {
         ...rest,
         comments_count: _count.comments,
         likes_count: _count.likes,
-      };
+      } as Omit<RecipeDetail, 'is_liked'>;
 
       await this.redis.setCache(cacheKey, recipeData, 60);
     }
@@ -233,10 +234,9 @@ export class RecipesService {
     const { ingredients, steps, ...scalarFields } = updateRecipeDto;
     const cacheKey = `recipe:id`;
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const oldRecipe = await this.findOne(id);
     if (!oldRecipe) throw new NotFoundException('Recipe not found');
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
     if (oldRecipe.author_id !== user_id)
       throw new UnauthorizedException(
         'You have no right to perform this action',

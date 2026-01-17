@@ -6,13 +6,9 @@ import { UsersModule } from '../users/users.module';
 import { RecipesModule } from '../recipes/recipes.module';
 
 @Module({
-  imports: [
-    PrismaModule,
-    UsersModule,
-    RecipesModule,
-  ],
+  imports: [PrismaModule, UsersModule, RecipesModule],
   controllers: [CollectionController],
   providers: [CollectionService],
   exports: [],
 })
-export class CollectionModule { }
+export class CollectionModule {}

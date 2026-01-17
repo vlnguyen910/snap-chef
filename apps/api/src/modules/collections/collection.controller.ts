@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { CreateCollectionDto } from './dto/create-collection';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { GetUser } from 'src/common/decorators/user.decorator';
@@ -8,7 +16,7 @@ import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt-auth.guard'
 
 @Controller('collections')
 export class CollectionController {
-  constructor(private collectionService: CollectionService) { }
+  constructor(private collectionService: CollectionService) {}
 
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -25,7 +33,10 @@ export class CollectionController {
     @Param('user_id') user_id: string,
     @GetUser() currentUser?: User | null,
   ) {
-    return await this.collectionService.getUserCollection(user_id, currentUser?.id);
+    return await this.collectionService.getUserCollection(
+      user_id,
+      currentUser?.id,
+    );
   }
 
   @UseGuards(OptionalJwtAuthGuard)
@@ -44,6 +55,10 @@ export class CollectionController {
     @Param('recipe_id', ParseIntPipe) recipe_id: number,
     @GetUser() currentUser: User,
   ) {
-    return await this.collectionService.addRecipe(collection_id, recipe_id, currentUser);
+    return await this.collectionService.addRecipe(
+      collection_id,
+      recipe_id,
+      currentUser,
+    );
   }
 }
