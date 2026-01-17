@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { CreateCollectionDto } from './dto/create-collection';
@@ -13,10 +14,11 @@ import { GetUser } from 'src/common/decorators/user.decorator';
 import type { Collection, User } from 'src/generated/prisma/client';
 import { CollectionService } from './collection.service';
 import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt-auth.guard';
+import { UpdateCollectionDto } from './dto/update-collection';
 
 @Controller('collections')
 export class CollectionController {
-  constructor(private collectionService: CollectionService) {}
+  constructor(private collectionService: CollectionService) { }
 
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -60,5 +62,15 @@ export class CollectionController {
       recipe_id,
       currentUser,
     );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id')
+  async updateCollection(
+    @Param('id') collection_id: string,
+    @Body() payload: UpdateCollectionDto,
+    @GetUser() currentUser: User,
+  ) {
+    return await this.collectionService.update(collection_id, payload, currentUser)
   }
 }
