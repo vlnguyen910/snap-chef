@@ -8,6 +8,7 @@ import { CreateCollectionDto } from './dto/create-collection';
 import { Collection, User } from 'src/generated/prisma/client';
 import { UsersService } from '../users/users.service';
 import { RecipesService } from '../recipes/recipes.service';
+import { UpdateCollectionDto } from './dto/update-collection';
 
 @Injectable()
 export class CollectionService {
@@ -15,7 +16,7 @@ export class CollectionService {
     private prisma: PrismaService,
     private userServicer: UsersService,
     private recipeService: RecipesService,
-  ) {}
+  ) { }
 
   async create(
     user_id: string,
@@ -64,10 +65,11 @@ export class CollectionService {
 
     if (!collection)
       throw new NotFoundException('This collection is not exist');
+
     if (
       collection &&
       !collection.is_public &&
-      current_user_id !== collection?.owner_id
+      current_user_id !== collection.owner_id
     )
       throw new ForbiddenException(
         'Collection is not exist or you have no right to see this',
@@ -110,5 +112,19 @@ export class CollectionService {
     return {
       message: `${recipe.title} has been ${action} ${collection.name}`,
     };
+  }
+
+  async update(collection_id: string, payload: UpdateCollectionDto, currentUser: User) {
+    const collection = await this.findOne(collection_id, currentUser.id);
+    if (!collection)
+      throw new NotFoundException('Collection is not foudn');
+
+    if (collection.owner_id !== currentUser.id)
+      throw new ForbiddenException('You have no right to edit this');
+
+    return await this.prisma.collection.update({
+      where: { id: collection_id },
+      data: payload,
+    })
   }
 }
