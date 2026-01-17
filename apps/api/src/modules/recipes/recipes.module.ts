@@ -23,5 +23,6 @@ import { RedisModule } from 'src/redis/redis.module';
   ],
   controllers: [RecipesController],
   providers: [RecipesService, JwtStrategy],
+  exports: [RecipesService],
 })
-export class RecipesModule {}
+export class RecipesModule { }
