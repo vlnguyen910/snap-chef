@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/db/prisma.service';
 import { CreateCollectionDto } from './dto/create-collection';
 import { Collection, User } from 'src/generated/prisma/client';
@@ -11,7 +15,7 @@ export class CollectionService {
     private prisma: PrismaService,
     private userServicer: UsersService,
     private recipeService: RecipesService,
-  ) { }
+  ) {}
 
   async create(
     user_id: string,
@@ -27,12 +31,10 @@ export class CollectionService {
 
   async getUserCollection(owner_id: string, current_user_id?: string | null) {
     const owner = await this.userServicer.findOne(owner_id);
-    if (!owner)
-      throw new NotFoundException('User is not exist');
+    if (!owner) throw new NotFoundException('User is not exist');
     if (current_user_id) {
       const currentUser = await this.userServicer.findOne(current_user_id);
-      if (!currentUser)
-        throw new NotFoundException('User is not exist');
+      if (!currentUser) throw new NotFoundException('User is not exist');
     }
 
     const isOwner = owner_id === current_user_id;
@@ -43,7 +45,7 @@ export class CollectionService {
         ...(isOwner ? {} : { is_public: true }),
       },
       orderBy: { updated_at: 'desc' },
-    })
+    });
   }
 
   async findOne(id: string, current_user_id?: string | null) {
@@ -55,23 +57,28 @@ export class CollectionService {
             id: true,
             title: true,
             thumbnail_url: true,
-          }
-        }
+          },
+        },
       },
-    })
+    });
 
     if (!collection)
       throw new NotFoundException('This collection is not exist');
-    if (collection && !collection.is_public && current_user_id !== collection?.owner_id)
-      throw new ForbiddenException('Collection is not exist or you have no right to see this');
+    if (
+      collection &&
+      !collection.is_public &&
+      current_user_id !== collection?.owner_id
+    )
+      throw new ForbiddenException(
+        'Collection is not exist or you have no right to see this',
+      );
 
     return collection;
   }
 
   async addRecipe(collection_id: string, recipe_id: number, currentUser: User) {
     const recipe = await this.recipeService.findOne(recipe_id);
-    if (!recipe)
-      throw new NotFoundException('This recipe is not found');
+    if (!recipe) throw new NotFoundException('This recipe is not found');
 
     const collection = await this.prisma.collection.findUnique({
       where: { id: collection_id },
@@ -80,10 +87,9 @@ export class CollectionService {
           where: { id: recipe_id },
         },
       },
-    })
+    });
 
-    if (!collection)
-      throw new NotFoundException('Collection is not found');
+    if (!collection) throw new NotFoundException('Collection is not found');
 
     if (collection.owner_id !== currentUser.id)
       throw new ForbiddenException('You have no right to edit this!');
@@ -95,14 +101,14 @@ export class CollectionService {
       data: {
         recipe: {
           [isRecipeInCollection ? 'disconnect' : 'connect']: { id: recipe_id },
-        }
-      }
-    })
+        },
+      },
+    });
 
     const action = isRecipeInCollection ? 'removed from' : 'added to';
 
     return {
-      message: `${recipe.title} has been ${action} ${collection.name}`
-    }
+      message: `${recipe.title} has been ${action} ${collection.name}`,
+    };
   }
 }
