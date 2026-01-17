@@ -69,28 +69,40 @@ export class CollectionService {
   }
 
   async addRecipe(collection_id: string, recipe_id: number, currentUser: User) {
-    const collection = await this.findOne(collection_id);
-    if (!collection)
-      throw new NotFoundException('This collection is not found');
-
     const recipe = await this.recipeService.findOne(recipe_id);
     if (!recipe)
       throw new NotFoundException('This recipe is not found');
 
+    const collection = await this.prisma.collection.findUnique({
+      where: { id: collection_id },
+      include: {
+        recipe: {
+          where: { id: recipe_id },
+        },
+      },
+    })
+
+    if (!collection)
+      throw new NotFoundException('Collection is not found');
+
     if (collection.owner_id !== currentUser.id)
       throw new ForbiddenException('You have no right to edit this!');
+
+    const isRecipeInCollection = collection.recipe.length > 0;
 
     await this.prisma.collection.update({
       where: { id: collection_id },
       data: {
         recipe: {
-          connect: { id: recipe_id },
+          [isRecipeInCollection ? 'disconnect' : 'connect']: { id: recipe_id },
         }
       }
     })
 
+    const action = isRecipeInCollection ? 'removed from' : 'added to';
+
     return {
-      message: `${recipe.title} has been added to ${collection.name}`
+      message: `${recipe.title} has been ${action} ${collection.name}`
     }
   }
 }

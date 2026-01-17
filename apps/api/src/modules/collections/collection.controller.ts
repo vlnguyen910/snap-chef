@@ -44,6 +44,6 @@ export class CollectionController {
     @Param('recipe_id', ParseIntPipe) recipe_id: number,
     @GetUser() currentUser: User,
   ) {
-    return await this.collectionService.addRecipe(collection_id, recipe_id, currentUser)
+    return await this.collectionService.addRecipe(collection_id, recipe_id, currentUser);
   }
 }
