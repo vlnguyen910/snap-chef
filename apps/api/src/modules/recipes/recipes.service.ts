@@ -15,6 +15,8 @@ import { UsersService } from '../users/users.service';
 import { RecipeWhereInput } from 'src/generated/prisma/models/Recipe';
 import { RedisService } from 'src/common/redis/redis.service';
 import { RecipeDetail } from './dto/recipe-detail.dto';
+import { NotificationService } from '../notifications/notification.service';
+import { NotificationType, NotificationResourceType } from 'src/generated/prisma/enums';
 
 @Injectable()
 export class RecipesService {
@@ -23,6 +25,7 @@ export class RecipesService {
     private ingredientsService: IngredientsService,
     private userService: UsersService,
     private redis: RedisService,
+    private notificationService: NotificationService,
   ) {}
 
   private readonly logger = new Logger(RecipesService.name);
@@ -343,12 +346,24 @@ export class RecipesService {
       });
       return { is_liked: false };
     } else {
-      await this.prisma.like.create({
+      const like = await this.prisma.like.create({
         data: {
           user_id,
           recipe_id,
         },
       });
+
+      // Trigger Notification
+      if (recipe.author_id !== user_id) {
+        await this.notificationService.createNotification({
+          receiverId: recipe.author_id,
+          senderId: user_id,
+          type: NotificationType.LIKE,
+          message: `${user.username} liked your recipe`,
+          resourceId: recipe_id,
+          resourceType: NotificationResourceType.RECIPE,
+        });
+      }
       return { is_liked: true };
     }
   }
