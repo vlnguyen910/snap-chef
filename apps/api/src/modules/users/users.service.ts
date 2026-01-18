@@ -4,12 +4,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { PrismaService } from 'src/db/prisma.service';
+import { PrismaService } from 'src/common/db/prisma.service';
 import { User } from 'src/generated/prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserWhereInput } from 'src/generated/prisma/models';
 import { UserPaginationDto } from 'src/common/dto/pagination.dto';
-import { RedisService } from 'src/redis/redis.service';
+import { RedisService } from 'src/common/redis/redis.service';
 
 @Injectable()
 export class UsersService {

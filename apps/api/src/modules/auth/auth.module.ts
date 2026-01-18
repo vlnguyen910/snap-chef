@@ -4,12 +4,12 @@ import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
-import { jwtConfiguration } from 'src/common/config/jwt.config';
-import { RedisModule } from 'src/redis/redis.module';
+import { jwtConfiguration } from 'src/config';
+import { RedisModule } from 'src/common/redis/redis.module';
 import { MailModule } from '../mail/mail.module';
-import { RefreshTokenStrategy } from 'src/common/strategies/refresh-token.strategy';
-import { JwtStrategy } from 'src/common/strategies/jwt.strategy';
-import { GoogleStrategy } from 'src/common/strategies/google.strategy';
+import { RefreshTokenStrategy } from 'src/modules/auth/strategies/refresh-token.strategy';
+import { JwtStrategy } from 'src/modules/auth/strategies/jwt.strategy';
+import { GoogleStrategy } from 'src/modules/auth/strategies/google.strategy';
 import { OauthModule } from '../oauth-accounts/oauth.module';
 
 @Module({

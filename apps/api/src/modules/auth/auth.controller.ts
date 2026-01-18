@@ -17,14 +17,16 @@ import { LoginResponseDto } from './dto/respone/login-respone.dto';
 import { SignUpDto } from './dto/request/sign-up.dto';
 import { VerifyEmailDto } from './dto/request/verify-email.dto';
 import type { Response } from 'express';
-import { GetUser } from 'src/common/decorators/user.decorator';
-import { TokenPayload } from 'src/common/interfaces/auth.interface';
-import { RefreshTokenGuard } from 'src/common/guards/refresh-token.guard';
+import { GetUser } from 'src/common/decorators';
+import { TokenPayload } from 'src/common/interfaces';
+import {
+  RefreshTokenGuard,
+  JwtAuthGuard,
+  GoogleOAuthGuard,
+} from 'src/common/guards';
 import { RefreshTokenResponseDto } from './dto/respone/refresh-token-respone.dto';
-import { cookieConfiguration } from 'src/common/config/cookie.config';
+import { cookieConfiguration } from 'src/config';
 import type { ConfigType } from '@nestjs/config';
-import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
-import { GoogleOAuthGuard } from 'src/common/guards/google-oauth.guard';
 
 @Controller('auth')
 export class AuthController {

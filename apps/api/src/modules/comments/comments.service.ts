@@ -4,7 +4,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/db/prisma.service';
+import { PrismaService } from 'src/common/db/prisma.service';
 import { CreateCommentsDto } from './dto/create-comments.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import type { Comment } from 'src/generated/prisma/client';

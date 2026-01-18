@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/db/prisma.service';
+import { PrismaService } from 'src/common/db/prisma.service';
 import { CreateCollectionDto } from './dto/create-collection';
 import { Collection, User } from 'src/generated/prisma/client';
 import { UsersService } from '../users/users.service';

@@ -1,13 +1,17 @@
 import { Injectable, Inject, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { jwtConfiguration } from '../config/jwt.config';
-import { TokenPayload } from '../interfaces/auth.interface';
+import { jwtConfiguration } from '../../../config';
+import { TokenPayload } from '../../../common/interfaces';
 import type { ConfigType } from '@nestjs/config';
-import { RedisService } from 'src/redis/redis.service';
+import { JwtTokenType } from '../../../common/enums';
+import { RedisService } from 'src/common/redis/redis.service';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+export class RefreshTokenStrategy extends PassportStrategy(
+  Strategy,
+  'jwt-refresh',
+) {
   constructor(
     @Inject(jwtConfiguration.KEY)
     private readonly jwtConfig: ConfigType<typeof jwtConfiguration>,
@@ -17,7 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: any) => {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-          return request?.cookies?.access_token;
+          return request?.cookies?.refresh_token;
         },
         ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]),
@@ -27,6 +31,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: TokenPayload) {
+    if (payload.type !== JwtTokenType.RefreshToken) {
+      throw new UnauthorizedException('Invalid token type');
+    }
+
+    // Kiểm tra token có bị blacklist không
     const blacklistKey = `blacklist:${payload.jti}`;
     const isBlacklisted = await this.redisService.getCache(blacklistKey);
 

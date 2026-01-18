@@ -7,13 +7,13 @@ import {
 } from '@nestjs/common';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
-import { PrismaService } from 'src/db/prisma.service';
+import { PrismaService } from 'src/common/db/prisma.service';
 import { IngredientsService } from '../ingredients/ingredients.service';
 import { RecipeStatus } from 'src/generated/prisma/enums';
 import { Recipe, RecipeIngredient } from 'src/generated/prisma/client';
 import { UsersService } from '../users/users.service';
 import { RecipeWhereInput } from 'src/generated/prisma/models/Recipe';
-import { RedisService } from 'src/redis/redis.service';
+import { RedisService } from 'src/common/redis/redis.service';
 import { RecipeDetail } from './dto/recipe-detail.dto';
 
 @Injectable()

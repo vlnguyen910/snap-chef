@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/db/prisma.service';
+import { PrismaService } from 'src/common/db/prisma.service';
 import { OauthAccount, OAuthProvider } from 'src/generated/prisma/client';
 import { CreateOauthAccountDto } from './dto/create-oauth-account.dto';
 
