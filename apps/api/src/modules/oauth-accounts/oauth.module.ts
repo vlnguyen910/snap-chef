@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { OauthService } from './oauth.service';
-import { PrismaModule } from 'src/db/prisma.module';
+import { PrismaModule } from 'src/common/db/prisma.module';
 
 @Module({
   imports: [PrismaModule],

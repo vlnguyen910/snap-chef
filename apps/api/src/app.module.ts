@@ -1,15 +1,17 @@
 import { Module } from '@nestjs/common';
-import { PrismaService } from './db/prisma.service';
+import { PrismaService } from './common/db/prisma.service';
 import { RecipesModule } from './modules/recipes/recipes.module';
 import { IngredientsModule } from './modules/ingredients/ingredients.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CommentsModule } from './modules/comments/comments.module';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { ConfigModule, ConfigType } from '@nestjs/config';
-import { redisConfiguration } from './common/config/redis.config';
-import { jwtConfiguration } from './common/config/jwt.config';
-import { cookieConfiguration } from './common/config/cookie.config';
-import { googleConfiguration } from './common/config/google.config';
+import {
+  redisConfiguration,
+  jwtConfiguration,
+  cookieConfiguration,
+  googleConfiguration,
+} from './config';
 import { UsersModule } from './modules/users/users.module';
 import { CollectionModule } from './modules/collections/collection.module';
 
