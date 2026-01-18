@@ -23,7 +23,7 @@ export class RecipesService {
     private ingredientsService: IngredientsService,
     private userService: UsersService,
     private redis: RedisService,
-  ) {}
+  ) { }
 
   private readonly logger = new Logger(RecipesService.name);
 
@@ -177,7 +177,7 @@ export class RecipesService {
     });
   }
 
-  async findOne(id: number, user_id?: string): Promise<RecipeDetail | null> {
+  async findOne(id: string, user_id?: string): Promise<RecipeDetail | null> {
     const cacheKey = `recipe:${id}`;
 
     let recipeData =
@@ -230,7 +230,7 @@ export class RecipesService {
     };
   }
 
-  async update(id: number, user_id: string, updateRecipeDto: UpdateRecipeDto) {
+  async update(id: string, user_id: string, updateRecipeDto: UpdateRecipeDto) {
     const { ingredients, steps, ...scalarFields } = updateRecipeDto;
     const cacheKey = `recipe:id`;
 
@@ -307,7 +307,7 @@ export class RecipesService {
     });
   }
 
-  private async checkUserLiked(user_id: string, recipe_id: number) {
+  private async checkUserLiked(user_id: string, recipe_id: string) {
     const like = await this.prisma.like.findUnique({
       where: {
         user_id_recipe_id: { user_id, recipe_id },
@@ -318,7 +318,7 @@ export class RecipesService {
     return !!like;
   }
 
-  async likeRecipe(user_id: string, recipe_id: number) {
+  async likeRecipe(user_id: string, recipe_id: string) {
     const recipe = await this.prisma.recipe.findUnique({
       where: { id: recipe_id },
       select: { author_id: true },

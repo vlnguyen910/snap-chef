@@ -78,7 +78,7 @@ export class CollectionService {
     return collection;
   }
 
-  async addRecipe(collection_id: string, recipe_id: number, currentUser: User) {
+  async addRecipe(collection_id: string, recipe_id: string, currentUser: User) {
     const recipe = await this.recipeService.findOne(recipe_id);
     if (!recipe) throw new NotFoundException('This recipe is not found');
 

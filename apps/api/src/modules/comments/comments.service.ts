@@ -16,7 +16,7 @@ export class CommentsService {
 
   private logger = new Logger(CommentsService.name);
 
-  async create(user_id: string, recipe_id: number, dto: CreateCommentsDto) {
+  async create(user_id: string, recipe_id: string, dto: CreateCommentsDto) {
     await this.prisma.comment.create({
       data: {
         user_id,
@@ -45,7 +45,7 @@ export class CommentsService {
   }
 
   async findAllCommentsOfRecipe(
-    recipe_id: number,
+    recipe_id: string,
     query: CommentPaginationDto,
   ) {
     const { page, limit } = query;
