@@ -23,7 +23,7 @@ export class RecipesService {
     private ingredientsService: IngredientsService,
     private userService: UsersService,
     private redis: RedisService,
-  ) { }
+  ) {}
 
   private readonly logger = new Logger(RecipesService.name);
 
@@ -319,6 +319,9 @@ export class RecipesService {
   }
 
   async likeRecipe(user_id: string, recipe_id: string) {
+    const user = await this.userService.findOne(user_id);
+    if (!user) throw new BadRequestException('User is not exist');
+
     const recipe = await this.prisma.recipe.findUnique({
       where: { id: recipe_id },
       select: { author_id: true },

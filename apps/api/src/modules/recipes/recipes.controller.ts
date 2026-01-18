@@ -31,7 +31,7 @@ export class RecipesController {
   constructor(
     private readonly recipesService: RecipesService,
     private readonly commentsService: CommentsService,
-  ) { }
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -46,10 +46,7 @@ export class RecipesController {
 
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
-  findOne(
-    @Param('id') id: string,
-    @GetUser() user: User | undefined,
-  ) {
+  findOne(@Param('id') id: string, @GetUser() user: User | undefined) {
     return this.recipesService.findOne(id, user?.id);
   }
 
@@ -71,10 +68,7 @@ export class RecipesController {
   //Social Features
   @Post(':id/like')
   @UseGuards(AuthGuard('jwt'))
-  likeRecipe(
-    @GetUser() user: User,
-    @Param('id') recipe_id: string,
-  ) {
+  likeRecipe(@GetUser() user: User, @Param('id') recipe_id: string) {
     return this.recipesService.likeRecipe(user.id, recipe_id);
   }
 
