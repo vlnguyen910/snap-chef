@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   Param,
-  ParseIntPipe,
   Post,
   Put,
   UseGuards,
@@ -18,7 +17,7 @@ import { UpdateCollectionDto } from './dto/update-collection';
 
 @Controller('collections')
 export class CollectionController {
-  constructor(private collectionService: CollectionService) { }
+  constructor(private collectionService: CollectionService) {}
 
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -71,6 +70,10 @@ export class CollectionController {
     @Body() payload: UpdateCollectionDto,
     @GetUser() currentUser: User,
   ) {
-    return await this.collectionService.update(collection_id, payload, currentUser)
+    return await this.collectionService.update(
+      collection_id,
+      payload,
+      currentUser,
+    );
   }
 }

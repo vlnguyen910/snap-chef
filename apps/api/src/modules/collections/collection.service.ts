@@ -16,7 +16,7 @@ export class CollectionService {
     private prisma: PrismaService,
     private userServicer: UsersService,
     private recipeService: RecipesService,
-  ) { }
+  ) {}
 
   async create(
     user_id: string,
@@ -114,10 +114,13 @@ export class CollectionService {
     };
   }
 
-  async update(collection_id: string, payload: UpdateCollectionDto, currentUser: User) {
+  async update(
+    collection_id: string,
+    payload: UpdateCollectionDto,
+    currentUser: User,
+  ) {
     const collection = await this.findOne(collection_id, currentUser.id);
-    if (!collection)
-      throw new NotFoundException('Collection is not foudn');
+    if (!collection) throw new NotFoundException('Collection is not foudn');
 
     if (collection.owner_id !== currentUser.id)
       throw new ForbiddenException('You have no right to edit this');
@@ -125,6 +128,6 @@ export class CollectionService {
     return await this.prisma.collection.update({
       where: { id: collection_id },
       data: payload,
-    })
+    });
   }
 }
