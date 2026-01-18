@@ -31,7 +31,7 @@ export class RecipesController {
   constructor(
     private readonly recipesService: RecipesService,
     private readonly commentsService: CommentsService,
-  ) {}
+  ) { }
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -47,7 +47,7 @@ export class RecipesController {
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
   findOne(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @GetUser() user: User | undefined,
   ) {
     return this.recipesService.findOne(id, user?.id);
@@ -61,7 +61,7 @@ export class RecipesController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @GetUser() user: User,
     @Body() updateRecipeDto: UpdateRecipeDto,
   ) {
@@ -73,7 +73,7 @@ export class RecipesController {
   @UseGuards(AuthGuard('jwt'))
   likeRecipe(
     @GetUser() user: User,
-    @Param('id', ParseIntPipe) recipe_id: number,
+    @Param('id') recipe_id: string,
   ) {
     return this.recipesService.likeRecipe(user.id, recipe_id);
   }
@@ -82,7 +82,7 @@ export class RecipesController {
   @UseGuards(AuthGuard('jwt'))
   createComment(
     @GetUser() user: User,
-    @Param('id', ParseIntPipe) recipe_id: number,
+    @Param('id') recipe_id: string,
     @Body() dto: CreateCommentsDto,
   ) {
     return this.commentsService.create(user.id, recipe_id, dto);
@@ -90,7 +90,7 @@ export class RecipesController {
 
   @Get(':id/comments')
   getAllCommentsOfRecipe(
-    @Param('id', ParseIntPipe) recipe_id: number,
+    @Param('id') recipe_id: string,
     @Query() query: CommentPaginationDto,
   ) {
     return this.commentsService.findAllCommentsOfRecipe(recipe_id, query);

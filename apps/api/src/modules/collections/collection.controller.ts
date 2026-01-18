@@ -54,7 +54,7 @@ export class CollectionController {
   @Post(':id/recipe/:recipe_id')
   async addRecipeToCollection(
     @Param('id') collection_id: string,
-    @Param('recipe_id', ParseIntPipe) recipe_id: number,
+    @Param('recipe_id') recipe_id: string,
     @GetUser() currentUser: User,
   ) {
     return await this.collectionService.addRecipe(
