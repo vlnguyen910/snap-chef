@@ -10,7 +10,7 @@
 CREATE TYPE "NotificationType" AS ENUM ('LIKE', 'COMMENT', 'FOLLOW', 'SYSTEM');
 
 -- CreateEnum
-CREATE TYPE "NotificationResourceType" AS ENUM ('PROFILE', 'RECIPE', 'COLLECTION');
+CREATE TYPE "NotificationResourceType" AS ENUM ('PROFILE', 'RECIPE', 'USER');
 
 -- DropForeignKey
 ALTER TABLE "Comment" DROP CONSTRAINT "Comment_recipe_id_fkey";
