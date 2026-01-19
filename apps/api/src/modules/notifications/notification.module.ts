@@ -9,7 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 @Module({
   imports: [
     PrismaModule, 
-    ConfigModule,
+    JwtModule,
     // JwtModule is likely global, but importing doesn't hurt if we need specific config, 
     // though usually global module is enough. 
     // If it's global, we don't strictly need it here, but explicit is fine.
