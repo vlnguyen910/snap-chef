@@ -188,7 +188,7 @@ enum NotificationType {
 enum NotificationResourceType {
   PROFILE
   RECIPE
-  COLLECTION
+  USER 
 }
 
 model Notification {
