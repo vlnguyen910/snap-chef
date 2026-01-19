@@ -41,7 +41,7 @@ export class NotificationGateway
 
       this.logger.log(`User connected: ${userId} (Socket ID: ${client.id})`);
 
-      client.join(userId);
+      await client.join(userId);
     } catch (error) {
       this.logger.error('Invalid token during connection', error);
       this.disconnect(client);
