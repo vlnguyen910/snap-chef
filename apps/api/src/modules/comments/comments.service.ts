@@ -9,10 +9,19 @@ import { CreateCommentsDto } from './dto/create-comments.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import type { Comment } from 'src/generated/prisma/client';
 import { CommentPaginationDto } from 'src/common/dto/pagination.dto';
+import { NotificationMessages, WebSocketEvents } from 'src/common/constants';
+import { NotificationService } from '../notifications/notification.service';
+import {
+  NotificationType,
+  NotificationResourceType,
+} from 'src/generated/prisma/enums';
 
 @Injectable()
 export class CommentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   private logger = new Logger(CommentsService.name);
 
@@ -28,7 +37,14 @@ export class CommentsService {
     this.logger.log(
       `New comment of recipe ${recipe_id} was created by user ${user_id}`,
     );
-
+    await this.notificationService.createNotification({
+      receiverId: user_id,
+      senderId: user_id,
+      type: NotificationType.COMMENT,
+      message: NotificationMessages.NEW_COMMENT(user_id),
+      resourceId: recipe_id,
+      resourceType: NotificationResourceType.RECIPE,
+    });
     return {
       message: 'Comment Created',
     };

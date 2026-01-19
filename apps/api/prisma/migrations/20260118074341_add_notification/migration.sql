@@ -7,7 +7,7 @@
 
 */
 -- CreateEnum
-CREATE TYPE "NotificationType" AS ENUM ('LIKE', 'COMMMENT', 'FOLLOW', 'SYSTEM');
+CREATE TYPE "NotificationType" AS ENUM ('LIKE', 'COMMENT', 'FOLLOW', 'SYSTEM');
 
 -- CreateEnum
 CREATE TYPE "NotificationResourceType" AS ENUM ('PROFILE', 'RECIPE', 'COLLECTION');

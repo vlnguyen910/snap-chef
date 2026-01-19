@@ -26,10 +26,7 @@ export class NotificationGateway
 
   private logger = new Logger(NotificationGateway.name);
 
-
-  constructor(
-    private readonly jwtService: JwtService,
-  ) {}
+  constructor(private readonly jwtService: JwtService) {}
 
   async handleConnection(client: Socket) {
     const token = this.extractTokenFromHandshake(client);
@@ -40,10 +37,10 @@ export class NotificationGateway
 
     try {
       const payload: TokenPayload = await this.jwtService.verifyAsync(token);
-      const userId = payload.sub; 
+      const userId = payload.sub;
 
       this.logger.log(`User connected: ${userId} (Socket ID: ${client.id})`);
-      
+
       client.join(userId);
     } catch (error) {
       this.logger.error('Invalid token during connection', error);
@@ -58,20 +55,21 @@ export class NotificationGateway
   private extractTokenFromHandshake(client: Socket): string | undefined {
     // 1. Check cookie first (Priority)
     if (client.handshake.headers.cookie) {
-      const cookies = client.handshake.headers.cookie
-        .split(';')
-        .reduce((acc, cookie) => {
+      const cookies = client.handshake.headers.cookie.split(';').reduce(
+        (acc, cookie) => {
           const parts = cookie.trim().split('=');
           if (parts.length === 2) {
-             const key = parts[0];
-             const value = parts[1];
-             if (key && value) {
-               acc[key as string] = value as string;
-             }
+            const key = parts[0];
+            const value = parts[1];
+            if (key && value) {
+              acc[key] = value;
+            }
           }
           return acc;
-        }, {} as Record<string, string>);
-      
+        },
+        {} as Record<string, string>,
+      );
+
       if (cookies['access_token']) {
         return cookies['access_token'];
       }
@@ -82,13 +80,13 @@ export class NotificationGateway
     if (authHeader && authHeader.split(' ')[0] === 'Bearer') {
       return authHeader.split(' ')[1];
     }
-    
+
     // 3. Check query param
     const token = client.handshake.query.token as string;
     if (token) {
       return token;
     }
-    
+
     return undefined;
   }
 
