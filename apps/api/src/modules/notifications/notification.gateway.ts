@@ -8,10 +8,13 @@ import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { Logger } from '@nestjs/common';
 import { TokenPayload } from 'src/common/interfaces';
+import { WebSocketEvents } from 'src/common/constants';
+import { getAppConfig } from 'src/config';
 
 @WebSocketGateway({
   cors: {
-    origin: '*', // Adjust this in production
+    origin: getAppConfig().corsOrigins,
+    credentials: true,
   },
   namespace: 'notifications',
 })
@@ -90,24 +93,11 @@ export class NotificationGateway
   }
 
   private disconnect(client: Socket) {
-    client.emit('error', 'Unauthorized');
+    client.emit(WebSocketEvents.ERROR, 'Unauthorized');
     client.disconnect();
   }
 
-  /**
-   * Send a notification to a specific user
-   * @param userId 
-   * @param event 
-   * @param data 
-   */
   sendToUser(userId: string, event: string, data: any) {
-    // Using rooms approach is cleaner and handles multiple sockets per user if they join the room
     this.server.to(userId).emit(event, data);
-    
-    // Fallback/log if needed
-    // const socketId = this.userSocketMap.get(userId);
-    // if (socketId) {
-    //   this.server.to(socketId).emit(event, data);
-    // }
   }
 }

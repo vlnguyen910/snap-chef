@@ -3,11 +3,13 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common/pipes/validation.pipe';
 import { getAppConfig } from './config';
 import cookieParser from 'cookie-parser';
+import { ConfigService } from '@nestjs/config';
+import { RedisIoAdapter } from './common/adapters/redis-io.adapter';
 
 getAppConfig();
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const { appPort } = getAppConfig();
+  const { appPort, corsOrigins } = getAppConfig();
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -17,8 +19,14 @@ async function bootstrap() {
     }),
   );
 
+  const configService = app.get(ConfigService);
+  const redisIoAdapter = new RedisIoAdapter(app, configService);
+  await redisIoAdapter.connectToRedis();
+
+  app.useWebSocketAdapter(redisIoAdapter);
+
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: corsOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

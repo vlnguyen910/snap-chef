@@ -13,10 +13,6 @@ export class NotificationService {
     private readonly notificationGateway: NotificationGateway,
   ) {}
 
-  /**
-   * Create a new notification and send real-time update
-   * @param dto 
-   */
   async createNotification(dto: CreateNotificationDto) {
     try {
       const notification = await this.prisma.notification.create({
@@ -53,10 +49,6 @@ export class NotificationService {
     }
   }
 
-  /**
-   * Get all notifications for a user
-   * @param userId 
-   */
   async getNotifications(userId: string) {
     return this.prisma.notification.findMany({
       where: {
@@ -77,11 +69,6 @@ export class NotificationService {
     });
   }
 
-  /**
-   * Mark a notification as read
-   * @param userId 
-   * @param notificationId 
-   */
   async markAsRead(userId: string, notificationId: number) {
     return this.prisma.notification.update({
       where: {
@@ -94,10 +81,6 @@ export class NotificationService {
     });
   }
 
-  /**
-   * Mark all notifications as read for a user
-   * @param userId 
-   */
   async markAllAsRead(userId: string) {
     return this.prisma.notification.updateMany({
       where: {
