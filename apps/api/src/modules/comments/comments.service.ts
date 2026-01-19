@@ -9,7 +9,7 @@ import { CreateCommentsDto } from './dto/create-comments.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import type { Comment } from 'src/generated/prisma/client';
 import { CommentPaginationDto } from 'src/common/dto/pagination.dto';
-import { NotificationMessages, WebSocketEvents } from 'src/common/constants';
+import { NotificationMessages } from 'src/common/constants';
 import { NotificationService } from '../notifications/notification.service';
 import {
   NotificationType,

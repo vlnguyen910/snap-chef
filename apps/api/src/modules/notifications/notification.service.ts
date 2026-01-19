@@ -2,10 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/common/db/prisma.service';
 import { NotificationGateway } from './notification.gateway';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-import {
-  NotificationType,
-  NotificationResourceType,
-} from 'src/generated/prisma/enums';
 import { WebSocketEvents } from 'src/common/constants';
 
 @Injectable()

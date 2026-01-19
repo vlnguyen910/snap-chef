@@ -350,7 +350,7 @@ export class RecipesService {
       });
       return { is_liked: false };
     } else {
-      const like = await this.prisma.like.create({
+      await this.prisma.like.create({
         data: {
           user_id,
           recipe_id,
