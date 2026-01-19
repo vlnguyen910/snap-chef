@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from 'src/common/db/prisma.service';
 import { NotificationGateway } from './notification.gateway';
 import { CreateNotificationDto } from './dto/create-notification.dto';
@@ -91,5 +92,21 @@ export class NotificationService {
         is_read: true,
       },
     });
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async cleanUpOldNotifications() {
+    this.logger.log('Cleaning up notifications older than 30 days...');
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const result = await this.prisma.notification.deleteMany({
+      where: {
+        created_at: {
+          lte: thirtyDaysAgo,
+        },
+      },
+    });
+    this.logger.log(`Deleted ${result.count} old notifications`);
   }
 }
