@@ -6,9 +6,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
-import { Logger, UseGuards } from '@nestjs/common';
-import { ConfigType } from '@nestjs/config';
-import { jwtConfiguration } from 'src/config';
+import { Logger } from '@nestjs/common';
+import { TokenPayload } from 'src/common/interfaces';
 
 @WebSocketGateway({
   cors: {
@@ -23,12 +22,10 @@ export class NotificationGateway
   server!: Server;
 
   private logger = new Logger(NotificationGateway.name);
-  // In-memory map for basic implementation. Ideally use RedisAdapter for scaling.
-  private userSocketMap = new Map<string, string>();
+
 
   constructor(
     private readonly jwtService: JwtService,
-    // Note: We might need to inject config if we verify manually, but jwtService.verify handles it if configured globally
   ) {}
 
   async handleConnection(client: Socket) {
@@ -39,12 +36,11 @@ export class NotificationGateway
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync(token);
-      const userId = payload.sub; // Assuming 'sub' holds the userId
-      this.userSocketMap.set(userId, client.id);
+      const payload: TokenPayload = await this.jwtService.verifyAsync(token);
+      const userId = payload.sub; 
+
       this.logger.log(`User connected: ${userId} (Socket ID: ${client.id})`);
       
-      // Optional: Join a room with userId
       client.join(userId);
     } catch (error) {
       this.logger.error('Invalid token during connection', error);
@@ -53,30 +49,38 @@ export class NotificationGateway
   }
 
   handleDisconnect(client: Socket) {
-    // We need to find the userId for this socketId to remove it from the map
-    // This is O(N) with a simple map. 
-    // Optimization: Store socketId -> userId map as well, or just rely on rooms.
-    // If we use rooms (client.join(userId)), we actually don't strictly need the map for sending 
-    // if we use this.server.to(userId).emit(...)
-    
-    // Cleaning up map
-    for (const [userId, socketId] of this.userSocketMap.entries()) {
-      if (socketId === client.id) {
-        this.userSocketMap.delete(userId);
-        this.logger.log(`User disconnected: ${userId}`);
-        break;
-      }
-    }
+    this.logger.log(`Client disconnected: ${client.id}`);
   }
 
   private extractTokenFromHandshake(client: Socket): string | undefined {
-    // Check auth header
+    // 1. Check cookie first (Priority)
+    if (client.handshake.headers.cookie) {
+      const cookies = client.handshake.headers.cookie
+        .split(';')
+        .reduce((acc, cookie) => {
+          const parts = cookie.trim().split('=');
+          if (parts.length === 2) {
+             const key = parts[0];
+             const value = parts[1];
+             if (key && value) {
+               acc[key as string] = value as string;
+             }
+          }
+          return acc;
+        }, {} as Record<string, string>);
+      
+      if (cookies['access_token']) {
+        return cookies['access_token'];
+      }
+    }
+
+    // 2. Check auth header (Bearer)
     const authHeader = client.handshake.headers.authorization;
     if (authHeader && authHeader.split(' ')[0] === 'Bearer') {
       return authHeader.split(' ')[1];
     }
     
-    // Check query param
+    // 3. Check query param
     const token = client.handshake.query.token as string;
     if (token) {
       return token;
