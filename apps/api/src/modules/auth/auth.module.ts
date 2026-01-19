@@ -17,7 +17,6 @@ import { OauthModule } from '../oauth-accounts/oauth.module';
     JwtModule.registerAsync({
       inject: [jwtConfiguration.KEY],
       useFactory: (jwtConfig: ConfigType<typeof jwtConfiguration>) => ({
-        global: true,
         secret: jwtConfig.secret,
       }),
     }),

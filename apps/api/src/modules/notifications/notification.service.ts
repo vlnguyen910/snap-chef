@@ -2,7 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/common/db/prisma.service';
 import { NotificationGateway } from './notification.gateway';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-import { NotificationType, NotificationResourceType } from 'src/generated/prisma/enums';
+import {
+  NotificationType,
+  NotificationResourceType,
+} from 'src/generated/prisma/enums';
+import { WebSocketEvents } from 'src/common/constants';
 
 @Injectable()
 export class NotificationService {
@@ -38,7 +42,7 @@ export class NotificationService {
       // Send real-time notification
       this.notificationGateway.sendToUser(
         dto.receiverId,
-        'new_notification',
+        WebSocketEvents.NEW_NOTIFICATION,
         notification,
       );
 
@@ -73,7 +77,7 @@ export class NotificationService {
     return this.prisma.notification.update({
       where: {
         id: notificationId,
-        receiver_id: userId, // Ensure ownership
+        receiver_id: userId,
       },
       data: {
         is_read: true,

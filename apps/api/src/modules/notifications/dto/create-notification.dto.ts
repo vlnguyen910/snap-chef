@@ -1,5 +1,8 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { NotificationResourceType, NotificationType } from 'src/generated/prisma/enums';
+import {
+  NotificationResourceType,
+  NotificationType,
+} from 'src/generated/prisma/enums';
 
 export class CreateNotificationDto {
   @IsString()

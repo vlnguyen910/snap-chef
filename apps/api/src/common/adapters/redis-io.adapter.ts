@@ -10,8 +10,8 @@ export class RedisIoAdapter extends IoAdapter {
   private adapterConstructor!: ReturnType<typeof createAdapter>;
 
   constructor(
-    private app: INestApplicationContext, 
-    private configService: ConfigService
+    private app: INestApplicationContext,
+    private configService: ConfigService,
   ) {
     super(app);
   }
@@ -20,7 +20,7 @@ export class RedisIoAdapter extends IoAdapter {
     const host = this.configService.get<string>('redis.host');
     const port = this.configService.get<number>('redis.port');
     const pubClient = createClient({
-        url: `redis://${host}:${port}`,
+      url: `redis://${host}:${port}`,
     });
     const subClient = pubClient.duplicate();
 

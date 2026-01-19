@@ -180,7 +180,7 @@ model Collection {
 
 enum NotificationType {
   LIKE
-  COMMMENT
+  COMMENT
   FOLLOW
   SYSTEM
 }

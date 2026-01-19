@@ -16,7 +16,11 @@ import { RecipeWhereInput } from 'src/generated/prisma/models/Recipe';
 import { RedisService } from 'src/common/redis/redis.service';
 import { RecipeDetail } from './dto/recipe-detail.dto';
 import { NotificationService } from '../notifications/notification.service';
-import { NotificationType, NotificationResourceType } from 'src/generated/prisma/enums';
+import {
+  NotificationType,
+  NotificationResourceType,
+} from 'src/generated/prisma/enums';
+import { NotificationMessages } from 'src/common/constants';
 
 @Injectable()
 export class RecipesService {
@@ -359,7 +363,7 @@ export class RecipesService {
           receiverId: recipe.author_id,
           senderId: user_id,
           type: NotificationType.LIKE,
-          message: `${user.username} liked your recipe`,
+          message: NotificationMessages.LIKE_RECIPE(user.username),
           resourceId: recipe_id,
           resourceType: NotificationResourceType.RECIPE,
         });
