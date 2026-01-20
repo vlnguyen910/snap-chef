@@ -6,5 +6,3 @@ export const googleConfiguration = registerAs('google', () => ({
   callbackURL: process.env.GOOGLE_CALLBACK_URL,
   scope: ['email', 'profile'],
 }));
-  scope: ['email', 'profile'],
-}));

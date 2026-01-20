@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -161,6 +162,10 @@ export class AuthService {
           provider_id,
           user_id: user.id,
         });
+      } else if (oauthAccount.provider_id !== provider_id) {
+        throw new ConflictException(
+          'User is already linked to a different Google account',
+        );
       }
     }
 
