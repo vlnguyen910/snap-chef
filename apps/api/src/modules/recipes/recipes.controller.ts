@@ -9,7 +9,6 @@ import {
   UseGuards,
   ParseIntPipe,
   Query,
-  DefaultValuePipe,
 } from '@nestjs/common';
 import { RecipesService } from './recipes.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
@@ -21,8 +20,11 @@ import { CommentsService } from '../comments/comments.service';
 import { CreateCommentsDto } from '../comments/dto/create-comments.dto';
 import { UpdateCommentDto } from '../comments/dto/update-comment.dto';
 import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt-auth.guard';
-import { JwtAuthGuard } from 'src/common/guards/jwt.guard'; 
-import { CommentPaginationDto, RecipePaginationDto } from 'src/common/dto/pagination.dto';
+import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import {
+  CommentPaginationDto,
+  RecipePaginationDto,
+} from 'src/common/dto/pagination.dto';
 
 @Controller('recipes')
 export class RecipesController {
@@ -38,18 +40,13 @@ export class RecipesController {
   }
 
   @Get()
-  findAll(
-    @Query() query: RecipePaginationDto,
-  ) {
+  findAll(@Query() query: RecipePaginationDto) {
     return this.recipesService.findAll(query);
   }
 
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
-  findOne(
-    @Param('id', ParseIntPipe) id: number,
-    @GetUser() user: User | undefined,
-  ) {
+  findOne(@Param('id') id: string, @GetUser() user: User | undefined) {
     return this.recipesService.findOne(id, user?.id);
   }
 
@@ -61,20 +58,17 @@ export class RecipesController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @GetUser() user: User,
     @Body() updateRecipeDto: UpdateRecipeDto,
   ) {
     return this.recipesService.update(id, user.id, updateRecipeDto);
   }
-  
+
   //Social Features
   @Post(':id/like')
   @UseGuards(AuthGuard('jwt'))
-  likeRecipe(
-    @GetUser() user: User,
-    @Param('id', ParseIntPipe) recipe_id: number
-  ) {
+  likeRecipe(@GetUser() user: User, @Param('id') recipe_id: string) {
     return this.recipesService.likeRecipe(user.id, recipe_id);
   }
 
@@ -82,7 +76,7 @@ export class RecipesController {
   @UseGuards(AuthGuard('jwt'))
   createComment(
     @GetUser() user: User,
-    @Param('id', ParseIntPipe) recipe_id: number,
+    @Param('id') recipe_id: string,
     @Body() dto: CreateCommentsDto,
   ) {
     return this.commentsService.create(user.id, recipe_id, dto);
@@ -90,20 +84,17 @@ export class RecipesController {
 
   @Get(':id/comments')
   getAllCommentsOfRecipe(
-    @Param('id', ParseIntPipe) recipe_id: number,
+    @Param('id') recipe_id: string,
     @Query() query: CommentPaginationDto,
   ) {
-    return this.commentsService.findAllCommentsOfRecipe(
-      recipe_id,
-      query
-    );
+    return this.commentsService.findAllCommentsOfRecipe(recipe_id, query);
   }
-  
+
   @Delete(':id/comments/:comment_id')
   @UseGuards(AuthGuard('jwt'))
   deleteComment(
     @Param('comment_id', ParseIntPipe) id: number,
-    @GetUser() user: User
+    @GetUser() user: User,
   ) {
     return this.commentsService.deleteComment(id, user.id);
   }

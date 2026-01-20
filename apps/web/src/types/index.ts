@@ -190,10 +190,20 @@ export interface FollowUser {
   bio?: string;
 }
 
+// UserSummary - shared interface for follow/follower lists
+export interface UserSummary {
+  id: string;
+  username: string;
+  avatar_url: string;
+  is_following?: boolean; // Whether I am following this user
+  is_followed?: boolean;  // Whether this user is following me (for "Follow Back" logic)
+}
+
 export interface SearchUsersParams {
   q: string;
   limit?: number;
   offset?: number;
+  page?: number;
 }
 
 // Search User Result from API /users/search

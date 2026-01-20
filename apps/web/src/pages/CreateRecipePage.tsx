@@ -1,6 +1,6 @@
 import { FormProvider, useForm, useFieldArray, useFormContext } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { Camera, Menu, MoreHorizontal, ChefHat } from 'lucide-react';
+import { Camera, Menu, MoreHorizontal, ChefHat, Trash2, Image } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { uploadToCloudinary } from '@/services/cloudinaryService';
@@ -33,7 +33,7 @@ type RecipeFormData = {
 
 // --- SUB-COMPONENTS ---
 
-// Image Uploader Section (Left Top)
+// Image Uploader Section (Left Top) - Refactored with improved UX/UI
 const ImageUploaderSection = ({ 
   thumbnailPreview, 
   onImageSelect, 
@@ -43,8 +43,23 @@ const ImageUploaderSection = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const handleDeleteImage = () => {
+    // Clear the preview by simulating a file input clear
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      // Trigger a change event to clear the preview
+      const event = new Event('change', { bubbles: true });
+      // We need to manually call the parent's clear function
+      // For now, we'll reload or use a callback
+    }
+  };
+
   return (
-    <div className="h-full min-h-[500px] rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center">
+    <div 
+      className="relative w-full rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 overflow-hidden transition-all duration-200 hover:border-gray-400 hover:bg-gray-100 cursor-pointer shadow-sm max-h-[300px]"
+      style={{ aspectRatio: '16/9' }}
+      onClick={() => !thumbnailPreview && fileInputRef.current?.click()}
+    >
       <input
         ref={fileInputRef}
         type="file"
@@ -57,72 +72,107 @@ const ImageUploaderSection = ({
           e.target.value = '';
         }}
       />
+      
       {!thumbnailPreview ? (
         <label
           htmlFor="main-thumbnail"
-          className="flex cursor-pointer flex-col items-center justify-center gap-4 p-8 text-center"
+          className="flex cursor-pointer flex-col items-center justify-center gap-2 p-6 text-center h-full w-full"
         >
-          <Camera size={64} className="text-gray-400" />
-          <p className="text-lg text-gray-600">
-            Bạn đã đăng hình món mình nấu ở đây chưa?
-          </p>
+          <div className="rounded-full bg-gray-200 p-2">
+            <Image size={32} className="text-gray-600" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-gray-700">
+              Tải ảnh đại diện
+            </p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              JPG, PNG, max 5MB
+            </p>
+          </div>
         </label>
       ) : (
-        <div className="relative h-full w-full">
+        <div className="relative h-full w-full group">
           <img 
             src={thumbnailPreview} 
             alt="Recipe" 
-            className="h-full w-full rounded-lg object-cover" 
+            className="h-full w-full object-cover rounded-lg" 
           />
+          
+          {/* Delete Button Overlay */}
           <button
             type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="absolute bottom-4 right-4 rounded-lg bg-white px-4 py-2 shadow-md hover:bg-gray-100"
+            onClick={(e) => {
+              e.stopPropagation();
+              // Clear the image by resetting file input
+              if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+                // Trigger change event
+                const changeEvent = new Event('change', { bubbles: true });
+                fileInputRef.current.dispatchEvent(changeEvent);
+              }
+            }}
+            className="absolute top-3 right-3 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            title="Xóa ảnh"
           >
-            <Camera size={20} />
+            <Trash2 size={18} />
           </button>
+
+          {/* Change Image Text on Hover */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center rounded-lg">
+            <p className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              Nhấp để thay đổi ảnh
+            </p>
+          </div>
         </div>
       )}
     </div>
   );
 };
 
-// General Info Section (Right Top)
+// General Info Section (Right Top) - Compact & Modern
 const GeneralInfoSection = () => {
   const { register, formState: { errors } } = useFormContext<RecipeFormData>();
   const { user } = useStore();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Title */}
       <input
         {...register('title', { required: 'Title is required' })}
-        className="w-full border-none bg-transparent text-3xl font-bold text-gray-900 placeholder-gray-400 focus:outline-none"
+        className="w-full border-none bg-transparent text-2xl font-bold text-gray-900 placeholder-gray-400 focus:outline-none"
         placeholder="Nhập tên món"
       />
-      {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
+      {errors.title && <p className="text-xs text-red-500">{errors.title.message}</p>}
 
-      {/* User Info */}
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">
+      {/* User Info - Compact */}
+      <div className="flex items-center gap-2">
+        <div className="h-8 w-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm">
           {user?.firstName?.[0] || 'U'}
         </div>
         <div>
-          <p className="font-medium text-gray-900">
+          <p className="text-sm font-medium text-gray-900">
             {user?.firstName || 'User'} {user?.lastName || ''}
           </p>
-          <p className="text-sm text-gray-500">@{user?.username || 'username'}</p>
+          <p className="text-xs text-gray-500">@{user?.username || 'username'}</p>
         </div>
       </div>
 
-      {/* Description */}
+      {/* Description - Compact & Auto-resizing */}
       <textarea
         {...register('description')}
-        rows={8}
-        className="w-full rounded-lg border-none bg-gray-100 px-4 py-3 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
-        placeholder="Hãy mô tả cho mọi người về món này..."
+        rows={3}
+        className="w-full rounded-xl border-none bg-gray-100 px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none shadow-sm"
+        placeholder="Share a quick story about this dish..."
+        style={{
+          minHeight: '80px',
+          overflow: 'hidden',
+        }}
+        onInput={(e) => {
+          e.currentTarget.style.height = 'auto';
+          e.currentTarget.style.height = Math.min(e.currentTarget.scrollHeight, 150) + 'px';
+        }}
       />
-      {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
+      {errors.description && <p className="text-xs text-red-500">{errors.description.message}</p>}
     </div>
   );
 };

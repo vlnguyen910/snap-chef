@@ -19,4 +19,3 @@ interface Window {
     warning?: (message: string) => void;
   };
 }
-}

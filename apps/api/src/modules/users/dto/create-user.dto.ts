@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -7,8 +8,8 @@ import {
   IsUrl,
   MinLength,
 } from 'class-validator';
-import { UserRoles } from 'src/generated/prisma/enums';
 import { Exclude, Expose } from 'class-transformer';
+import { UserRoles } from 'src/generated/prisma/enums';
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -19,10 +20,9 @@ export class CreateUserDto {
   @IsEmail()
   email!: string;
 
-  @IsNotEmpty()
   @IsString()
   @MinLength(8)
-  password!: string;
+  password!: string | null;
 
   @IsOptional()
   @IsUrl()
@@ -31,6 +31,10 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsEnum(UserRoles)
   role!: UserRoles;
+
+  @IsOptional()
+  @IsBoolean()
+  is_verified?: boolean;
 }
 
 export class UserResponseDto {

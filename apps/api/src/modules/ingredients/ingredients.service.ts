@@ -1,10 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
-import { PrismaService } from 'src/db/prisma.service';
+import { PrismaService } from 'src/common/db/prisma.service';
 import { Ingredient, Prisma } from 'src/generated/prisma/client';
 
 @Injectable()
@@ -37,7 +34,8 @@ export class IngredientsService {
     return ingredient;
   }
 
-  update(id: number, updateIngredientDto: UpdateIngredientDto) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  update(id: number, _: UpdateIngredientDto) {
     return `This action updates a #${id} ingredient`;
   }
 

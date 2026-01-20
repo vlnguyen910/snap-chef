@@ -3,25 +3,30 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigType } from '@nestjs/config';
-import { jwtConfiguration } from 'src/common/config/jwt.config';
+import { ConfigType } from '@nestjs/config';
+import { jwtConfiguration } from 'src/config';
+import { RedisModule } from 'src/common/redis/redis.module';
+import { MailModule } from '../mail/mail.module';
+import { RefreshTokenStrategy } from 'src/modules/auth/strategies/refresh-token.strategy';
+import { JwtStrategy } from 'src/modules/auth/strategies/jwt.strategy';
+import { GoogleStrategy } from 'src/modules/auth/strategies/google.strategy';
+import { OauthModule } from '../oauth-accounts/oauth.module';
+
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      load: [jwtConfiguration],
-    }),
     JwtModule.registerAsync({
-      imports: [ConfigModule.forFeature(jwtConfiguration)],
+      inject: [jwtConfiguration.KEY],
       useFactory: (jwtConfig: ConfigType<typeof jwtConfiguration>) => ({
-        global: true,
         secret: jwtConfig.secret,
       }),
-      inject: [jwtConfiguration.KEY],
     }),
     UsersModule,
+    RedisModule,
+    MailModule,
+    OauthModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, JwtStrategy, RefreshTokenStrategy, GoogleStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

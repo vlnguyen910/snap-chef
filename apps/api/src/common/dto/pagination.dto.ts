@@ -15,7 +15,7 @@ class PaginationDto {
   @IsInt()
   @Min(1)
   @Max(PAGINATION.MAX_LIMIT)
-  limit!: number; 
+  limit!: number;
 
   @IsOptional()
   @IsString()
@@ -23,13 +23,13 @@ class PaginationDto {
 }
 
 export class RecipePaginationDto extends PaginationDto {
-    limit: number = PAGINATION.RECIPES.DEFAULT_LIMIT;
+  limit: number = PAGINATION.RECIPES.DEFAULT_LIMIT;
 }
 
 export class CommentPaginationDto extends PaginationDto {
-    limit: number = PAGINATION.COMMENTS.DEFAULT_LIMIT;
+  limit: number = PAGINATION.COMMENTS.DEFAULT_LIMIT;
 }
 
 export class UserPaginationDto extends PaginationDto {
-    limit: number = PAGINATION.USERS.DEFAULT_LIMIT;
+  limit: number = PAGINATION.USERS.DEFAULT_LIMIT;
 }

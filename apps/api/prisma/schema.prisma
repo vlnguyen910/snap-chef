@@ -14,26 +14,51 @@ enum UserRoles {
   ADMIN
 }
 
+enum OAuthProvider {
+  LOCAL
+  GOOGLE
+  FACEBOOK
+}
+
 model User {
-  id         String    @id @default(cuid())
-  email      String    @unique
-  password   String
-  username   String
-  role       UserRoles
-  avatar_url String?
-  is_active  Boolean   @default(true)
-  bio        String?
-  create_at  DateTime  @default(now())
+  id          String    @id @default(cuid())
+  email       String    @unique
+  password    String?
+  username    String
+  role        UserRoles
+  avatar_url  String?
+  is_active   Boolean   @default(true)
+  bio         String?
+  create_at   DateTime  @default(now())
+  is_verified Boolean   @default(false) //Email Verify
 
   //Relations
   recipe     Recipe[]
   likes      Like[]
   comments   Comment[]
-  following  Follow[]  @relation("followerRelation") // nguoi dang theo doi
-  followedBy Follow[]  @relation("followingRelation") // nguoi theo toi
+  following  Follow[]       @relation("followerRelation") // nguoi dang theo doi
+  followedBy Follow[]       @relation("followingRelation") // nguoi theo toi
+  account    OauthAccount[]
+  collection Collection[]
+
+  notificationReceived Notification[] @relation("ReceiverNotification")
+  notificationSent     Notification[] @relation("SenderNotification")
 
   //Indexes
   @@index([username])
+}
+
+model OauthAccount {
+  id          Int           @id @default(autoincrement())
+  user_id     String
+  provider    OAuthProvider
+  provider_id String
+  created_at  DateTime      @default(now())
+
+  //Relations
+  user User @relation(fields: [user_id], references: [id])
+
+  @@unique([provider, provider_id])
 }
 
 enum RecipeStatus {
@@ -44,7 +69,7 @@ enum RecipeStatus {
 }
 
 model Recipe {
-  id            Int          @id @default(autoincrement())
+  id            String       @id @default(uuid())
   author_id     String
   title         String
   description   String?
@@ -61,6 +86,7 @@ model Recipe {
   steps       Step[]
   likes       Like[]
   comments    Comment[]
+  collection  Collection[]
 
   //Indexes
   @@index([title])
@@ -79,7 +105,7 @@ model Ingredient {
 
 model RecipeIngredient {
   id            Int    @id @default(autoincrement())
-  recipe_id     Int
+  recipe_id     String
   ingredient_id Int
   quantity      Float
   unit          String
@@ -91,7 +117,7 @@ model RecipeIngredient {
 
 model Step {
   id          Int     @id @default(autoincrement())
-  recipe_id   Int
+  recipe_id   String
   order_index Int
   image_url   String?
   content     String
@@ -102,7 +128,7 @@ model Step {
 
 model Like {
   user_id    String
-  recipe_id  Int
+  recipe_id  String
   created_at DateTime @default(now())
 
   //Relations
@@ -115,7 +141,7 @@ model Like {
 model Comment {
   id         Int      @id @default(autoincrement())
   user_id    String
-  recipe_id  Int
+  recipe_id  String
   content    String?
   rating     Int
   created_at DateTime @default(now())
@@ -136,4 +162,46 @@ model Follow {
   following User @relation("followingRelation", fields: [following_id], references: [id])
 
   @@id([follower_id, following_id])
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  thumbnail   String?
+  is_public   Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  owner_id String
+  user     User     @relation(fields: [owner_id], references: [id])
+  recipe   Recipe[]
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
+  FOLLOW
+  SYSTEM
+}
+
+enum NotificationResourceType {
+  PROFILE
+  RECIPE
+  USER 
+}
+
+model Notification {
+  id            Int                       @id @default(autoincrement())
+  receiver_id   String
+  sender_id     String?
+  type          NotificationType
+  message       String
+  is_read       Boolean                   @default(false)
+  resource_id   String?
+  resource_type NotificationResourceType?
+  created_at    DateTime                  @default(now())
+
+  receiver User  @relation("ReceiverNotification", fields: [receiver_id], references: [id], onDelete: Cascade)
+  sender   User? @relation("SenderNotification", fields: [sender_id], references: [id], onDelete: Cascade)
 }

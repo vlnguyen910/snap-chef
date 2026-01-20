@@ -4,16 +4,26 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { PrismaService } from 'src/db/prisma.service';
-import { User } from 'src/generated/prisma/client';
+import { PrismaService } from 'src/common/db/prisma.service';
+import {
+  NotificationResourceType,
+  NotificationType,
+  User,
+} from 'src/generated/prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserWhereInput } from 'src/generated/prisma/models';
 import { UserPaginationDto } from 'src/common/dto/pagination.dto';
-import { fa } from '@faker-js/faker';
+import { RedisService } from 'src/common/redis/redis.service';
+import { NotificationService } from '../notifications/notification.service';
+import { NotificationMessages } from 'src/common/constants';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    private redis: RedisService,
+    private notificationService: NotificationService,
+  ) {}
 
   async create(payload: CreateUserDto) {
     const user = await this.prisma.user.create({
@@ -23,13 +33,13 @@ export class UsersService {
     return user;
   }
 
-  async findAll(query: UserPaginationDto, current_user_id?: string | undefined) {
+  async findAll(query: UserPaginationDto, current_user_id?: string) {
     const { page, limit, search } = query;
     const skip = (page - 1) * limit;
 
     const whereCondition: UserWhereInput = {
       is_active: true,
-    }
+    };
 
     if (current_user_id) {
       whereCondition.id = { not: current_user_id };
@@ -48,22 +58,30 @@ export class UsersService {
       skip,
       take: limit,
       orderBy: {
-        followedBy: { _count: 'desc' }
+        followedBy: { _count: 'desc' },
       },
       select: {
         id: true,
         username: true,
         avatar_url: true,
-      }
-    })
+      },
+    });
 
     return users;
   }
 
   async findOne(id: string): Promise<User | null> {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-    });
+    const cacheKey = `user:${id}`;
+    let user = await this.redis.getCache<User>(cacheKey);
+
+    if (!user) {
+      user = await this.prisma.user.findUnique({
+        where: { id },
+      });
+
+      await this.redis.setCache(cacheKey, user, 60);
+    }
+
     return user;
   }
 
@@ -73,12 +91,32 @@ export class UsersService {
     });
   }
 
+  async update(id: string, user_id: string, payload: UpdateUserDto) {
+    const cacheKey = `user:${id}`;
+    const user = await this.findOne(id);
+
+    if (!user) throw new NotFoundException('User is not exist');
+    if (user.id !== user_id)
+      throw new UnauthorizedException(
+        'You have no right to perform this action',
+      );
+
+    await this.redis.delCache(cacheKey);
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: { ...payload },
+    });
+
+    return updatedUser;
+  }
+
   async followUser(current_id: string, following_id: string) {
-    const currentUser = this.findOne(current_id);
-    const followingUser = this.findOne(following_id);
+    const currentUser = await this.findOne(current_id);
+    const followingUser = await this.findOne(following_id);
 
-    if (!currentUser || !followingUser) throw new NotFoundException('User is not exist');
-
+    if (!currentUser || !followingUser)
+      throw new NotFoundException('User is not exist');
 
     let isFollowed: boolean | null = null;
     const followedUser = await this.prisma.follow.findUnique({
@@ -86,36 +124,47 @@ export class UsersService {
         follower_id_following_id: {
           follower_id: current_id,
           following_id,
-        }
-      }
-    })
+        },
+      },
+    });
 
     if (!followedUser) {
       await this.prisma.follow.create({
         data: {
           follower_id: current_id,
           following_id,
-        }
-      })
+        },
+      });
 
       isFollowed = true;
-    }
-    else {
+    } else {
       await this.prisma.follow.delete({
         where: {
           follower_id_following_id: {
             follower_id: current_id,
             following_id,
-          }
-        }
-      })
+          },
+        },
+      });
       isFollowed = false;
     }
 
-    const message = isFollowed ? 'You have followed this user' : 'You have unfollowed this user';
+    //Trigger notification
+    await this.notificationService.createNotification({
+      receiverId: following_id,
+      senderId: current_id,
+      type: NotificationType.FOLLOW,
+      message: NotificationMessages.NEW_FOLLOW(followingUser.username),
+      resourceId: following_id,
+      resourceType: NotificationResourceType.USER,
+    });
+
+    const message = isFollowed
+      ? 'You have followed this user'
+      : 'You have unfollowed this user';
     return {
       message,
-    }
+    };
   }
 
   async getLikedRecipes(user_id: string) {
@@ -125,7 +174,7 @@ export class UsersService {
     return await this.prisma.like.findMany({
       where: { user_id },
       select: { recipe: true },
-    })
+    });
   }
 
   async getCurrentProfile(user_id: string) {
@@ -137,20 +186,21 @@ export class UsersService {
             followedBy: true,
             following: true,
             recipe: true,
-          }
-        }
-      }
+          },
+        },
+      },
     });
 
     if (!user) throw new NotFoundException('User not exist');
 
-    const { password, _count, ...userData } = user;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _password, _count, ...userData } = user;
     return {
       ...userData,
       followers_count: _count.followedBy,
       following_count: _count.following,
       recipes_count: _count.recipe,
-    }
+    };
   }
 
   async getPublicProfile(target_id: string, current_id: string | undefined) {
@@ -164,47 +214,30 @@ export class UsersService {
           follower_id_following_id: {
             follower_id: current_id,
             following_id: target_id,
-          }
-        }
+          },
+        },
       });
 
       if (followingUser) isFollowed = true;
     }
 
-    const { email, role, ...userData } = targetUser;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { email: _email, role: _role, ...userData } = targetUser;
     return {
       user: userData,
       is_followed: isFollowed,
-    }
-  }
-
-  async update(id: string, user_id: string, payload: UpdateUserDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-      select: { id: true },
-    });
-
-    if (!user) throw new NotFoundException('User is not exist');
-    if (user.id !== user_id)
-      throw new UnauthorizedException('You have no right to perform this action');
-
-    const updatedUser = await this.prisma.user.update({
-      where: { id },
-      data: { ...payload },
-    });
-
-    return updatedUser;
+    };
   }
 
   async getFollowers(
     profile_id: string,
     current_user_id: string | undefined,
-    query: UserPaginationDto
+    query: UserPaginationDto,
   ) {
-    const profile = this.findOne(profile_id);
+    const profile = await this.findOne(profile_id);
     if (!profile) throw new NotFoundException('User is not exist');
     if (current_user_id) {
-      const currentUser = this.findOne(current_user_id);
+      const currentUser = await this.findOne(current_user_id);
       if (!currentUser) throw new NotFoundException('User is not exist');
     }
 
@@ -222,10 +255,12 @@ export class UsersService {
             id: true,
             username: true,
             avatar_url: true,
-            followedBy: current_user_id ? {
-              where: { follower_id: current_user_id },
-              select: { follower_id: true },
-            } : false,
+            followedBy: current_user_id
+              ? {
+                  where: { follower_id: current_user_id },
+                  select: { follower_id: true },
+                }
+              : false,
           },
         },
       },
@@ -238,7 +273,8 @@ export class UsersService {
         ? targetUser.followedBy.length > 0
         : false;
 
-      const { followedBy, ...userData } = targetUser;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { followedBy: _followedBy, ...userData } = targetUser;
 
       return {
         ...userData,
@@ -250,12 +286,12 @@ export class UsersService {
   async getFollowing(
     profile_id: string,
     current_user_id: string | undefined,
-    query: UserPaginationDto
+    query: UserPaginationDto,
   ) {
-    const user = this.findOne(profile_id);
+    const user = await this.findOne(profile_id);
     if (!user) throw new NotFoundException('User is not exist');
     if (current_user_id) {
-      const currentUser = this.findOne(current_user_id);
+      const currentUser = await this.findOne(current_user_id);
       if (!currentUser) throw new NotFoundException('User is not exist');
     }
 
@@ -273,10 +309,12 @@ export class UsersService {
             id: true,
             username: true,
             avatar_url: true,
-            followedBy: current_user_id ? {
-              where: { follower_id: current_user_id },
-              select: { follower_id: true },
-            } : false,
+            followedBy: current_user_id
+              ? {
+                  where: { follower_id: current_user_id },
+                  select: { follower_id: true },
+                }
+              : false,
           },
         },
       },
@@ -289,7 +327,8 @@ export class UsersService {
         ? targetUser.followedBy.length > 0
         : false;
 
-      const { followedBy, ...userData } = targetUser;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { followedBy: _followedBy, ...userData } = targetUser;
 
       return {
         ...userData,
