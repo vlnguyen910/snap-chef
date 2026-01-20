@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -110,6 +111,9 @@ export class UsersService {
 
     if (!currentUser || !followingUser)
       throw new NotFoundException('User is not exist');
+
+    if (current_id === following_id)
+      throw new BadRequestException('You can not follow yourself');
 
     let isFollowed: boolean | null = null;
     const followedUser = await this.prisma.follow.findUnique({
