@@ -11,6 +11,8 @@ COPY . .
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 # Generate Prisma Client
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm --filter=api add -D dotenv
+# Set dummy DATABASE_URL for prisma generate to work during build
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 RUN pnpm --filter=api exec prisma generate
 # Build the API
 RUN pnpm turbo run build --filter=api...
