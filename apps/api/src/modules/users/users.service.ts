@@ -1,22 +1,24 @@
 import {
-  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'src/common/db/prisma.service';
-import { User } from 'src/generated/prisma/client';
+import { NotificationResourceType, NotificationType, User } from 'src/generated/prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserWhereInput } from 'src/generated/prisma/models';
 import { UserPaginationDto } from 'src/common/dto/pagination.dto';
 import { RedisService } from 'src/common/redis/redis.service';
+import { NotificationService } from '../notifications/notification.service';
+import { NotificationMessages } from 'src/common/constants';
 
 @Injectable()
 export class UsersService {
   constructor(
     private prisma: PrismaService,
     private redis: RedisService,
+    private notificationService: NotificationService,
   ) {}
 
   async create(payload: CreateUserDto) {
@@ -112,9 +114,6 @@ export class UsersService {
     if (!currentUser || !followingUser)
       throw new NotFoundException('User is not exist');
 
-    if (current_id === following_id)
-      throw new BadRequestException('You can not follow yourself');
-
     let isFollowed: boolean | null = null;
     const followedUser = await this.prisma.follow.findUnique({
       where: {
@@ -145,6 +144,16 @@ export class UsersService {
       });
       isFollowed = false;
     }
+
+    //Trigger notification
+    await this.notificationService.createNotification({
+      receiverId: following_id, 
+      senderId: current_id,
+      type: NotificationType.FOLLOW,
+      message: NotificationMessages.NEW_FOLLOW(followingUser.username),
+      resourceId: following_id,
+      resourceType: NotificationResourceType.USER,
+    })
 
     const message = isFollowed
       ? 'You have followed this user'

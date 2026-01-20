@@ -10,7 +10,7 @@ import { UpdateRecipeDto } from './dto/update-recipe.dto';
 import { PrismaService } from 'src/common/db/prisma.service';
 import { IngredientsService } from '../ingredients/ingredients.service';
 import { RecipeStatus } from 'src/generated/prisma/enums';
-import { Recipe, RecipeIngredient } from 'src/generated/prisma/client';
+import { RecipeIngredient } from 'src/generated/prisma/client';
 import { UsersService } from '../users/users.service';
 import { RecipeWhereInput } from 'src/generated/prisma/models/Recipe';
 import { RedisService } from 'src/common/redis/redis.service';
@@ -30,7 +30,7 @@ export class RecipesService {
     private userService: UsersService,
     private redis: RedisService,
     private notificationService: NotificationService,
-  ) {}
+  ) { }
 
   private readonly logger = new Logger(RecipesService.name);
 
@@ -122,7 +122,7 @@ export class RecipesService {
     page: number;
     limit: number;
     search?: string;
-  }): Promise<Recipe[]> {
+  }) {
     const { page, limit, search } = params;
     const skip = (page - 1) * limit;
 
@@ -149,7 +149,14 @@ export class RecipesService {
       skip,
       take: limit,
       orderBy: { created_at: 'desc' },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        author_id: true,
+        thumbnail_url: true,
+        cooking_time: true,
+        servings: true,
+        created_at: true,
         user: {
           select: {
             username: true,
@@ -162,7 +169,9 @@ export class RecipesService {
           select: {
             quantity: true,
             unit: true,
-            ingredient: true,
+            ingredient: {
+              select: { name: true }
+            }
           },
         },
         _count: {
@@ -184,7 +193,7 @@ export class RecipesService {
     });
   }
 
-  async findOne(id: string, user_id?: string): Promise<RecipeDetail | null> {
+  async findOne(id: string, user_id?: string) {
     const cacheKey = `recipe:${id}`;
 
     let recipeData =
@@ -192,23 +201,36 @@ export class RecipesService {
     if (!recipeData) {
       const recipe = await this.prisma.recipe.findUnique({
         where: { id },
-        include: {
+        select: {
+          id: true,
+          author_id: true,
+          title: true,
+          thumbnail_url: true,
+          cooking_time: true,
+          servings: true,
+          created_at: true,
           user: {
             select: {
               username: true,
-              email: true,
               avatar_url: true,
-              role: true,
             },
           },
           ingredients: {
             select: {
               quantity: true,
               unit: true,
-              ingredient: true,
+              ingredient: {
+                select: { name: true },
+              },
             },
           },
-          steps: true,
+          steps: {
+            select: {
+              order_index: true,
+              image_url: true,
+              content: true,
+            }
+          },
           _count: {
             select: {
               comments: true,
@@ -227,19 +249,28 @@ export class RecipesService {
         likes_count: _count.likes,
       } as Omit<RecipeDetail, 'is_liked'>;
 
-      await this.redis.setCache(cacheKey, recipeData, 60);
+      await this.redis.setCache(cacheKey, recipeData, 10);
     }
     const is_liked = user_id ? await this.checkUserLiked(user_id, id) : false;
 
+    // Ensure we only return the allowed user fields, even if cache was malformed
+    const safeRecipeData = {
+        ...recipeData,
+        user: {
+            username: recipeData.user.username,
+            avatar_url: recipeData.user.avatar_url,
+        }
+    };
+
     return {
-      ...recipeData,
+      ...safeRecipeData,
       is_liked,
     };
   }
 
   async update(id: string, user_id: string, updateRecipeDto: UpdateRecipeDto) {
     const { ingredients, steps, ...scalarFields } = updateRecipeDto;
-    const cacheKey = `recipe:id`;
+    const cacheKey = `recipe:${id}`;
 
     const oldRecipe = await this.findOne(id);
     if (!oldRecipe) throw new NotFoundException('Recipe not found');
