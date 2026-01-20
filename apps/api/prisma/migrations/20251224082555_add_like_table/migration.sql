@@ -1,7 +1,7 @@
 -- CreateTable
 CREATE TABLE "Like" (
     "user_id" TEXT NOT NULL,
-    "recipe_id" INTEGER NOT NULL,
+    "recipe_id" TEXT NOT NULL,
 
     CONSTRAINT "Like_pkey" PRIMARY KEY ("user_id","recipe_id")
 );
