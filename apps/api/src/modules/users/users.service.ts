@@ -5,7 +5,11 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'src/common/db/prisma.service';
-import { NotificationResourceType, NotificationType, User } from 'src/generated/prisma/client';
+import {
+  NotificationResourceType,
+  NotificationType,
+  User,
+} from 'src/generated/prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserWhereInput } from 'src/generated/prisma/models';
 import { UserPaginationDto } from 'src/common/dto/pagination.dto';
@@ -147,13 +151,13 @@ export class UsersService {
 
     //Trigger notification
     await this.notificationService.createNotification({
-      receiverId: following_id, 
+      receiverId: following_id,
       senderId: current_id,
       type: NotificationType.FOLLOW,
       message: NotificationMessages.NEW_FOLLOW(followingUser.username),
       resourceId: following_id,
       resourceType: NotificationResourceType.USER,
-    })
+    });
 
     const message = isFollowed
       ? 'You have followed this user'
