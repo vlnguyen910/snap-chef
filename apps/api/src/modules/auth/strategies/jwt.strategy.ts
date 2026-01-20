@@ -23,6 +23,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: TokenPayload) {
+    if (!payload.jti || typeof payload.jti !== 'string') {
+      throw new UnauthorizedException('Missing or invalid jti');
+    }
+
     const blacklistKey = `blacklist:${payload.jti}`;
     const isBlacklisted = await this.redisService.getCache(blacklistKey);
 
@@ -31,11 +35,12 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     }
 
     return {
-      id: payload.sub,
+      sub: payload.sub,
       email: payload.email,
       username: payload.username,
       role: payload.role,
       is_verified: payload.is_verified,
+      type: payload.type,
       jti: payload.jti,
     };
   }

@@ -24,6 +24,7 @@ import { RedisService } from 'src/common/redis/redis.service';
 import { MailerService } from '../mail/mail.service';
 import { VerifyEmailDto } from './dto/request/verify-email.dto';
 import { OauthService } from '../oauth-accounts/oauth.service';
+import { randomInt } from 'crypto';
 
 interface GoogleUser {
   email: string;
@@ -80,9 +81,7 @@ export class AuthService {
     });
 
     const cacheKey = `verify_email:${newUser.id}`;
-    const token: string = Math.floor(
-      100000 + Math.random() * 900000,
-    ).toString();
+    const token: string = randomInt(100000, 1000000).toString();
     await this.redis.setCache(cacheKey, token, 10);
 
     await this.mailService.sendUserConfirmation(newUser, token);

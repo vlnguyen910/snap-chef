@@ -34,6 +34,10 @@ export class RefreshTokenStrategy extends PassportStrategy(
       throw new UnauthorizedException('Invalid token type');
     }
 
+    if (!payload.jti || typeof payload.jti !== 'string') {
+      throw new UnauthorizedException('Missing or invalid jti');
+    }
+
     // Kiểm tra token có bị blacklist không
     const blacklistKey = `blacklist:${payload.jti}`;
     const isBlacklisted = await this.redisService.getCache(blacklistKey);

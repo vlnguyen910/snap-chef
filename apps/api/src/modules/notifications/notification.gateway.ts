@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Logger } from '@nestjs/common';
 import { TokenPayload } from 'src/common/interfaces';
 import { WebSocketEvents } from 'src/common/constants';
+import { JwtTokenType } from 'src/common/enums';
 import { getAppConfig } from 'src/config';
 
 @WebSocketGateway({
@@ -37,6 +38,13 @@ export class NotificationGateway
 
     try {
       const payload: TokenPayload = await this.jwtService.verifyAsync(token);
+      
+      if (payload.type !== JwtTokenType.AccessToken) {
+        this.logger.warn(`Invalid token type: ${payload.type}`);
+        this.disconnect(client);
+        return;
+      }
+
       const userId = payload.sub;
 
       this.logger.log(`User connected: ${userId} (Socket ID: ${client.id})`);
