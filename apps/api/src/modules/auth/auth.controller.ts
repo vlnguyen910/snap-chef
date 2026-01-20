@@ -44,13 +44,6 @@ export class AuthController {
   ): Promise<LoginResponseDto> {
     const data = await this.authService.login(body);
 
-    res.cookie('access_token', data.access_token, {
-      httpOnly: this.cookieConfig.httpOnly,
-      secure: this.cookieConfig.secure,
-      sameSite: this.cookieConfig.sameSite,
-      maxAge: this.cookieConfig.accessTokenMaxAge,
-    });
-
     res.cookie('refresh_token', data.refresh_token, {
       httpOnly: this.cookieConfig.httpOnly,
       secure: this.cookieConfig.secure,
@@ -59,7 +52,8 @@ export class AuthController {
       path: '/auth/refresh',
     });
 
-    return data;
+    const { refresh_token, ...rest } = data;
+    return rest;
   }
 
   @Post('sign-up')
@@ -75,13 +69,6 @@ export class AuthController {
   ): Promise<RefreshTokenResponseDto> {
     const data = await this.authService.refreshToken(userPayload);
 
-    res.cookie('access_token', data.access_token, {
-      httpOnly: this.cookieConfig.httpOnly,
-      secure: this.cookieConfig.secure,
-      sameSite: this.cookieConfig.sameSite,
-      maxAge: this.cookieConfig.accessTokenMaxAge,
-    });
-
     return data;
   }
 
@@ -92,11 +79,6 @@ export class AuthController {
     @GetUser() user: TokenPayload,
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ message: string }> {
-    res.clearCookie('access_token', {
-      httpOnly: this.cookieConfig.httpOnly,
-      secure: this.cookieConfig.secure,
-      sameSite: this.cookieConfig.sameSite,
-    });
 
     res.clearCookie('refresh_token', {
       httpOnly: this.cookieConfig.httpOnly,
@@ -130,12 +112,6 @@ export class AuthController {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const data = await this.authService.googleLogin(req);
 
-    res.cookie('access_token', data.access_token, {
-      httpOnly: this.cookieConfig.httpOnly,
-      secure: this.cookieConfig.secure,
-      sameSite: this.cookieConfig.sameSite,
-      maxAge: this.cookieConfig.accessTokenMaxAge,
-    });
 
     res.cookie('refresh_token', data.refresh_token, {
       httpOnly: this.cookieConfig.httpOnly,
@@ -145,6 +121,8 @@ export class AuthController {
       path: '/auth/refresh',
     });
 
-    return data;
+    const { refresh_token, ...rest } = data;
+    return rest;
+  }
   }
 }
