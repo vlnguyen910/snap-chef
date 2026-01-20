@@ -26,6 +26,16 @@ export class CommentsService {
   private logger = new Logger(CommentsService.name);
 
   async create(user_id: string, recipe_id: string, dto: CreateCommentsDto) {
+    const recipe = await this.prisma.recipe.findUnique({
+      where: { id: recipe_id },
+    });
+    if (!recipe) throw new NotFoundException('Recipe is not exist');
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: user_id },
+    });
+    if (!user) throw new NotFoundException('User is not exist');
+
     await this.prisma.comment.create({
       data: {
         user_id,
@@ -38,10 +48,10 @@ export class CommentsService {
       `New comment of recipe ${recipe_id} was created by user ${user_id}`,
     );
     await this.notificationService.createNotification({
-      receiverId: user_id,
+      receiverId: recipe.author_id,
       senderId: user_id,
       type: NotificationType.COMMENT,
-      message: NotificationMessages.NEW_COMMENT(user_id),
+      message: NotificationMessages.NEW_COMMENT(user.username, recipe.title),
       resourceId: recipe_id,
       resourceType: NotificationResourceType.RECIPE,
     });

@@ -1,4 +1,5 @@
 export const NotificationMessages = {
-  LIKE_RECIPE: (username: string) => `${username} liked your recipe`,
-  NEW_COMMENT: (username: string) => `${username} commented on your recipe`,
+  LIKE_RECIPE: (username: string, recipeTitle: string) => `${username} liked your recipe ${recipeTitle}`,
+  NEW_COMMENT: (username: string, recipeTitle: string) => `${username} commented on your recipe ${recipeTitle}`,
+  NEW_FOLLOWER: (username: string) => `${username} started following you`,  
 };
