@@ -15,6 +15,7 @@ import {
 } from './config';
 import { UsersModule } from './modules/users/users.module';
 import { CollectionModule } from './modules/collections/collection.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -45,7 +46,7 @@ import { CollectionModule } from './modules/collections/collection.module';
     AuthModule,
     CollectionModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [PrismaService],
 })
-export class AppModule {}
+export class AppModule { }
