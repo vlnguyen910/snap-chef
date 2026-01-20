@@ -21,7 +21,7 @@ CREATE TABLE "User" (
 
 -- CreateTable
 CREATE TABLE "Recipe" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "author_id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
@@ -46,7 +46,7 @@ CREATE TABLE "Ingredient" (
 -- CreateTable
 CREATE TABLE "RecipeIngredient" (
     "id" SERIAL NOT NULL,
-    "recipe_id" INTEGER NOT NULL,
+    "recipe_id" TEXT NOT NULL,
     "ingredient_id" INTEGER NOT NULL,
     "quantity" DOUBLE PRECISION NOT NULL,
     "unit" TEXT NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE "RecipeIngredient" (
 -- CreateTable
 CREATE TABLE "Step" (
     "id" SERIAL NOT NULL,
-    "recipe_id" INTEGER NOT NULL,
+    "recipe_id" TEXT NOT NULL,
     "order_index" INTEGER NOT NULL,
     "image_url" TEXT,
     "content" TEXT NOT NULL,
