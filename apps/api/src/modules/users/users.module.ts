@@ -6,13 +6,9 @@ import { RedisModule } from 'src/common/redis/redis.module';
 import { NotificationModule } from '../notifications/notification.module';
 
 @Module({
-  imports: [
-    PrismaModule,
-    RedisModule,
-    NotificationModule
-  ],
+  imports: [PrismaModule, RedisModule, NotificationModule],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],
 })
-export class UsersModule { }
+export class UsersModule {}

@@ -52,6 +52,7 @@ export class AuthController {
       path: '/auth/refresh',
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { refresh_token, ...rest } = data;
     return rest;
   }
@@ -65,7 +66,6 @@ export class AuthController {
   @UseGuards(RefreshTokenGuard)
   async refreshToken(
     @GetUser() userPayload: TokenPayload,
-    @Res({ passthrough: true }) res: Response,
   ): Promise<RefreshTokenResponseDto> {
     const data = await this.authService.refreshToken(userPayload);
 
@@ -79,7 +79,6 @@ export class AuthController {
     @GetUser() user: TokenPayload,
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ message: string }> {
-
     res.clearCookie('refresh_token', {
       httpOnly: this.cookieConfig.httpOnly,
       secure: this.cookieConfig.secure,
@@ -112,7 +111,6 @@ export class AuthController {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const data = await this.authService.googleLogin(req);
 
-
     res.cookie('refresh_token', data.refresh_token, {
       httpOnly: this.cookieConfig.httpOnly,
       secure: this.cookieConfig.secure,
@@ -121,8 +119,8 @@ export class AuthController {
       path: '/auth/refresh',
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { refresh_token, ...rest } = data;
     return rest;
-  }
   }
 }

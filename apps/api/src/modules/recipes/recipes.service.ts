@@ -30,7 +30,7 @@ export class RecipesService {
     private userService: UsersService,
     private redis: RedisService,
     private notificationService: NotificationService,
-  ) { }
+  ) {}
 
   private readonly logger = new Logger(RecipesService.name);
 
@@ -118,11 +118,7 @@ export class RecipesService {
     });
   }
 
-  async findAll(params: {
-    page: number;
-    limit: number;
-    search?: string;
-  }) {
+  async findAll(params: { page: number; limit: number; search?: string }) {
     const { page, limit, search } = params;
     const skip = (page - 1) * limit;
 
@@ -170,8 +166,8 @@ export class RecipesService {
             quantity: true,
             unit: true,
             ingredient: {
-              select: { name: true }
-            }
+              select: { name: true },
+            },
           },
         },
         _count: {
@@ -229,7 +225,7 @@ export class RecipesService {
               order_index: true,
               image_url: true,
               content: true,
-            }
+            },
           },
           _count: {
             select: {
@@ -255,11 +251,11 @@ export class RecipesService {
 
     // Ensure we only return the allowed user fields, even if cache was malformed
     const safeRecipeData = {
-        ...recipeData,
-        user: {
-            username: recipeData.user.username,
-            avatar_url: recipeData.user.avatar_url,
-        }
+      ...recipeData,
+      user: {
+        username: recipeData.user.username,
+        avatar_url: recipeData.user.avatar_url,
+      },
     };
 
     return {
@@ -394,7 +390,10 @@ export class RecipesService {
           receiverId: recipe.author_id,
           senderId: user_id,
           type: NotificationType.LIKE,
-          message: NotificationMessages.LIKE_RECIPE(user.username, recipe.title),
+          message: NotificationMessages.LIKE_RECIPE(
+            user.username,
+            recipe.title,
+          ),
           resourceId: recipe_id,
           resourceType: NotificationResourceType.RECIPE,
         });
