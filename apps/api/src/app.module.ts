@@ -33,10 +33,7 @@ import { AppController } from './app.controller';
       inject: [redisConfiguration.KEY],
       useFactory: (redisConfig: ConfigType<typeof redisConfiguration>) => ({
         type: 'single',
-        options: {
-          host: redisConfig.host,
-          port: redisConfig.port,
-        },
+        url: redisConfig.url,
       }),
     }),
     UsersModule,

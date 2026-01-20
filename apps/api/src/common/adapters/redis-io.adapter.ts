@@ -20,22 +20,30 @@ export class RedisIoAdapter extends IoAdapter {
     const url = this.configService.get<string>('redis.url');
 
     try {
-      this.logger.log(`Connecting to Redis using URL (masked): ${(url || '').replace(/:\/\/.*@/, '://***@')}`);
+      this.logger.log(
+        `Connecting to Redis using URL (masked): ${(url || '').replace(/:\/\/.*@/, '://***@')}`,
+      );
       const pubClient = createClient({ url });
       const subClient = pubClient.duplicate();
 
-      pubClient.on('error', (err) => this.logger.error('Redis Pub Client Error', err));
-      subClient.on('error', (err) => this.logger.error('Redis Sub Client Error', err));
+      pubClient.on('error', (err) =>
+        this.logger.error('Redis Pub Client Error', err),
+      );
+      subClient.on('error', (err) =>
+        this.logger.error('Redis Sub Client Error', err),
+      );
 
       await Promise.all([pubClient.connect(), subClient.connect()]);
 
       this.adapterConstructor = createAdapter(pubClient, subClient);
-      this.logger.log('Successfully connected to Redis and initialized adapter');
+      this.logger.log(
+        'Successfully connected to Redis and initialized adapter',
+      );
     } catch (error) {
       this.logger.error('Failed to connect to Redis', error);
       // Don't rethrow if you want the app to start without Redis (though typically fatal for websockets)
       // For now, let's log and maybe allow it to fail eventually or keep retry logic in main
-      throw error; 
+      throw error;
     }
   }
 

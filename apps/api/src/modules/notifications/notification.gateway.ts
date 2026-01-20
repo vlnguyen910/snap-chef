@@ -38,7 +38,7 @@ export class NotificationGateway
 
     try {
       const payload: TokenPayload = await this.jwtService.verifyAsync(token);
-      
+
       if (payload.type !== JwtTokenType.AccessToken) {
         this.logger.warn(`Invalid token type: ${payload.type}`);
         this.disconnect(client);
