@@ -9,6 +9,14 @@ import { useAuth } from '@/context/authContext';
 import Loading from '@/components/common/Loading';
 import ErrorState from '@/components/common/ErrorState';
 
+/**
+ * Render a searchable user directory with debounced queries, paginated results, and follow/unfollow controls.
+ *
+ * The page shows a search input, handles loading and error states, displays matched users in a responsive grid,
+ * supports "Load More" pagination, and performs optimistic follow/unfollow updates with per-user in-progress state.
+ *
+ * @returns The component's JSX element representing the user search page.
+ */
 export default function UserSearchPage() {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');

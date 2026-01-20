@@ -20,6 +20,11 @@ import UserSearchPage from '@/pages/UserSearchPage';
 // Components
 import UserProfile from '@/components/common/UserProfile';
 
+/**
+ * Register the application's route hierarchy, including public pages, authenticated user routes, moderator routes, and a catch-all 404.
+ *
+ * @returns A JSX element rendering the configured route tree with appropriate layouts and access control wrappers.
+ */
 export default function AppRoutes() {
   return (
     <Routes>

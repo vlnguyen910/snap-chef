@@ -34,7 +34,16 @@ interface PaginationState {
   };
 }
 
-const LIMIT = 15; // Items per page
+const LIMIT = 15; /**
+ * Modal that displays and manages a user's followers and following lists.
+ *
+ * Features include per-tab caching, infinite scrolling with pagination, optimistic follow/unfollow toggles with per-user loading state, and error/loading UI. Navigating to a user's entry closes the modal. Requires an authenticated user for API interactions; unauthenticated users are prompted to sign in.
+ *
+ * @param userId - ID of the user whose followers/following are shown
+ * @param initialTab - Which tab to show initially (`'followers'` or `'following'`); defaults to `'followers'`
+ * @param onClose - Callback invoked when the modal is closed
+ * @returns A React element rendering the followers/following modal
+ */
 
 export default function FollowersFollowingModal({
   userId,

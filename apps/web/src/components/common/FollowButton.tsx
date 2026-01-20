@@ -13,6 +13,20 @@ interface FollowButtonProps {
   className?: string;
 }
 
+/**
+ * Render a follow/unfollow button for a target user with optimistic updates and an authentication guard.
+ *
+ * Performs an optimistic toggle of the follow state, calls the appropriate follow/unfollow service,
+ * reverts the state on error, and redirects unauthenticated users to the sign-in page.
+ *
+ * @param userId - ID of the user to follow or unfollow
+ * @param initialIsFollowed - Initial follow state shown by the button (defaults to `false`)
+ * @param onFollowChange - Optional callback invoked with the new follow state after a successful toggle
+ * @param size - Button size: `'sm' | 'default' | 'lg'` (defaults to `'default'`)
+ * @param showIcon - Whether to display the follow/unfollow icon (defaults to `true`)
+ * @param className - Additional CSS class names applied to the button
+ * @returns The Follow/Unfollow button element, or `null` when viewing the current user's own profile
+ */
 export default function FollowButton({
   userId,
   initialIsFollowed = false,

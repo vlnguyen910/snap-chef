@@ -10,6 +10,14 @@ import type { FollowUser } from '@/types';
 
 type TabType = 'following' | 'followers';
 
+/**
+ * Render the Connections page for viewing and managing a user's followers and following.
+ *
+ * Displays two tabs ("Following" and "Followers"), loads the appropriate list for the current target user,
+ * and provides follow/unfollow actions (which prompt sign-in if the actor is not authenticated).
+ *
+ * @returns The rendered React element containing the connections UI: tabbed lists, loading/error/empty states, and follow/unfollow controls.
+ */
 export default function FollowListPage() {
   const navigate = useNavigate();
   const location = useLocation();

@@ -64,6 +64,15 @@ interface AuthorData {
   email?: string;
 }
 
+/**
+ * Renders the Recipe detail page including hero, metadata, ingredients, instructions, and interactive actions.
+ *
+ * Fetches recipe details and global ingredient list on mount (or when `id` changes), loads author profile when available,
+ * and displays loading / error states. Provides optimistic UI interactions for liking, bookmarking, and following the author,
+ * and exposes owner actions for editing and deleting the recipe. Navigation to authentication is triggered when actions require login.
+ *
+ * @returns The JSX element for the recipe detail page UI
+ */
 export default function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();

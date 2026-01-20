@@ -7,6 +7,11 @@ import { ConfigService } from '@nestjs/config';
 import { RedisIoAdapter } from './common/adapters/redis-io.adapter';
 
 getAppConfig();
+/**
+ * Create, configure, and start the NestJS application using runtime configuration.
+ *
+ * Initializes global validation rules, attaches a Redis-backed WebSocket adapter, enables CORS with configured origins, registers cookie parsing middleware, sets the global API prefix, and starts the HTTP server on the configured port.
+ */
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const { appPort, corsOrigins } = getAppConfig();

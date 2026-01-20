@@ -33,6 +33,15 @@ interface Recipe {
   likes_count: number;
 }
 
+/**
+ * Render the user's profile page with avatar, contact info, stats, and recipe lists.
+ *
+ * Displays either the current user's profile or another user's profile based on the route.
+ * Handles avatar preview and upload, profile editing (username and bio), follow/unfollow interactions,
+ * viewing followers/following via a modal, and toggling between created and liked recipes.
+ *
+ * @returns The JSX element for the user profile page UI.
+ */
 export default function UserProfile() {
   const { id: userIdFromUrl } = useParams<{ id: string }>();
   const currentUser = useStore((state) => state.user);
