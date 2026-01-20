@@ -99,7 +99,7 @@ export class NotificationService {
     this.logger.log('Cleaning up notifications older than 30 days...');
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
+
     const result = await this.prisma.notification.deleteMany({
       where: {
         created_at: {
