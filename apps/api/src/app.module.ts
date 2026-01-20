@@ -49,4 +49,4 @@ import { AppController } from './app.controller';
   controllers: [AppController],
   providers: [PrismaService],
 })
-export class AppModule { }
+export class AppModule {}

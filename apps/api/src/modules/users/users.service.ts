@@ -92,7 +92,7 @@ export class UsersService {
   }
 
   async update(id: string, user_id: string, payload: UpdateUserDto) {
-    const cacheKey = `user:id`;
+    const cacheKey = `user:${id}`;
     const user = await this.findOne(id);
 
     if (!user) throw new NotFoundException('User is not exist');

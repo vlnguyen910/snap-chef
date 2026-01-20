@@ -15,7 +15,7 @@ CREATE TABLE "Collection" (
 -- CreateTable
 CREATE TABLE "_CollectionToRecipe" (
     "A" TEXT NOT NULL,
-    "B" INTEGER NOT NULL,
+    "B" TEXT NOT NULL,
 
     CONSTRAINT "_CollectionToRecipe_AB_pkey" PRIMARY KEY ("A","B")
 );
