@@ -331,7 +331,7 @@ export class RecipesService {
 
     const recipe = await this.prisma.recipe.findUnique({
       where: { id: recipe_id },
-      select: { author_id: true },
+      select: { author_id: true, title: true },
     });
 
     if (!recipe) throw new NotFoundException('Recipe not found');
@@ -363,7 +363,7 @@ export class RecipesService {
           receiverId: recipe.author_id,
           senderId: user_id,
           type: NotificationType.LIKE,
-          message: NotificationMessages.LIKE_RECIPE(user.username),
+          message: NotificationMessages.LIKE_RECIPE(user.username, recipe.title),
           resourceId: recipe_id,
           resourceType: NotificationResourceType.RECIPE,
         });
