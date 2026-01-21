@@ -22,7 +22,7 @@ export class RedisIoAdapter extends IoAdapter {
     const keepAlive = this.configService.get<number>('redis.keepAlive');
 
     if (!url) {
-        throw new Error('Redis URL is not defined');
+      throw new Error('Redis URL is not defined');
     }
 
     try {
@@ -41,17 +41,17 @@ export class RedisIoAdapter extends IoAdapter {
       subClient.on('error', (err) =>
         this.logger.error('Redis Sub Client Error', err),
       );
-      
+
       // ioredis connects automatically, but we can wait for ready
       await Promise.all([
-         new Promise<void>((resolve, reject) => {
-             pubClient.once('ready', () => resolve());
-             pubClient.once('error', reject);
-         }),
-         new Promise<void>((resolve, reject) => {
-             subClient.once('ready', () => resolve());
-             subClient.once('error', reject);
-         })
+        new Promise<void>((resolve, reject) => {
+          pubClient.once('ready', () => resolve());
+          pubClient.once('error', reject);
+        }),
+        new Promise<void>((resolve, reject) => {
+          subClient.once('ready', () => resolve());
+          subClient.once('error', reject);
+        }),
       ]);
 
       this.adapterConstructor = createAdapter(pubClient, subClient);
