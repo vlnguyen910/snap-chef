@@ -12,4 +12,8 @@ export class UpdateUserDto {
   @IsOptional()
   @IsBoolean()
   is_verified?: boolean;
+
+  @IsOptional()
+  @IsString()
+  password?: string;
 }

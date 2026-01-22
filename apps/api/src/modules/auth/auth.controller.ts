@@ -24,6 +24,8 @@ import {
   JwtAuthGuard,
   GoogleOAuthGuard,
 } from 'src/common/guards';
+import { ForgetPasswordDto } from './dto/request/forget-password.dto';
+import { ResetPasswordDto } from './dto/request/reset-password.dto';
 import { RefreshTokenResponseDto } from './dto/respone/refresh-token-respone.dto';
 import { cookieConfiguration } from 'src/config';
 import type { ConfigType } from '@nestjs/config';
@@ -34,7 +36,7 @@ export class AuthController {
     private readonly authService: AuthService,
     @Inject(cookieConfiguration.KEY)
     private readonly cookieConfig: ConfigType<typeof cookieConfiguration>,
-  ) {}
+  ) { }
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
@@ -100,7 +102,7 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(GoogleOAuthGuard)
-  async googleAuth() {}
+  async googleAuth() { }
 
   @Get('google-redirect')
   @UseGuards(GoogleOAuthGuard)
@@ -122,5 +124,15 @@ export class AuthController {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { refresh_token, ...rest } = data;
     return rest;
+  }
+
+  @Post('forget-password')
+  async forgetPassword(@Body() body: ForgetPasswordDto): Promise<{ message: string }> {
+    return await this.authService.forgetPassword(body);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() body: ResetPasswordDto): Promise<{ message: string }> {
+    return await this.authService.resetPassword(body);
   }
 }

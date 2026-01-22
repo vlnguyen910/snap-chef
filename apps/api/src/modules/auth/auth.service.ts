@@ -24,7 +24,9 @@ import { RedisService } from 'src/common/redis/redis.service';
 import { MailerService } from '../mail/mail.service';
 import { VerifyEmailDto } from './dto/request/verify-email.dto';
 import { OauthService } from '../oauth-accounts/oauth.service';
-import { randomInt } from 'crypto';
+import { randomInt, createHash } from 'crypto';
+import { ForgetPasswordDto } from './dto/request/forget-password.dto';
+import { ResetPasswordDto } from './dto/request/reset-password.dto';
 
 interface GoogleUser {
   email: string;
@@ -44,7 +46,7 @@ export class AuthService {
     private redis: RedisService,
     private mailService: MailerService,
     private oauthService: OauthService,
-  ) {}
+  ) { }
 
   async login(body: LoginDto): Promise<LoginResponseDto> {
     const { email, password } = body;
@@ -173,6 +175,51 @@ export class AuthService {
 
     return this.manageUserToken(user);
   }
+
+  async forgetPassword(body: ForgetPasswordDto): Promise<{ message: string }> {
+    const { email } = body;
+    const user = await this.userService.findByEmail(email);
+
+    if (user) {
+      const token = uuidv4();
+
+      const cacheKey = `reset_password:${token}`;
+      await this.redis.setCache(cacheKey, user.id, 15); 
+
+      await this.mailService.sendResetPassword(user, token);
+    }
+
+    return {
+      message: 'An email was sent to you. Check it to reset your password',
+    };
+  }
+
+  async resetPassword(body: ResetPasswordDto): Promise<{ message: string }> {
+    const { token, password } = body;
+    const cacheKey = `reset_password:${token}`;
+    const userId = await this.redis.getCache<string>(cacheKey);
+
+    if (!userId) {
+      throw new BadRequestException('Invalid or expired token');
+    }
+
+    const hashedPassword = await argon2.hash(password);
+    
+    // We need to use prisma directly or add updatePassword to useService
+    // Since userService.update checks current_user match, we might need a system-level update
+    // But userService.update signatures: update(id, user_id, payload). user_id is for auth check.
+    // If we pass userId as both, it should bypass the check if implemented that way, 
+    // BUT userService.update checks `if (user.id !== user_id)`. So passing same ID works.
+    
+    await this.userService.update(userId, userId, {
+      password: hashedPassword,
+    });
+
+    await this.redis.delCache(cacheKey);
+
+    return { message: 'Password has been reset successfully' };
+  }
+
 
   async isTokenABlacklisted(jti: string): Promise<boolean> {
     const blacklistKey = `blacklist:${jti}`;
