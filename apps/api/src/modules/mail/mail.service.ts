@@ -4,7 +4,7 @@ import { MailerService as MailService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class MailerService {
-  constructor(private mailerService: MailService) { }
+  constructor(private mailerService: MailService) {}
 
   async sendUserConfirmation(user: User, token: string) {
     const url = `localhost:8080/api/auth/verify-email?id=${user.id}&token=${token}`;
