@@ -24,7 +24,6 @@ import { RedisService } from 'src/common/redis/redis.service';
 import { MailerService } from '../mail/mail.service';
 import { VerifyEmailDto } from './dto/request/verify-email.dto';
 import { OauthService } from '../oauth-accounts/oauth.service';
-import { randomInt } from 'crypto';
 import { ForgetPasswordDto } from './dto/request/forget-password.dto';
 import { ResetPasswordDto } from './dto/request/reset-password.dto';
 
@@ -82,9 +81,9 @@ export class AuthService {
       role: UserRoles.USER,
     });
 
-    const cacheKey = `verify_email:${newUser.id}`;
-    const token: string = randomInt(100000, 1000000).toString();
-    await this.redis.setCache(cacheKey, token, 10);
+    const token = uuidv4();
+    const cacheKey = `verify_email:${token}`;
+    await this.redis.setCache(cacheKey, newUser.id, 15);
 
     await this.mailService.sendUserConfirmation(newUser, token);
 
@@ -92,14 +91,13 @@ export class AuthService {
   }
 
   async verifyEmail(payload: VerifyEmailDto) {
-    const { id, token } = payload;
-    const cacheKey = `verify_email:${id}`;
-    const cacheToken = await this.redis.getCache<string>(cacheKey);
+    const { token } = payload;
+    const cacheKey = `verify_email:${token}`;
+    const userId = await this.redis.getCache<string>(cacheKey);
 
-    if (!cacheToken || cacheToken !== token)
-      throw new BadRequestException('Invalid Token');
+    if (!userId) throw new BadRequestException('Invalid Token');
 
-    await this.userService.update(id, id, {
+    await this.userService.update(userId, userId, {
       is_verified: true,
     });
 
