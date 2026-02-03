@@ -36,7 +36,7 @@ export class AuthController {
     private readonly authService: AuthService,
     @Inject(cookieConfiguration.KEY)
     private readonly cookieConfig: ConfigType<typeof cookieConfiguration>,
-  ) { }
+  ) {}
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
@@ -102,7 +102,7 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(GoogleOAuthGuard)
-  async googleAuth() { }
+  async googleAuth() {}
 
   @Get('google-redirect')
   @UseGuards(GoogleOAuthGuard)
@@ -127,12 +127,16 @@ export class AuthController {
   }
 
   @Post('forget-password')
-  async forgetPassword(@Body() body: ForgetPasswordDto): Promise<{ message: string }> {
+  async forgetPassword(
+    @Body() body: ForgetPasswordDto,
+  ): Promise<{ message: string }> {
     return await this.authService.forgetPassword(body);
   }
 
   @Post('reset-password')
-  async resetPassword(@Body() body: ResetPasswordDto): Promise<{ message: string }> {
+  async resetPassword(
+    @Body() body: ResetPasswordDto,
+  ): Promise<{ message: string }> {
     return await this.authService.resetPassword(body);
   }
 }
