@@ -24,7 +24,7 @@ import { RedisService } from 'src/common/redis/redis.service';
 import { MailerService } from '../mail/mail.service';
 import { VerifyEmailDto } from './dto/request/verify-email.dto';
 import { OauthService } from '../oauth-accounts/oauth.service';
-import { randomInt, createHash } from 'crypto';
+import { randomInt } from 'crypto';
 import { ForgetPasswordDto } from './dto/request/forget-password.dto';
 import { ResetPasswordDto } from './dto/request/reset-password.dto';
 
@@ -46,7 +46,7 @@ export class AuthService {
     private redis: RedisService,
     private mailService: MailerService,
     private oauthService: OauthService,
-  ) { }
+  ) {}
 
   async login(body: LoginDto): Promise<LoginResponseDto> {
     const { email, password } = body;
@@ -184,7 +184,7 @@ export class AuthService {
       const token = uuidv4();
 
       const cacheKey = `reset_password:${token}`;
-      await this.redis.setCache(cacheKey, user.id, 15); 
+      await this.redis.setCache(cacheKey, user.id, 15);
 
       await this.mailService.sendResetPassword(user, token);
     }
@@ -204,13 +204,13 @@ export class AuthService {
     }
 
     const hashedPassword = await argon2.hash(password);
-    
+
     // We need to use prisma directly or add updatePassword to useService
     // Since userService.update checks current_user match, we might need a system-level update
     // But userService.update signatures: update(id, user_id, payload). user_id is for auth check.
-    // If we pass userId as both, it should bypass the check if implemented that way, 
+    // If we pass userId as both, it should bypass the check if implemented that way,
     // BUT userService.update checks `if (user.id !== user_id)`. So passing same ID works.
-    
+
     await this.userService.update(userId, userId, {
       password: hashedPassword,
     });
@@ -219,7 +219,6 @@ export class AuthService {
 
     return { message: 'Password has been reset successfully' };
   }
-
 
   async isTokenABlacklisted(jti: string): Promise<boolean> {
     const blacklistKey = `blacklist:${jti}`;
