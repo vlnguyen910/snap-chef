@@ -9,10 +9,10 @@ import { Roles } from 'src/common/decorators';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRoles.ADMIN)
 export class AdminController {
-  constructor(private readonly adminServicer: AdminService) {}
+  constructor(private readonly adminServicer: AdminService) { }
 
   @Get('/users')
-  async getAllUsers(@Query() query: UserPaginationDto) {
-    return await this.adminServicer.getAllUsers(query);
+  async getUsers(@Query() query: UserPaginationDto) {
+    return await this.adminServicer.getUsers(query);
   }
 }
