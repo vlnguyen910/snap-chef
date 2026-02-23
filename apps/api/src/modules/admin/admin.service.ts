@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserPaginationDto } from 'src/common/dto/pagination.dto';
+import { RecipePaginationDto, UserPaginationDto } from 'src/common/dto/pagination.dto';
 import { PrismaService } from 'src/common/db/prisma.service';
 import { UserRoles } from 'src/generated/prisma/enums';
 
@@ -28,5 +28,20 @@ export class AdminService {
     });
 
     return userList;
+  }
+
+  async getAllRecipes(query: RecipePaginationDto) {
+    const { limit, page } = query;
+    const skip = (page - 1) * limit;
+
+    const recipeList = await this.prisma.recipe.findMany({
+      skip,
+      take: limit,
+      orderBy: {
+        created_at: 'desc',
+      },
+    })
+
+    return recipeList;
   }
 }
