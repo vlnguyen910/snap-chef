@@ -17,6 +17,7 @@ import { getRedisOptions } from './config/redis.options';
 import { UsersModule } from './modules/users/users.module';
 import { CollectionModule } from './modules/collections/collection.module';
 import { AppController } from './app.controller';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { AppController } from './app.controller';
     IngredientsModule,
     AuthModule,
     CollectionModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [PrismaService],
