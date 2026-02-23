@@ -1,14 +1,14 @@
 import { faker } from '@faker-js/faker';
-import { PrismaClient } from '../src/generated/prisma/client';
+import { PrismaClient, UserRoles } from '../src/generated/prisma/client';
 import type { User, Recipe } from '../src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg'
 
 // 1. Setup the Postgres driver
-    const adapter = new PrismaPg({
-      connectionString: process.env.DATABASE_URL,
-    });
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
+});
 
-const prisma = new PrismaClient({adapter});
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log('🌱 Starting seeding...');
@@ -27,9 +27,9 @@ async function main() {
 
   // 2. TẠO USERS
   const users: User[] = [];
-  const passwordHash = '$argon2id$v=19$m=65536,t=3,p=4$VV6tfD8Z4G5IK0CJXWFOXQ$hDlaheVA2vJ7I8Svl9TKHwvMjrK4dERSjqnY2LHizxU'; 
+  const passwordHash = '$argon2id$v=19$m=65536,t=3,p=4$VV6tfD8Z4G5IK0CJXWFOXQ$hDlaheVA2vJ7I8Svl9TKHwvMjrK4dERSjqnY2LHizxU';
   const numberOfUsers = 100;
-  
+
   for (let i = 0; i < numberOfUsers; i++) {
     const user = await prisma.user.create({
       data: {
@@ -45,6 +45,17 @@ async function main() {
   }
   console.log(`👤 Created ${users.length} users`);
 
+  //Admin user 
+  await prisma.user.create({
+    data: {
+      email: "admin@gmail.com",
+      username: "admin",
+      password: passwordHash,
+      role: UserRoles.ADMIN
+    }
+  })
+  console.log('Admin account create');
+
   // 3. TẠO RECIPES & TƯƠNG TÁC
   const recipes: Recipe[] = [];
   for (const user of users) {
@@ -52,7 +63,7 @@ async function main() {
       // Tạo ingredient names khác nhau
       let ingredientName1 = faker.food.ingredient().toLowerCase();
       let ingredientName2 = faker.food.ingredient().toLowerCase();
-      
+
       // Đảm bảo 2 ingredient khác nhau
       while (ingredientName2 === ingredientName1) {
         ingredientName2 = faker.food.ingredient().toLowerCase();
