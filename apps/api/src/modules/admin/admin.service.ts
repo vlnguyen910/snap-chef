@@ -5,9 +5,9 @@ import { UserRoles } from 'src/generated/prisma/enums';
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
-  async getAllUsers(query: UserPaginationDto) {
+  async getUsers(query: UserPaginationDto) {
     const { limit, page } = query;
     const skip = (page - 1) * limit;
 
