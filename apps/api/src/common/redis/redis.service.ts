@@ -4,7 +4,7 @@ import Redis from 'ioredis';
 
 @Injectable()
 export class RedisService {
-  constructor(@InjectRedis() private client: Redis) {}
+  constructor(@InjectRedis() private client: Redis) { }
 
   private logger = new Logger(RedisService.name);
 
@@ -33,7 +33,7 @@ export class RedisService {
   }
 
   async delCache(key: string) {
-    this.logger.log(`Cache key ${key} is invalidate`);
     await this.client.del(key);
+    this.logger.log(`Cache key ${key} is invalidate`);
   }
 }
