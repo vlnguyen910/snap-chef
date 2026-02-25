@@ -5,8 +5,9 @@ import { RecipesModule } from './modules/recipes/recipes.module';
 import { IngredientsModule } from './modules/ingredients/ingredients.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CommentsModule } from './modules/comments/comments.module';
-import { RedisModule } from '@nestjs-modules/ioredis';
+import { RedisModule as IoredisModule } from '@nestjs-modules/ioredis';
 import { ConfigModule, ConfigType } from '@nestjs/config';
+import { RedisModule } from './common/redis/redis.module';
 import {
   redisConfiguration,
   jwtConfiguration,
@@ -31,7 +32,7 @@ import { AdminModule } from './modules/admin/admin.module';
         googleConfiguration,
       ],
     }),
-    RedisModule.forRootAsync({
+    IoredisModule.forRootAsync({
       inject: [redisConfiguration.KEY],
       useFactory: (redisConfig: ConfigType<typeof redisConfiguration>) => ({
         type: 'single',
@@ -39,6 +40,7 @@ import { AdminModule } from './modules/admin/admin.module';
         options: getRedisOptions(redisConfig.keepAlive),
       }),
     }),
+    RedisModule,
     UsersModule,
     CommentsModule,
     RecipesModule,
@@ -50,4 +52,4 @@ import { AdminModule } from './modules/admin/admin.module';
   controllers: [AppController],
   providers: [PrismaService],
 })
-export class AppModule {}
+export class AppModule { }

@@ -5,7 +5,6 @@ import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
 import { jwtConfiguration } from 'src/config';
-import { RedisModule } from 'src/common/redis/redis.module';
 import { MailModule } from '../mail/mail.module';
 import { RefreshTokenStrategy } from 'src/modules/auth/strategies/refresh-token.strategy';
 import { JwtStrategy } from 'src/modules/auth/strategies/jwt.strategy';
@@ -21,7 +20,6 @@ import { OauthModule } from '../oauth-accounts/oauth.module';
       }),
     }),
     UsersModule,
-    RedisModule,
     MailModule,
     OauthModule,
   ],

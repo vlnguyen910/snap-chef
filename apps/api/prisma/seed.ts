@@ -51,7 +51,9 @@ async function main() {
       email: "admin@gmail.com",
       username: "admin",
       password: passwordHash,
-      role: UserRoles.ADMIN
+      role: UserRoles.ADMIN,
+      is_active: true,
+      is_verified: true,
     }
   })
   console.log('Admin account create');
