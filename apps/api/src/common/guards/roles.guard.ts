@@ -1,4 +1,9 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { UserRoles } from '../../generated/prisma/enums';
@@ -6,7 +11,7 @@ import { AuthenticatedRequest } from '../interfaces';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) { }
+  constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
     const requiredRoles = this.reflector.getAllAndOverride<UserRoles[]>(
@@ -19,7 +24,7 @@ export class RolesGuard implements CanActivate {
     const { user } = context.switchToHttp().getRequest<AuthenticatedRequest>();
 
     if (!user || !user.role || !requiredRoles.includes(user.role)) {
-      throw new ForbiddenException('Insufficient permissions')
+      throw new ForbiddenException('Insufficient permissions');
     }
 
     return true;
