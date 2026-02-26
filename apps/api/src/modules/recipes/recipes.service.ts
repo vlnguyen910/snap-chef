@@ -30,7 +30,7 @@ export class RecipesService {
     private userService: UsersService,
     private redis: RedisService,
     private notificationService: NotificationService,
-  ) {}
+  ) { }
 
   private readonly logger = new Logger(RecipesService.name);
 
@@ -124,6 +124,7 @@ export class RecipesService {
 
     const whereCondition: RecipeWhereInput = {
       // status: 'PUBLISHED',
+      deleted_at: null,
     };
 
     if (search) {
@@ -196,7 +197,10 @@ export class RecipesService {
       await this.redis.getCache<Omit<RecipeDetail, 'is_liked'>>(cacheKey);
     if (!recipeData) {
       const recipe = await this.prisma.recipe.findUnique({
-        where: { id },
+        where: {
+          id,
+          deleted_at: null,
+        },
         select: {
           id: true,
           author_id: true,
