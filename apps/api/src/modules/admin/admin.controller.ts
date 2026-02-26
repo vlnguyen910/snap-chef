@@ -22,7 +22,7 @@ import { UserStatusUpdateDto } from './dto/user-status-update.dto';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRoles.ADMIN)
 export class AdminController {
-  constructor(private readonly adminServicer: AdminService) { }
+  constructor(private readonly adminServicer: AdminService) {}
 
   @Get('/users')
   async getUsers(@Query() query: UserPaginationDto) {
