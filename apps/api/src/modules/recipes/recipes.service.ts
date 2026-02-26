@@ -30,7 +30,7 @@ export class RecipesService {
     private userService: UsersService,
     private redis: RedisService,
     private notificationService: NotificationService,
-  ) { }
+  ) {}
 
   private readonly logger = new Logger(RecipesService.name);
 

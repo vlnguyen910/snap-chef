@@ -52,4 +52,4 @@ import { AdminModule } from './modules/admin/admin.module';
   controllers: [AppController],
   providers: [PrismaService],
 })
-export class AppModule { }
+export class AppModule {}
