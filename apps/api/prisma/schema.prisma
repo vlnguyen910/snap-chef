@@ -79,6 +79,7 @@ model Recipe {
   status        RecipeStatus
   created_at    DateTime     @default(now())
   updated_at    DateTime     @updatedAt
+  deleted_at    DateTime?
 
   //Relations
   user        User               @relation(fields: [author_id], references: [id])
@@ -188,7 +189,7 @@ enum NotificationType {
 enum NotificationResourceType {
   PROFILE
   RECIPE
-  USER 
+  USER
 }
 
 model Notification {

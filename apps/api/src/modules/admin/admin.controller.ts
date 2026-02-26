@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Put,
@@ -21,7 +22,7 @@ import { UserStatusUpdateDto } from './dto/user-status-update.dto';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRoles.ADMIN)
 export class AdminController {
-  constructor(private readonly adminServicer: AdminService) {}
+  constructor(private readonly adminServicer: AdminService) { }
 
   @Get('/users')
   async getUsers(@Query() query: UserPaginationDto) {
@@ -42,5 +43,10 @@ export class AdminController {
   @Get('/recipes')
   async getRecipes(@Query() query: RecipePaginationDto) {
     return await this.adminServicer.getAllRecipes(query);
+  }
+
+  @Delete('/recipes/:id')
+  async deleteRecipe(@Param('id') recipe_id: string) {
+    return await this.adminServicer.deleteRecipe(recipe_id);
   }
 }
