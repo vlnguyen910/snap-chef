@@ -28,7 +28,7 @@ async function main() {
   // 2. TẠO USERS
   const users: User[] = [];
   const passwordHash = '$argon2id$v=19$m=65536,t=3,p=4$VV6tfD8Z4G5IK0CJXWFOXQ$hDlaheVA2vJ7I8Svl9TKHwvMjrK4dERSjqnY2LHizxU';
-  const numberOfUsers = 100;
+  const numberOfUsers = 1000;
 
   for (let i = 0; i < numberOfUsers; i++) {
     const user = await prisma.user.create({

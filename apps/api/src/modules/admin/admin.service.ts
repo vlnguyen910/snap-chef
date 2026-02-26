@@ -8,6 +8,7 @@ import { UserRoles } from 'src/generated/prisma/enums';
 import { UsersService } from '../users/users.service';
 import { UserStatusUpdateDto } from './dto/user-status-update.dto';
 import { RedisService } from 'src/common/redis/redis.service';
+import { RecipesService } from '../recipes/recipes.service';
 
 @Injectable()
 export class AdminService {
@@ -15,7 +16,8 @@ export class AdminService {
     private readonly prisma: PrismaService,
     private readonly userService: UsersService,
     private readonly redis: RedisService,
-  ) {}
+    private readonly recipeService: RecipesService,
+  ) { }
 
   async getUsers(query: UserPaginationDto) {
     const { limit, page } = query;
@@ -71,5 +73,24 @@ export class AdminService {
     });
 
     return recipeList;
+  }
+
+  async deleteRecipe(recipe_id: string) {
+    const recipe = await this.recipeService.findOne(recipe_id);
+    if (!recipe) throw new NotFoundException('Recipe is not found or exist');
+
+    const now = new Date();
+    await this.prisma.recipe.update({
+      where: { id: recipe_id },
+      data: {
+        deleted_at: now,
+      }
+    })
+
+    await this.redis.delCache(`recipe:${recipe.id}`);
+
+    return {
+      message: `Recice ${recipe.title} by ${recipe.user.username} is deleted`
+    }
   }
 }
