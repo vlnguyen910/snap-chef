@@ -11,4 +11,4 @@ import { RecipesModule } from '../recipes/recipes.module';
   providers: [AdminService],
   exports: [AdminService],
 })
-export class AdminModule { }
+export class AdminModule {}

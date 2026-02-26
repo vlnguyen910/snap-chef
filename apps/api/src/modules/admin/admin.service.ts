@@ -17,7 +17,7 @@ export class AdminService {
     private readonly userService: UsersService,
     private readonly redis: RedisService,
     private readonly recipeService: RecipesService,
-  ) { }
+  ) {}
 
   async getUsers(query: UserPaginationDto) {
     const { limit, page } = query;
@@ -84,13 +84,13 @@ export class AdminService {
       where: { id: recipe_id },
       data: {
         deleted_at: now,
-      }
-    })
+      },
+    });
 
     await this.redis.delCache(`recipe:${recipe.id}`);
 
     return {
-      message: `Recice ${recipe.title} by ${recipe.user.username} is deleted`
-    }
+      message: `Recice ${recipe.title} by ${recipe.user.username} is deleted`,
+    };
   }
 }
