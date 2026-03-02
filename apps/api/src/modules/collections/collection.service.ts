@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/common/db/prisma.service';
 import { CreateCollectionDto } from './dto/create-collection';
-import { Collection, User } from 'src/generated/prisma/client';
+import { Collection } from 'src/generated/prisma/client';
 import { UsersService } from '../users/users.service';
 import { RecipesService } from '../recipes/recipes.service';
 import { UpdateCollectionDto } from './dto/update-collection';
@@ -78,7 +78,7 @@ export class CollectionService {
     return collection;
   }
 
-  async addRecipe(collection_id: string, recipe_id: string, currentUser: User) {
+  async addRecipe(collection_id: string, recipe_id: string, user_id: string) {
     const recipe = await this.recipeService.findOne(recipe_id);
     if (!recipe) throw new NotFoundException('This recipe is not found');
 
@@ -93,7 +93,7 @@ export class CollectionService {
 
     if (!collection) throw new NotFoundException('Collection is not found');
 
-    if (collection.owner_id !== currentUser.id)
+    if (collection.owner_id !== user_id)
       throw new ForbiddenException('You have no right to edit this!');
 
     const isRecipeInCollection = collection.recipe.length > 0;
@@ -117,12 +117,12 @@ export class CollectionService {
   async update(
     collection_id: string,
     payload: UpdateCollectionDto,
-    currentUser: User,
+    user_id: string,
   ) {
-    const collection = await this.findOne(collection_id, currentUser.id);
+    const collection = await this.findOne(collection_id, user_id);
     if (!collection) throw new NotFoundException('Collection is not foudn');
 
-    if (collection.owner_id !== currentUser.id)
+    if (collection.owner_id !== user_id)
       throw new ForbiddenException('You have no right to edit this');
 
     return await this.prisma.collection.update({

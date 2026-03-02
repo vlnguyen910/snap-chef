@@ -10,12 +10,12 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import type { User } from 'src/generated/prisma/client';
 import { GetUser } from 'src/common/decorators/user.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt-auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserPaginationDto } from 'src/common/dto/pagination.dto';
+import { TokenPayload } from 'src/common/interfaces';
 
 @Controller('users')
 export class UsersController {
@@ -28,43 +28,43 @@ export class UsersController {
 
   @Get()
   @UseGuards(OptionalJwtAuthGuard)
-  findAll(@Query() query: UserPaginationDto, @GetUser() user?: User) {
-    return this.usersService.findAll(query, user?.id);
+  findAll(@Query() query: UserPaginationDto, @GetUser() user?: TokenPayload) {
+    return this.usersService.findAll(query, user?.sub);
   }
 
   @Get('/me')
   @UseGuards(JwtAuthGuard)
-  getProfile(@GetUser() user: User) {
-    return this.usersService.getCurrentProfile(user.id);
+  getProfile(@GetUser() user: TokenPayload) {
+    return this.usersService.getCurrentProfile(user.sub);
   }
 
   @Get(':id/profile')
   @UseGuards(OptionalJwtAuthGuard)
   getPublicProfile(
     @Param('id') target_id: string,
-    @GetUser() user: User | undefined,
+    @GetUser() user: TokenPayload | undefined,
   ) {
-    return this.usersService.getPublicProfile(target_id, user?.id);
+    return this.usersService.getPublicProfile(target_id, user?.sub);
   }
 
   @Get(':id/followers')
   @UseGuards(OptionalJwtAuthGuard)
   getFollowers(
     @Param('id') profile_id: string,
-    @GetUser() current_user: User | undefined,
+    @GetUser() current_user: TokenPayload | undefined,
     @Query() query: UserPaginationDto,
   ) {
-    return this.usersService.getFollowers(profile_id, current_user?.id, query);
+    return this.usersService.getFollowers(profile_id, current_user?.sub, query);
   }
 
   @Get(':id/following')
   @UseGuards(JwtAuthGuard)
   getFollowing(
     @Param('id') profile_id: string,
-    @GetUser() current_user: User | undefined,
+    @GetUser() current_user: TokenPayload | undefined,
     @Query() query: UserPaginationDto,
   ) {
-    return this.usersService.getFollowing(profile_id, current_user?.id, query);
+    return this.usersService.getFollowing(profile_id, current_user?.sub, query);
   }
 
   @Get(':id')
@@ -74,23 +74,23 @@ export class UsersController {
 
   @Get('me/likes')
   @UseGuards(JwtAuthGuard)
-  getLikedRecipes(@GetUser() user: User) {
-    return this.usersService.getLikedRecipes(user.id);
+  getLikedRecipes(@GetUser() user: TokenPayload) {
+    return this.usersService.getLikedRecipes(user.sub);
   }
 
   @Post(':id/follow')
   @UseGuards(JwtAuthGuard)
-  followUser(@GetUser() user: User, @Param('id') following_id: string) {
-    return this.usersService.followUser(user.id, following_id);
+  followUser(@GetUser() user: TokenPayload, @Param('id') following_id: string) {
+    return this.usersService.followUser(user.sub, following_id);
   }
 
   @Put(':id')
   @UseGuards(JwtAuthGuard)
   update(
     @Param('id') id: string,
-    @GetUser() user: User,
+    @GetUser() user: TokenPayload,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    return this.usersService.update(id, user.id, updateUserDto);
+    return this.usersService.update(id, user.sub, updateUserDto);
   }
 }

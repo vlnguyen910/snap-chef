@@ -13,7 +13,7 @@ import {
 import { RecipesService } from './recipes.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
-import type { User } from 'src/generated/prisma/client';
+import { TokenPayload } from 'src/common/interfaces';
 import { GetUser } from 'src/common/decorators/user.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { CommentsService } from '../comments/comments.service';
@@ -35,8 +35,8 @@ export class RecipesController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(@GetUser() user: User, @Body() createRecipeDto: CreateRecipeDto) {
-    return this.recipesService.create(user.id, createRecipeDto);
+  create(@GetUser() user: TokenPayload, @Body() createRecipeDto: CreateRecipeDto) {
+    return this.recipesService.create(user.sub, createRecipeDto);
   }
 
   @Get()
@@ -46,8 +46,8 @@ export class RecipesController {
 
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
-  findOne(@Param('id') id: string, @GetUser() user: User | undefined) {
-    return this.recipesService.findOne(id, user?.id);
+  findOne(@Param('id') id: string, @GetUser() user: TokenPayload | undefined) {
+    return this.recipesService.findOne(id, user?.sub);
   }
 
   @Get('user/:id')
@@ -59,27 +59,27 @@ export class RecipesController {
   @UseGuards(JwtAuthGuard)
   update(
     @Param('id') id: string,
-    @GetUser() user: User,
+    @GetUser() user: TokenPayload,
     @Body() updateRecipeDto: UpdateRecipeDto,
   ) {
-    return this.recipesService.update(id, user.id, updateRecipeDto);
+    return this.recipesService.update(id, user.sub, updateRecipeDto);
   }
 
   //Social Features
   @Post(':id/like')
   @UseGuards(AuthGuard('jwt'))
-  likeRecipe(@GetUser() user: User, @Param('id') recipe_id: string) {
-    return this.recipesService.likeRecipe(user.id, recipe_id);
+  likeRecipe(@GetUser() user: TokenPayload, @Param('id') recipe_id: string) {
+    return this.recipesService.likeRecipe(user.sub, recipe_id);
   }
 
   @Post(':id/comments')
   @UseGuards(AuthGuard('jwt'))
   createComment(
-    @GetUser() user: User,
+    @GetUser() user: TokenPayload,
     @Param('id') recipe_id: string,
     @Body() dto: CreateCommentsDto,
   ) {
-    return this.commentsService.create(user.id, recipe_id, dto);
+    return this.commentsService.create(user.sub, recipe_id, dto);
   }
 
   @Get(':id/comments')
@@ -94,18 +94,18 @@ export class RecipesController {
   @UseGuards(AuthGuard('jwt'))
   deleteComment(
     @Param('comment_id', ParseIntPipe) id: number,
-    @GetUser() user: User,
+    @GetUser() user: TokenPayload,
   ) {
-    return this.commentsService.deleteComment(id, user.id);
+    return this.commentsService.deleteComment(id, user.sub);
   }
 
   @Patch(':id/comments/:comment_id')
   @UseGuards(AuthGuard('jwt'))
   updateComment(
     @Param('comment_id', ParseIntPipe) id: number,
-    @GetUser() user: User,
+    @GetUser() user: TokenPayload,
     @Body() dto: UpdateCommentDto,
   ) {
-    return this.commentsService.updateComment(id, user.id, dto);
+    return this.commentsService.updateComment(id, user.sub, dto);
   }
 }
