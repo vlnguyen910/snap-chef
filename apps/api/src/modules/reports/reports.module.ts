@@ -4,7 +4,7 @@ import { ReportsController } from './reports.controller';
 import { PrismaModule } from 'src/common/db/prisma.module';
 
 @Module({
-  imports: [PrismaModule]
+  imports: [PrismaModule],
   controllers: [ReportsController],
   providers: [ReportsService],
 })

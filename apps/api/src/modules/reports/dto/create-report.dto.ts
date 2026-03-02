@@ -25,8 +25,4 @@ export class CreateReportDto {
   @IsNotEmpty()
   @IsEnum(ReportStatus)
   status!: ReportStatus;
-
-  @IsNotEmpty()
-  @IsString()
-  handler_id!: string;
 }

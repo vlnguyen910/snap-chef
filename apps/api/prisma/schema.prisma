@@ -185,6 +185,7 @@ enum NotificationType {
   COMMENT
   FOLLOW
   SYSTEM
+  REPORT
 }
 
 enum NotificationResourceType {
@@ -235,12 +236,12 @@ model Report {
   target_id   String
   reason      ReportReason
   description String?
-  status      ReportStatus
-  handler_id  String
+  status      ReportStatus     @default(PENDING)
+  handler_id  String?
   created_at  DateTime         @default(now())
   updated_at  DateTime         @updatedAt
 
   //Relations
-  reporter User @relation("UserReports", fields: [reporter_id], references: [id])
-  handler  User @relation("UserHandles", fields: [handler_id], references: [id])
+  reporter User  @relation("UserReports", fields: [reporter_id], references: [id])
+  handler  User? @relation("UserHandles", fields: [handler_id], references: [id])
 }
