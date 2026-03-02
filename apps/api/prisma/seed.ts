@@ -21,6 +21,9 @@ async function main() {
   await prisma.step.deleteMany();
   await prisma.ingredient.deleteMany();
   await prisma.recipe.deleteMany();
+  await prisma.notification.deleteMany();
+  await prisma.report.deleteMany();
+  await prisma.oauthAccount.deleteMany();
   await prisma.user.deleteMany();
 
   console.log('🧹 Cleaned up database');
