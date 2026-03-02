@@ -35,7 +35,10 @@ export class RecipesController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(@GetUser() user: TokenPayload, @Body() createRecipeDto: CreateRecipeDto) {
+  create(
+    @GetUser() user: TokenPayload,
+    @Body() createRecipeDto: CreateRecipeDto,
+  ) {
     return this.recipesService.create(user.sub, createRecipeDto);
   }
 
