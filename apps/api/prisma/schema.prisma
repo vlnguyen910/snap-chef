@@ -222,7 +222,7 @@ enum ReportReason {
   OTHER
 }
 
-enum ReportSatus {
+enum ReportStatus {
   PENDING
   RESOLVED
   DISMISSED
@@ -235,7 +235,7 @@ model Report {
   target_id   String
   reason      ReportReason
   description String?
-  status      RecipeStatus
+  status      ReportStatus
   handler_id  String
   created_at  DateTime         @default(now())
   updated_at  DateTime         @updatedAt
