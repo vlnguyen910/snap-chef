@@ -1,25 +1,29 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { ReportsService } from './reports.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { JwtAuthGuard, RolesGuard } from 'src/common/guards';
 import { UserRoles } from 'src/generated/prisma/enums';
 import { GetUser, Roles } from 'src/common/decorators';
-import type { User } from 'src/generated/prisma/client';
 import { TokenPayload } from 'src/common/interfaces';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('reports')
 export class ReportsController {
-  constructor(private readonly reportsService: ReportsService) { }
+  constructor(private readonly reportsService: ReportsService) {}
 
   @Roles(UserRoles.USER)
   @Post()
-  create(
-    @GetUser() user: TokenPayload,
-    @Body() payload: CreateReportDto
-  ) {
-    return this.reportsService.create(user!.sub, payload);
+  create(@GetUser() user: TokenPayload, @Body() payload: CreateReportDto) {
+    return this.reportsService.create(user.sub, payload);
   }
 
   @Roles(UserRoles.ADMIN)

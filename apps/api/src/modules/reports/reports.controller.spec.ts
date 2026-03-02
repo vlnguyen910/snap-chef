@@ -124,7 +124,9 @@ describe('ReportsController', () => {
     it('should propagate service errors to the caller', async () => {
       service.create.mockRejectedValue(new Error('Service error'));
 
-      await expect(controller.create(mockUser, createDto)).rejects.toThrow('Service error');
+      await expect(controller.create(mockUser, createDto)).rejects.toThrow(
+        'Service error',
+      );
     });
   });
 
@@ -231,15 +233,18 @@ describe('ReportsController', () => {
       const result = await controller.update('report-uuid-1', statusOnlyDto);
 
       expect(result.status).toBe(ReportStatus.DISMISSED);
-      expect(service.update).toHaveBeenCalledWith('report-uuid-1', statusOnlyDto);
+      expect(service.update).toHaveBeenCalledWith(
+        'report-uuid-1',
+        statusOnlyDto,
+      );
     });
 
     it('should propagate errors from service', async () => {
       service.update.mockRejectedValue(new Error('Not found'));
 
-      await expect(
-        controller.update('bad-id', updateDto),
-      ).rejects.toThrow('Not found');
+      await expect(controller.update('bad-id', updateDto)).rejects.toThrow(
+        'Not found',
+      );
     });
   });
 });
