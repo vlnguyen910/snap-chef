@@ -7,11 +7,28 @@ import {
   TargetReportType,
   ReportReason,
   ReportStatus,
+  UserRoles,
 } from 'src/generated/prisma/enums';
+import { TokenPayload } from 'src/common/interfaces';
+import { JwtTokenType } from 'src/common/enums';
+
+/**
+ * Mock user (TokenPayload) — thay cho @GetUser() user: User cũ.
+ * sub = user id, đây là field được dùng trong controller.
+ */
+const mockUser: TokenPayload = {
+  sub: 'user-uuid-1',
+  email: 'user@example.com',
+  username: 'testuser',
+  role: UserRoles.USER,
+  is_verified: true,
+  type: JwtTokenType.AccessToken,
+  jti: 'some-jti',
+};
 
 /**
  * Mock report object dùng chung cho các test.
- * Sửa / thêm field ở đây nếu bạn muốn test dữ liệu khác.
+ * handler_id có thể null vì report mới tạo chưa có admin xử lý.
  */
 const mockReport = {
   id: 'report-uuid-1',
@@ -21,14 +38,13 @@ const mockReport = {
   reason: ReportReason.SPAM,
   description: 'Spam content',
   status: ReportStatus.PENDING,
-  handler_id: 'admin-uuid-1',
+  handler_id: null,
   created_at: new Date(),
   updated_at: new Date(),
 };
 
 /**
  * Mock ReportsService: Controller chỉ gọi service, không biết về DB.
- * Mỗi method của service đều được mock bằng jest.fn().
  *
  * Cách thêm mock method mới:
  * 1. Thêm vào mockReportsService: newMethod: jest.fn()
@@ -39,7 +55,6 @@ const mockReportsService = {
   findAll: jest.fn(),
   findOne: jest.fn(),
   update: jest.fn(),
-  remove: jest.fn(),
 };
 
 describe('ReportsController', () => {
@@ -78,29 +93,30 @@ describe('ReportsController', () => {
   // PHẦN 2: POST / (create)
   // ─────────────────────────────────────────────
   describe('create()', () => {
+    /**
+     * CreateReportDto không chứa reporter_id, handler_id, status nữa.
+     * reporter_id được lấy từ user token (user.sub).
+     */
     const createDto: CreateReportDto = {
-      reporter_id: 'user-uuid-1',
       target_type: TargetReportType.RECIPE,
       target_id: 'recipe-uuid-1',
       reason: ReportReason.SPAM,
       description: 'Spam content',
-      status: ReportStatus.PENDING,
-      handler_id: 'admin-uuid-1',
     };
 
-    it('should call reportsService.create with the DTO', async () => {
+    it('should call reportsService.create with user.sub and DTO', async () => {
       service.create.mockResolvedValue(mockReport);
 
-      await controller.create(createDto);
+      await controller.create(mockUser, createDto);
 
       expect(service.create).toHaveBeenCalledTimes(1);
-      expect(service.create).toHaveBeenCalledWith(createDto);
+      expect(service.create).toHaveBeenCalledWith(mockUser.sub, createDto);
     });
 
     it('should return the created report', async () => {
       service.create.mockResolvedValue(mockReport);
 
-      const result = await controller.create(createDto);
+      const result = await controller.create(mockUser, createDto);
 
       expect(result).toEqual(mockReport);
     });
@@ -108,7 +124,7 @@ describe('ReportsController', () => {
     it('should propagate service errors to the caller', async () => {
       service.create.mockRejectedValue(new Error('Service error'));
 
-      await expect(controller.create(createDto)).rejects.toThrow('Service error');
+      await expect(controller.create(mockUser, createDto)).rejects.toThrow('Service error');
     });
   });
 
@@ -144,10 +160,7 @@ describe('ReportsController', () => {
 
       await controller.findOne('report-uuid-1');
 
-      // Controller truyền +id (ép kiểu number), kiểm tra giá trị đúng
-      expect(service.findOne).toHaveBeenCalledWith(
-        expect.anything(), // +id, có thể là NaN nếu id không phải số
-      );
+      expect(service.findOne).toHaveBeenCalledWith('report-uuid-1');
     });
 
     it('should return the found report', async () => {
@@ -169,33 +182,56 @@ describe('ReportsController', () => {
 
   // ─────────────────────────────────────────────
   // PHẦN 5: PATCH /:id (update)
+  // Admin cập nhật status hoặc assign handler_id
   // ─────────────────────────────────────────────
   describe('update()', () => {
+    /**
+     * UpdateReportDto chỉ có status và handler_id (không có description).
+     * Dùng cho admin xử lý report.
+     */
     const updateDto: UpdateReportDto = {
       status: ReportStatus.RESOLVED,
+      handler_id: 'admin-uuid-1',
     };
 
     it('should call reportsService.update with id and DTO', async () => {
-      const updatedReport = { ...mockReport, status: ReportStatus.RESOLVED };
+      const updatedReport = {
+        ...mockReport,
+        status: ReportStatus.RESOLVED,
+        handler_id: 'admin-uuid-1',
+      };
       service.update.mockResolvedValue(updatedReport);
 
       await controller.update('report-uuid-1', updateDto);
 
       expect(service.update).toHaveBeenCalledTimes(1);
-      expect(service.update).toHaveBeenCalledWith(
-        expect.anything(),
-        updateDto,
-      );
+      expect(service.update).toHaveBeenCalledWith('report-uuid-1', updateDto);
     });
 
     it('should return the updated report', async () => {
-      const updatedReport = { ...mockReport, status: ReportStatus.RESOLVED };
+      const updatedReport = {
+        ...mockReport,
+        status: ReportStatus.RESOLVED,
+        handler_id: 'admin-uuid-1',
+      };
       service.update.mockResolvedValue(updatedReport);
 
       const result = await controller.update('report-uuid-1', updateDto);
 
       expect(result).toEqual(updatedReport);
       expect(result.status).toBe(ReportStatus.RESOLVED);
+      expect(result.handler_id).toBe('admin-uuid-1');
+    });
+
+    it('should update only status without handler_id', async () => {
+      const statusOnlyDto: UpdateReportDto = { status: ReportStatus.DISMISSED };
+      const dismissedReport = { ...mockReport, status: ReportStatus.DISMISSED };
+      service.update.mockResolvedValue(dismissedReport);
+
+      const result = await controller.update('report-uuid-1', statusOnlyDto);
+
+      expect(result.status).toBe(ReportStatus.DISMISSED);
+      expect(service.update).toHaveBeenCalledWith('report-uuid-1', statusOnlyDto);
     });
 
     it('should propagate errors from service', async () => {
