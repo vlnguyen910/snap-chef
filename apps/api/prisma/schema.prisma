@@ -192,6 +192,7 @@ enum NotificationResourceType {
   PROFILE
   RECIPE
   USER
+  REPORT
 }
 
 model Notification {

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { PrismaService } from 'src/common/db/prisma.service';
-import { NotificationType, Report, TargetReportType, UserRoles } from 'src/generated/prisma/client';
+import { NotificationResourceType, NotificationType, Report, TargetReportType, UserRoles } from 'src/generated/prisma/client';
 import { NotificationService } from '../notifications/notification.service';
 import { NotificationMessages } from 'src/common/constants';
 import { UsersService } from '../users/users.service';
@@ -37,8 +37,8 @@ export class ReportsService {
         receiverId: admin.id,
         type: NotificationType.REPORT,
         message: NotificationMessages.NEW_REPORT,
-        resourceType: dto.target_type === TargetReportType.USER ? TargetReportType.USER : TargetReportType.RECIPE,
-        resourceId: dto.target_id,
+        resourceType: NotificationResourceType.REPORT,
+        resourceId: report.id,
       })),
     );
 
