@@ -19,6 +19,7 @@ import { UsersModule } from './modules/users/users.module';
 import { CollectionModule } from './modules/collections/collection.module';
 import { AppController } from './app.controller';
 import { AdminModule } from './modules/admin/admin.module';
+import { ReportsModule } from './modules/reports/reports.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { AdminModule } from './modules/admin/admin.module';
     AuthModule,
     CollectionModule,
     AdminModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [PrismaService],
