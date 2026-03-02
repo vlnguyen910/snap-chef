@@ -4,7 +4,9 @@ import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { JwtAuthGuard, RolesGuard } from 'src/common/guards';
 import { UserRoles } from 'src/generated/prisma/enums';
-import { Roles } from 'src/common/decorators';
+import { GetUser, Roles } from 'src/common/decorators';
+import type { User } from 'src/generated/prisma/client';
+import { TokenPayload } from 'src/common/interfaces';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('reports')
@@ -13,8 +15,11 @@ export class ReportsController {
 
   @Roles(UserRoles.USER)
   @Post()
-  create(@Body() payload: CreateReportDto) {
-    return this.reportsService.create(payload);
+  create(
+    @GetUser() user: TokenPayload,
+    @Body() payload: CreateReportDto
+  ) {
+    return this.reportsService.create(user!.sub, payload);
   }
 
   @Roles(UserRoles.ADMIN)
