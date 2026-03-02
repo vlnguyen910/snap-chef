@@ -11,7 +11,7 @@ import {
 import { NotificationService } from './notification.service';
 import { GetUser } from 'src/common/decorators/user.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
-import type { User } from 'src/generated/prisma/client';
+import { TokenPayload } from 'src/common/interfaces';
 
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)
@@ -19,21 +19,21 @@ export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
   @Get()
-  async getNotifications(@GetUser() user: User) {
-    return this.notificationService.getNotifications(user.id);
+  async getNotifications(@GetUser() user: TokenPayload) {
+    return this.notificationService.getNotifications(user.sub);
   }
 
   @Patch(':id/read')
   async markAsRead(
-    @GetUser() user: User,
+    @GetUser() user: TokenPayload,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.notificationService.markAsRead(user.id, id);
+    return this.notificationService.markAsRead(user.sub, id);
   }
 
   @Patch('read-all')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async markAllAsRead(@GetUser() user: User) {
-    await this.notificationService.markAllAsRead(user.id);
+  async markAllAsRead(@GetUser() user: TokenPayload) {
+    await this.notificationService.markAllAsRead(user.sub);
   }
 }

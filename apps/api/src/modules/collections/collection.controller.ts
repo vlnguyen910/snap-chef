@@ -10,10 +10,11 @@ import {
 import { CreateCollectionDto } from './dto/create-collection';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { GetUser } from 'src/common/decorators/user.decorator';
-import type { Collection, User } from 'src/generated/prisma/client';
+import type { Collection } from 'src/generated/prisma/client';
 import { CollectionService } from './collection.service';
 import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt-auth.guard';
 import { UpdateCollectionDto } from './dto/update-collection';
+import { TokenPayload } from 'src/common/interfaces';
 
 @Controller('collections')
 export class CollectionController {
@@ -22,21 +23,21 @@ export class CollectionController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(
-    @GetUser() user: User,
+    @GetUser() user: TokenPayload,
     @Body() payload: CreateCollectionDto,
   ): Promise<Collection> {
-    return await this.collectionService.create(user.id, payload);
+    return await this.collectionService.create(user.sub, payload);
   }
 
   @UseGuards(OptionalJwtAuthGuard)
   @Get('user/:user_id')
   async getUserCollections(
     @Param('user_id') user_id: string,
-    @GetUser() currentUser?: User | null,
+    @GetUser() currentUser?: TokenPayload | null,
   ) {
     return await this.collectionService.getUserCollection(
       user_id,
-      currentUser?.id,
+      currentUser?.sub,
     );
   }
 
@@ -44,9 +45,9 @@ export class CollectionController {
   @Get(':id')
   async getCollectionDetail(
     @Param('id') id: string,
-    @GetUser() currentUser?: User | null,
+    @GetUser() currentUser?: TokenPayload | null,
   ) {
-    return await this.collectionService.findOne(id, currentUser?.id);
+    return await this.collectionService.findOne(id, currentUser?.sub);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -54,12 +55,12 @@ export class CollectionController {
   async addRecipeToCollection(
     @Param('id') collection_id: string,
     @Param('recipe_id') recipe_id: string,
-    @GetUser() currentUser: User,
+    @GetUser() currentUser: TokenPayload,
   ) {
     return await this.collectionService.addRecipe(
       collection_id,
       recipe_id,
-      currentUser,
+      currentUser.sub,
     );
   }
 
@@ -68,12 +69,12 @@ export class CollectionController {
   async updateCollection(
     @Param('id') collection_id: string,
     @Body() payload: UpdateCollectionDto,
-    @GetUser() currentUser: User,
+    @GetUser() currentUser: TokenPayload,
   ) {
     return await this.collectionService.update(
       collection_id,
       payload,
-      currentUser,
+      currentUser.sub,
     );
   }
 }
