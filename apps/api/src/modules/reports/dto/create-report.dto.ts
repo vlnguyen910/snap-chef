@@ -1,5 +1,5 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
-import { ReportReason, ReportStatus, TargetReportType } from "src/generated/prisma/enums";
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { ReportReason, TargetReportType } from 'src/generated/prisma/enums';
 
 export class CreateReportDto {
   @IsNotEmpty()

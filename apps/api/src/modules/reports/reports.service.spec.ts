@@ -154,7 +154,9 @@ describe('ReportsService', () => {
       // User không tồn tại
       mockUsersService.findOne.mockResolvedValue(null);
 
-      await expect(service.create(reporterId, createDto)).rejects.toThrow(NotFoundException);
+      await expect(service.create(reporterId, createDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should send notifications to all admins after creating report', async () => {
@@ -163,7 +165,9 @@ describe('ReportsService', () => {
 
       await service.create(reporterId, createDto);
 
-      expect(mockNotificationService.createNotification).toHaveBeenCalledTimes(1);
+      expect(mockNotificationService.createNotification).toHaveBeenCalledTimes(
+        1,
+      );
       expect(mockNotificationService.createNotification).toHaveBeenCalledWith(
         expect.objectContaining({
           senderId: reporterId,
@@ -198,7 +202,9 @@ describe('ReportsService', () => {
     it('should propagate error if prisma throws', async () => {
       prisma.report.create.mockRejectedValue(new Error('DB Error'));
 
-      await expect(service.create(reporterId, createDto)).rejects.toThrow('DB Error');
+      await expect(service.create(reporterId, createDto)).rejects.toThrow(
+        'DB Error',
+      );
     });
   });
 
