@@ -206,28 +206,4 @@ describe('ReportsController', () => {
       ).rejects.toThrow('Not found');
     });
   });
-
-  // ─────────────────────────────────────────────
-  // PHẦN 6: DELETE /:id (remove)
-  // Lưu ý: ReportsService chưa có method remove().
-  // Nếu bạn thêm method remove() vào service, bỏ comment test này.
-  // ─────────────────────────────────────────────
-  describe('remove()', () => {
-    it('should call reportsService.remove with the id param', async () => {
-      service.remove.mockResolvedValue({ deleted: true });
-
-      await controller.remove('report-uuid-1');
-
-      expect(service.remove).toHaveBeenCalledTimes(1);
-    });
-
-    it('should return the result from service.remove', async () => {
-      const deleteResult = { deleted: true };
-      service.remove.mockResolvedValue(deleteResult);
-
-      const result = await controller.remove('report-uuid-1');
-
-      expect(result).toEqual(deleteResult);
-    });
-  });
 });
