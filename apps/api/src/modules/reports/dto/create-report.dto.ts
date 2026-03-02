@@ -3,10 +3,6 @@ import { ReportReason, ReportStatus, TargetReportType } from "src/generated/pris
 
 export class CreateReportDto {
   @IsNotEmpty()
-  @IsString()
-  reporter_id!: string;
-
-  @IsNotEmpty()
   @IsEnum(TargetReportType)
   target_type!: TargetReportType;
 
@@ -21,8 +17,4 @@ export class CreateReportDto {
   @IsOptional()
   @IsString()
   description?: string;
-
-  @IsNotEmpty()
-  @IsEnum(ReportStatus)
-  status!: ReportStatus;
 }

@@ -2,20 +2,47 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { PrismaService } from 'src/common/db/prisma.service';
-import { Report } from 'src/generated/prisma/client';
+import { NotificationType, Report, TargetReportType, UserRoles } from 'src/generated/prisma/client';
+import { NotificationService } from '../notifications/notification.service';
+import { NotificationMessages } from 'src/common/constants';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class ReportsService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+    private readonly userService: UsersService,
   ) { }
 
-  async create(dto: CreateReportDto) {
-    return await this.prisma.report.create({
+  async create(reporter_id: string, dto: CreateReportDto) {
+    const user = await this.userService.findOne(reporter_id);
+    if (!user) throw new NotFoundException('User is not found or exist');
+
+    const report = await this.prisma.report.create({
       data: {
+        reporter_id,
         ...dto,
       }
     });
+
+    const admins = await this.prisma.user.findMany({
+      where: { role: UserRoles.ADMIN },
+      select: { id: true },
+    })
+
+    await Promise.all(
+      admins.map((admin) => this.notificationService.createNotification({
+        senderId: reporter_id,
+        receiverId: admin.id,
+        type: NotificationType.REPORT,
+        message: NotificationMessages.NEW_REPORT,
+        resourceType: dto.target_type === TargetReportType.USER ? TargetReportType.USER : TargetReportType.RECIPE,
+        resourceId: dto.target_id,
+      })),
+    );
+
+    return report;
   }
 
   async findAll() {
