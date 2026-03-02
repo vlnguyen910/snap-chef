@@ -22,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: TokenPayload) {
+  async validate(payload: TokenPayload): Promise<TokenPayload> {
     if (!payload.jti || typeof payload.jti !== 'string') {
       throw new UnauthorizedException('Missing or invalid jti');
     }
