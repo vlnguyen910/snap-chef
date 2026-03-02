@@ -33,16 +33,17 @@ model User {
   is_verified Boolean   @default(false) //Email Verify
 
   //Relations
-  recipe     Recipe[]
-  likes      Like[]
-  comments   Comment[]
-  following  Follow[]       @relation("followerRelation") // nguoi dang theo doi
-  followedBy Follow[]       @relation("followingRelation") // nguoi theo toi
-  account    OauthAccount[]
-  collection Collection[]
-
+  recipe               Recipe[]
+  likes                Like[]
+  comments             Comment[]
+  following            Follow[]       @relation("followerRelation") // nguoi dang theo doi
+  followedBy           Follow[]       @relation("followingRelation") // nguoi theo toi
+  account              OauthAccount[]
+  collection           Collection[]
   notificationReceived Notification[] @relation("ReceiverNotification")
   notificationSent     Notification[] @relation("SenderNotification")
+  reporter             Report[]       @relation("UserReports")
+  reportHandler        Report[]       @relation("UserHandles")
 
   //Indexes
   @@index([username])
@@ -205,4 +206,41 @@ model Notification {
 
   receiver User  @relation("ReceiverNotification", fields: [receiver_id], references: [id], onDelete: Cascade)
   sender   User? @relation("SenderNotification", fields: [sender_id], references: [id], onDelete: Cascade)
+}
+
+enum TargetReportType {
+  USER
+  RECIPE
+}
+
+enum ReportReason {
+  SPAM
+  INAPORIATE_CONTENT
+  COPYRIGHT_VIOLATION
+  IRRELEVANT_CONTENT
+  FAKE_ACCOUNT
+  OTHER
+}
+
+enum ReportSatus {
+  PENDING
+  RESOLVED
+  DISMISSED
+}
+
+model Report {
+  id          String           @id @default(cuid())
+  reporter_id String
+  target_type TargetReportType
+  target_id   String
+  reason      ReportReason
+  description String?
+  status      RecipeStatus
+  handler_id  String
+  created_at  DateTime         @default(now())
+  updated_at  DateTime         @updatedAt
+
+  //Relations
+  reporter User @relation("UserReports", fields: [reporter_id], references: [id])
+  handler  User @relation("UserHandles", fields: [handler_id], references: [id])
 }
