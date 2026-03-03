@@ -300,6 +300,11 @@ describe('ReportsService', () => {
       handler_id: 'admin-uuid-1',
     };
 
+    beforeEach(() => {
+      // Mock findOne() inside update()
+      prisma.report.findUnique.mockResolvedValue(mockReport);
+    });
+
     it('should update and return the updated report', async () => {
       prisma.report.update.mockResolvedValue(updatedReport);
 
@@ -346,14 +351,12 @@ describe('ReportsService', () => {
       expect(result.handler_id).toBe('admin-uuid-2');
     });
 
-    it('should propagate error if report is not found', async () => {
-      prisma.report.update.mockRejectedValue(
-        new Error('Record to update not found.'),
-      );
+    it('should throw NotFoundException if report is not found', async () => {
+      prisma.report.findUnique.mockResolvedValue(null);
 
-      await expect(
-        service.update('non-existent-id', updateDto),
-      ).rejects.toThrow('Record to update not found.');
+      await expect(service.update('non-existent-id', updateDto)).rejects.toThrow(
+        new NotFoundException('Report is not found or exist'),
+      );
     });
   });
 });
