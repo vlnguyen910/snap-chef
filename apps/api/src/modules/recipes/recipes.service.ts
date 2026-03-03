@@ -20,7 +20,7 @@ import {
   NotificationType,
   NotificationResourceType,
 } from 'src/generated/prisma/enums';
-import { NotificationMessages } from 'src/common/constants';
+import { NotificationMessages, ErrorMessages } from 'src/common/constants';
 
 @Injectable()
 export class RecipesService {
@@ -38,27 +38,27 @@ export class RecipesService {
     const sortedIndices = [...orderIndices].sort((a, b) => a - b);
 
     if (sortedIndices.length === 0) {
-      throw new BadRequestException('At least one step is required');
+      throw new BadRequestException(ErrorMessages.AT_LEAST_ONE_STEP);
     }
 
     if (orderIndices.length !== new Set(orderIndices).size) {
-      throw new BadRequestException('Order index can not be duplicated');
+      throw new BadRequestException(ErrorMessages.DUPLICATE_ORDER_INDEX);
     }
 
     if (sortedIndices[0] !== 1) {
-      throw new BadRequestException('order_index must start from 1');
+      throw new BadRequestException(ErrorMessages.ORDER_INDEX_START_FROM_1);
     }
 
     for (let i = 0; i < sortedIndices.length - 1; i++) {
       if (sortedIndices[i + 1] !== sortedIndices[i]! + 1) {
-        throw new BadRequestException('Order index must be continuous');
+        throw new BadRequestException(ErrorMessages.ORDER_INDEX_CONTINUOUS);
       }
     }
   }
 
   async create(user_id: string, dto: CreateRecipeDto) {
     const user = await this.userService.findOne(user_id);
-    if (!user) throw new BadRequestException('User is not exist');
+    if (!user) throw new BadRequestException(ErrorMessages.USER_NOT_FOUND);
 
     const orderIndices = dto.steps.map((step) => step.order_index);
     this.validateOrderIndices(orderIndices);
@@ -240,7 +240,7 @@ export class RecipesService {
         },
       });
 
-      if (!recipe) throw new NotFoundException('Recipe is not exist');
+      if (!recipe) throw new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND);
 
       const { _count, ...rest } = recipe;
       recipeData = {
@@ -273,12 +273,10 @@ export class RecipesService {
     const cacheKey = `recipe:${id}`;
 
     const oldRecipe = await this.findOne(id);
-    if (!oldRecipe) throw new NotFoundException('Recipe not found');
+    if (!oldRecipe) throw new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND);
 
     if (oldRecipe.author_id !== user_id)
-      throw new UnauthorizedException(
-        'You have no right to perform this action',
-      );
+      throw new UnauthorizedException(ErrorMessages.NO_PERMISSION);
 
     await this.redis.delCache(cacheKey);
 
@@ -358,16 +356,16 @@ export class RecipesService {
 
   async likeRecipe(user_id: string, recipe_id: string) {
     const user = await this.userService.findOne(user_id);
-    if (!user) throw new BadRequestException('User is not exist');
+    if (!user) throw new BadRequestException(ErrorMessages.USER_NOT_FOUND);
 
     const recipe = await this.prisma.recipe.findUnique({
       where: { id: recipe_id },
       select: { author_id: true, title: true },
     });
 
-    if (!recipe) throw new NotFoundException('Recipe not found');
+    if (!recipe) throw new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND);
     if (recipe.author_id === user_id)
-      throw new BadRequestException('You cannot like your own recipe');
+      throw new BadRequestException(ErrorMessages.CANNOT_LIKE_OWN_RECIPE);
 
     const isLiked = await this.checkUserLiked(user_id, recipe_id);
     if (isLiked) {

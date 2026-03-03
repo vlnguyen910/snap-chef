@@ -12,6 +12,7 @@ import {
   UserRoles,
 } from 'src/generated/prisma/enums';
 import { NotFoundException } from '@nestjs/common';
+import { ErrorMessages } from 'src/common/constants';
 
 /**
  * Mock report data — handler_id là null vì mới tạo chưa có admin xử lý.
@@ -355,7 +356,7 @@ describe('ReportsService', () => {
       prisma.report.findUnique.mockResolvedValue(null);
 
       await expect(service.update('non-existent-id', updateDto)).rejects.toThrow(
-        new NotFoundException('Report is not found or exist'),
+        new NotFoundException(ErrorMessages.REPORT_NOT_FOUND),
       );
     });
   });

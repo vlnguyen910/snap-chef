@@ -5,6 +5,7 @@ import { jwtConfiguration } from '../../../config';
 import { TokenPayload } from '../../../common/interfaces';
 import type { ConfigType } from '@nestjs/config';
 import { RedisService } from 'src/common/redis/redis.service';
+import { ErrorMessages } from 'src/common/constants';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -24,14 +25,14 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   async validate(payload: TokenPayload): Promise<TokenPayload> {
     if (!payload.jti || typeof payload.jti !== 'string') {
-      throw new UnauthorizedException('Missing or invalid jti');
+      throw new UnauthorizedException(ErrorMessages.MISSING_OR_INVALID_JTI);
     }
 
     const blacklistKey = `blacklist:${payload.jti}`;
     const isBlacklisted = await this.redisService.getCache(blacklistKey);
 
     if (isBlacklisted) {
-      throw new UnauthorizedException('Token has been revoked');
+      throw new UnauthorizedException(ErrorMessages.TOKEN_REVOKED);
     }
 
     return {

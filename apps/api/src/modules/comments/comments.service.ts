@@ -9,7 +9,7 @@ import { CreateCommentsDto } from './dto/create-comments.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import type { Comment } from 'src/generated/prisma/client';
 import { CommentPaginationDto } from 'src/common/dto/pagination.dto';
-import { NotificationMessages } from 'src/common/constants';
+import { NotificationMessages, ErrorMessages } from 'src/common/constants';
 import { NotificationService } from '../notifications/notification.service';
 import {
   NotificationType,
@@ -29,12 +29,12 @@ export class CommentsService {
     const recipe = await this.prisma.recipe.findUnique({
       where: { id: recipe_id },
     });
-    if (!recipe) throw new NotFoundException('Recipe is not exist');
+    if (!recipe) throw new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND);
 
     const user = await this.prisma.user.findUnique({
       where: { id: user_id },
     });
-    if (!user) throw new NotFoundException('User is not exist');
+    if (!user) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
 
     await this.prisma.comment.create({
       data: {
@@ -99,11 +99,9 @@ export class CommentsService {
 
   async deleteComment(id: number, user_id: string) {
     const comment = await this.findOneById(id);
-    if (!comment) throw new NotFoundException('Comment is not exist');
+    if (!comment) throw new NotFoundException(ErrorMessages.COMMENT_NOT_FOUND);
     if (comment.user_id !== user_id && comment.recipe.author_id !== user_id)
-      throw new UnauthorizedException(
-        'You not have right to delete this comment',
-      );
+      throw new UnauthorizedException(ErrorMessages.NO_RIGHT_DELETE_COMMENT);
 
     await this.prisma.comment.delete({
       where: { id },
@@ -116,11 +114,9 @@ export class CommentsService {
 
   async updateComment(id: number, user_id: string, dto: UpdateCommentDto) {
     const comment = await this.findOneById(id);
-    if (!comment) throw new NotFoundException('Comment is not exist');
+    if (!comment) throw new NotFoundException(ErrorMessages.COMMENT_NOT_FOUND);
     if (comment.user_id !== user_id)
-      throw new UnauthorizedException(
-        'You not have right to update this comment',
-      );
+      throw new UnauthorizedException(ErrorMessages.NO_RIGHT_UPDATE_COMMENT);
 
     await this.prisma.comment.update({
       where: { id },
