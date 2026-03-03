@@ -63,6 +63,9 @@ export class ReportsService {
   }
 
   async update(id: string, payload: UpdateReportDto) {
+    const report = await this.findOne(id);
+    if (!report) throw new NotFoundException('Report is not found or exist');
+
     return await this.prisma.report.update({
       where: { id },
       data: { ...payload },
