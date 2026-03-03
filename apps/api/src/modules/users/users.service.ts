@@ -15,7 +15,7 @@ import { UserWhereInput } from 'src/generated/prisma/models';
 import { UserPaginationDto } from 'src/common/dto/pagination.dto';
 import { RedisService } from 'src/common/redis/redis.service';
 import { NotificationService } from '../notifications/notification.service';
-import { NotificationMessages } from 'src/common/constants';
+import { NotificationMessages, ErrorMessages } from 'src/common/constants';
 
 @Injectable()
 export class UsersService {
@@ -95,11 +95,9 @@ export class UsersService {
     const cacheKey = `user:${id}`;
     const user = await this.findOne(id);
 
-    if (!user) throw new NotFoundException('User is not exist');
+    if (!user) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
     if (user.id !== user_id)
-      throw new UnauthorizedException(
-        'You have no right to perform this action',
-      );
+      throw new UnauthorizedException(ErrorMessages.NO_PERMISSION);
 
     await this.redis.delCache(cacheKey);
 
@@ -116,7 +114,7 @@ export class UsersService {
     const followingUser = await this.findOne(following_id);
 
     if (!currentUser || !followingUser)
-      throw new NotFoundException('User is not exist');
+      throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
 
     let isFollowed: boolean | null = null;
     const followedUser = await this.prisma.follow.findUnique({
@@ -169,7 +167,7 @@ export class UsersService {
 
   async getLikedRecipes(user_id: string) {
     const user = await this.findOne(user_id);
-    if (!user) throw new NotFoundException('User is not exist');
+    if (!user) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
 
     return await this.prisma.like.findMany({
       where: { user_id },
@@ -191,7 +189,7 @@ export class UsersService {
       },
     });
 
-    if (!user) throw new NotFoundException('User not exist');
+    if (!user) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _password, _count, ...userData } = user;
@@ -205,7 +203,7 @@ export class UsersService {
 
   async getPublicProfile(target_id: string, current_id: string | undefined) {
     const targetUser = await this.getCurrentProfile(target_id);
-    if (!targetUser) throw new NotFoundException('User is not exist,');
+    if (!targetUser) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
 
     let isFollowed = false;
     if (current_id) {
@@ -235,10 +233,10 @@ export class UsersService {
     query: UserPaginationDto,
   ) {
     const profile = await this.findOne(profile_id);
-    if (!profile) throw new NotFoundException('User is not exist');
+    if (!profile) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
     if (current_user_id) {
       const currentUser = await this.findOne(current_user_id);
-      if (!currentUser) throw new NotFoundException('User is not exist');
+      if (!currentUser) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
     }
 
     const { page, limit } = query;
@@ -289,10 +287,10 @@ export class UsersService {
     query: UserPaginationDto,
   ) {
     const user = await this.findOne(profile_id);
-    if (!user) throw new NotFoundException('User is not exist');
+    if (!user) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
     if (current_user_id) {
       const currentUser = await this.findOne(current_user_id);
-      if (!currentUser) throw new NotFoundException('User is not exist');
+      if (!currentUser) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
     }
 
     const { page, limit } = query;

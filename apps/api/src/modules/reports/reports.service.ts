@@ -9,7 +9,7 @@ import {
   UserRoles,
 } from 'src/generated/prisma/client';
 import { NotificationService } from '../notifications/notification.service';
-import { NotificationMessages } from 'src/common/constants';
+import { NotificationMessages, ErrorMessages } from 'src/common/constants';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -22,7 +22,7 @@ export class ReportsService {
 
   async create(reporter_id: string, dto: CreateReportDto) {
     const user = await this.userService.findOne(reporter_id);
-    if (!user) throw new NotFoundException('User is not found or exist');
+    if (!user) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
 
     const report = await this.prisma.report.create({
       data: {
@@ -64,7 +64,7 @@ export class ReportsService {
 
   async update(id: string, payload: UpdateReportDto) {
     const report = await this.findOne(id);
-    if (!report) throw new NotFoundException('Report is not found or exist');
+    if (!report) throw new NotFoundException(ErrorMessages.REPORT_NOT_FOUND);
 
     return await this.prisma.report.update({
       where: { id },

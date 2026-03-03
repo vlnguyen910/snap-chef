@@ -9,6 +9,7 @@ import { Collection } from 'src/generated/prisma/client';
 import { UsersService } from '../users/users.service';
 import { RecipesService } from '../recipes/recipes.service';
 import { UpdateCollectionDto } from './dto/update-collection';
+import { ErrorMessages } from 'src/common/constants';
 
 @Injectable()
 export class CollectionService {
@@ -32,10 +33,10 @@ export class CollectionService {
 
   async getUserCollection(owner_id: string, current_user_id?: string | null) {
     const owner = await this.userServicer.findOne(owner_id);
-    if (!owner) throw new NotFoundException('User is not exist');
+    if (!owner) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
     if (current_user_id) {
       const currentUser = await this.userServicer.findOne(current_user_id);
-      if (!currentUser) throw new NotFoundException('User is not exist');
+      if (!currentUser) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
     }
 
     const isOwner = owner_id === current_user_id;
@@ -64,23 +65,21 @@ export class CollectionService {
     });
 
     if (!collection)
-      throw new NotFoundException('This collection is not exist');
+      throw new NotFoundException(ErrorMessages.COLLECTION_NOT_FOUND);
 
     if (
       collection &&
       !collection.is_public &&
       current_user_id !== collection.owner_id
     )
-      throw new ForbiddenException(
-        'Collection is not exist or you have no right to see this',
-      );
+      throw new ForbiddenException(ErrorMessages.COLLECTION_FORBIDDEN);
 
     return collection;
   }
 
   async addRecipe(collection_id: string, recipe_id: string, user_id: string) {
     const recipe = await this.recipeService.findOne(recipe_id);
-    if (!recipe) throw new NotFoundException('This recipe is not found');
+    if (!recipe) throw new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND);
 
     const collection = await this.prisma.collection.findUnique({
       where: { id: collection_id },
@@ -91,10 +90,10 @@ export class CollectionService {
       },
     });
 
-    if (!collection) throw new NotFoundException('Collection is not found');
+    if (!collection) throw new NotFoundException(ErrorMessages.COLLECTION_NOT_FOUND);
 
     if (collection.owner_id !== user_id)
-      throw new ForbiddenException('You have no right to edit this!');
+      throw new ForbiddenException(ErrorMessages.NO_RIGHT_EDIT_COLLECTION);
 
     const isRecipeInCollection = collection.recipe.length > 0;
 
@@ -120,10 +119,10 @@ export class CollectionService {
     user_id: string,
   ) {
     const collection = await this.findOne(collection_id, user_id);
-    if (!collection) throw new NotFoundException('Collection is not foudn');
+    if (!collection) throw new NotFoundException(ErrorMessages.COLLECTION_NOT_FOUND);
 
     if (collection.owner_id !== user_id)
-      throw new ForbiddenException('You have no right to edit this');
+      throw new ForbiddenException(ErrorMessages.NO_RIGHT_EDIT_COLLECTION);
 
     return await this.prisma.collection.update({
       where: { id: collection_id },

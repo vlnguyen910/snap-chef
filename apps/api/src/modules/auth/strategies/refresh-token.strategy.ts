@@ -6,6 +6,7 @@ import { TokenPayload } from '../../../common/interfaces';
 import type { ConfigType } from '@nestjs/config';
 import { JwtTokenType } from '../../../common/enums';
 import { RedisService } from 'src/common/redis/redis.service';
+import { ErrorMessages } from 'src/common/constants';
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(
@@ -31,11 +32,11 @@ export class RefreshTokenStrategy extends PassportStrategy(
 
   async validate(payload: TokenPayload) {
     if (payload.type !== JwtTokenType.RefreshToken) {
-      throw new UnauthorizedException('Invalid token type');
+      throw new UnauthorizedException(ErrorMessages.INVALID_TOKEN_TYPE);
     }
 
     if (!payload.jti || typeof payload.jti !== 'string') {
-      throw new UnauthorizedException('Missing or invalid jti');
+      throw new UnauthorizedException(ErrorMessages.MISSING_OR_INVALID_JTI);
     }
 
     // Kiểm tra token có bị blacklist không
@@ -43,7 +44,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
     const isBlacklisted = await this.redisService.getCache(blacklistKey);
 
     if (isBlacklisted) {
-      throw new UnauthorizedException('Token has been revoked');
+      throw new UnauthorizedException(ErrorMessages.TOKEN_REVOKED);
     }
 
     return {
