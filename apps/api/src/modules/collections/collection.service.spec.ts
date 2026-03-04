@@ -7,8 +7,16 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ErrorMessages } from 'src/common/constants';
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
-const mockOwner = { id: 'owner-uuid-1', username: 'owner', email: 'owner@example.com' };
-const mockOtherUser = { id: 'other-uuid-1', username: 'other', email: 'other@example.com' };
+const mockOwner = {
+  id: 'owner-uuid-1',
+  username: 'owner',
+  email: 'owner@example.com',
+};
+const mockOtherUser = {
+  id: 'other-uuid-1',
+  username: 'other',
+  email: 'other@example.com',
+};
 
 const mockRecipe = {
   id: 'recipe-uuid-1',
@@ -93,7 +101,11 @@ describe('CollectionService', () => {
   // Tạo collection mới cho user.
   // ──────────────────────────────────────────────────────────────────────────
   describe('create()', () => {
-    const dto = { name: 'My Favorites', description: 'Best recipes', is_public: true };
+    const dto = {
+      name: 'My Favorites',
+      description: 'Best recipes',
+      is_public: true,
+    };
 
     /**
      * Happy path: tạo collection với owner_id được set từ user_id.
@@ -127,7 +139,11 @@ describe('CollectionService', () => {
     it('should return all collections (including private) when owner views their own', async () => {
       await service.getUserCollection(mockOwner.id, mockOwner.id);
 
-      const call = mockPrismaService.collection.findMany.mock.calls[0][0];
+      const mockCalls = mockPrismaService.collection.findMany.mock.calls;
+      const firstCall = mockCalls[0] as unknown[];
+      const call = firstCall[0] as {
+        where: Record<string, unknown>;
+      };
       expect(call.where).not.toHaveProperty('is_public');
     });
 
@@ -139,7 +155,11 @@ describe('CollectionService', () => {
 
       await service.getUserCollection(mockOwner.id, mockOtherUser.id);
 
-      const call = mockPrismaService.collection.findMany.mock.calls[0][0];
+      const mockCalls = mockPrismaService.collection.findMany.mock.calls;
+      const firstCall = mockCalls[0] as unknown[];
+      const call = firstCall[0] as {
+        where: Record<string, unknown>;
+      };
       expect(call.where).toHaveProperty('is_public', true);
     });
 
@@ -149,7 +169,11 @@ describe('CollectionService', () => {
     it('should return only public collections when not logged in', async () => {
       await service.getUserCollection(mockOwner.id, undefined);
 
-      const call = mockPrismaService.collection.findMany.mock.calls[0][0];
+      const mockCalls = mockPrismaService.collection.findMany.mock.calls;
+      const firstCall = mockCalls[0] as unknown[];
+      const call = firstCall[0] as {
+        where: Record<string, unknown>;
+      };
       expect(call.where).toHaveProperty('is_public', true);
     });
 
@@ -175,7 +199,9 @@ describe('CollectionService', () => {
      * Public collection → bất kỳ ai cũng xem được.
      */
     it('should return public collection for any user', async () => {
-      mockPrismaService.collection.findUnique.mockResolvedValue(mockCollectionWithRecipes);
+      mockPrismaService.collection.findUnique.mockResolvedValue(
+        mockCollectionWithRecipes,
+      );
 
       const result = await service.findOne(mockCollection.id, mockOtherUser.id);
 
@@ -191,7 +217,10 @@ describe('CollectionService', () => {
         recipe: [],
       });
 
-      const result = await service.findOne(mockPrivateCollection.id, mockOwner.id);
+      const result = await service.findOne(
+        mockPrivateCollection.id,
+        mockOwner.id,
+      );
 
       expect(result.is_public).toBe(false);
     });
@@ -205,7 +234,9 @@ describe('CollectionService', () => {
         recipe: [],
       });
 
-      await expect(service.findOne(mockPrivateCollection.id, mockOtherUser.id)).rejects.toThrow(
+      await expect(
+        service.findOne(mockPrivateCollection.id, mockOtherUser.id),
+      ).rejects.toThrow(
         new ForbiddenException(ErrorMessages.COLLECTION_FORBIDDEN),
       );
     });
@@ -228,7 +259,10 @@ describe('CollectionService', () => {
   // ──────────────────────────────────────────────────────────────────────────
   describe('addRecipe()', () => {
     beforeEach(() => {
-      mockRecipesService.findOne.mockResolvedValue({ ...mockRecipe, is_liked: false });
+      mockRecipesService.findOne.mockResolvedValue({
+        ...mockRecipe,
+        is_liked: false,
+      });
       mockPrismaService.collection.update.mockResolvedValue({});
     });
 
@@ -241,7 +275,11 @@ describe('CollectionService', () => {
         recipe: [], // Recipe chưa có
       });
 
-      const result = await service.addRecipe(mockCollection.id, mockRecipe.id, mockOwner.id);
+      const result = await service.addRecipe(
+        mockCollection.id,
+        mockRecipe.id,
+        mockOwner.id,
+      );
 
       expect(result.message).toContain('added to');
       expect(mockPrismaService.collection.update).toHaveBeenCalledWith({
@@ -259,7 +297,11 @@ describe('CollectionService', () => {
         recipe: [{ id: mockRecipe.id }], // Recipe đã có
       });
 
-      const result = await service.addRecipe(mockCollection.id, mockRecipe.id, mockOwner.id);
+      const result = await service.addRecipe(
+        mockCollection.id,
+        mockRecipe.id,
+        mockOwner.id,
+      );
 
       expect(result.message).toContain('removed from');
       expect(mockPrismaService.collection.update).toHaveBeenCalledWith({
@@ -289,7 +331,9 @@ describe('CollectionService', () => {
 
       await expect(
         service.addRecipe('ghost-collection', mockRecipe.id, mockOwner.id),
-      ).rejects.toThrow(new NotFoundException(ErrorMessages.COLLECTION_NOT_FOUND));
+      ).rejects.toThrow(
+        new NotFoundException(ErrorMessages.COLLECTION_NOT_FOUND),
+      );
     });
 
     /**
@@ -303,7 +347,9 @@ describe('CollectionService', () => {
 
       await expect(
         service.addRecipe(mockCollection.id, mockRecipe.id, mockOtherUser.id),
-      ).rejects.toThrow(new ForbiddenException(ErrorMessages.NO_RIGHT_EDIT_COLLECTION));
+      ).rejects.toThrow(
+        new ForbiddenException(ErrorMessages.NO_RIGHT_EDIT_COLLECTION),
+      );
     });
   });
 
@@ -316,7 +362,9 @@ describe('CollectionService', () => {
 
     beforeEach(() => {
       // findOne() → public collection, owner là mockOwner
-      mockPrismaService.collection.findUnique.mockResolvedValue(mockCollectionWithRecipes);
+      mockPrismaService.collection.findUnique.mockResolvedValue(
+        mockCollectionWithRecipes,
+      );
     });
 
     /**
@@ -326,7 +374,11 @@ describe('CollectionService', () => {
       const updatedCollection = { ...mockCollection, ...updateDto };
       mockPrismaService.collection.update.mockResolvedValue(updatedCollection);
 
-      const result = await service.update(mockCollection.id, updateDto, mockOwner.id);
+      const result = await service.update(
+        mockCollection.id,
+        updateDto,
+        mockOwner.id,
+      );
 
       expect(result).toEqual(updatedCollection);
       expect(mockPrismaService.collection.update).toHaveBeenCalledWith({

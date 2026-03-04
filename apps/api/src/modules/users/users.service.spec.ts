@@ -3,16 +3,13 @@ import { UsersService } from './users.service';
 import { PrismaService } from 'src/common/db/prisma.service';
 import { RedisService } from 'src/common/redis/redis.service';
 import { NotificationService } from '../notifications/notification.service';
-import {
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import {
   NotificationType,
   NotificationResourceType,
   UserRoles,
 } from 'src/generated/prisma/client';
-import { ErrorMessages, NotificationMessages } from 'src/common/constants';
+import { ErrorMessages } from 'src/common/constants';
 import { UserPaginationDto } from 'src/common/dto/pagination.dto';
 
 // ─── Mock Data ───────────────────────────────────────────────────────────────
@@ -228,10 +225,16 @@ describe('UsersService', () => {
       const updatedUser = { ...mockUser, username: 'updated-username' };
       mockPrismaService.user.update.mockResolvedValue(updatedUser);
 
-      const result = await service.update(mockUser.id, mockUser.id, updatePayload);
+      const result = await service.update(
+        mockUser.id,
+        mockUser.id,
+        updatePayload,
+      );
 
       expect(result).toEqual(updatedUser);
-      expect(mockRedisService.delCache).toHaveBeenCalledWith(`user:${mockUser.id}`);
+      expect(mockRedisService.delCache).toHaveBeenCalledWith(
+        `user:${mockUser.id}`,
+      );
       expect(mockPrismaService.user.update).toHaveBeenCalledWith({
         where: { id: mockUser.id },
         data: { ...updatePayload },
@@ -269,8 +272,8 @@ describe('UsersService', () => {
     beforeEach(() => {
       // findOne() cho cả 2 user
       mockRedisService.getCache
-        .mockResolvedValueOnce(mockUser)    // currentUser
-        .mockResolvedValueOnce(mockUser2);  // followingUser
+        .mockResolvedValueOnce(mockUser) // currentUser
+        .mockResolvedValueOnce(mockUser2); // followingUser
       mockNotificationService.createNotification.mockResolvedValue(undefined);
     });
 
@@ -328,7 +331,7 @@ describe('UsersService', () => {
     it('should throw NotFoundException if either user is not found', async () => {
       mockRedisService.getCache.mockReset();
       mockRedisService.getCache
-        .mockResolvedValueOnce(null)  // currentUser không tìm thấy
+        .mockResolvedValueOnce(null) // currentUser không tìm thấy
         .mockResolvedValueOnce(null);
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
@@ -491,8 +494,10 @@ describe('UsersService', () => {
       expect(result).toEqual(mockUsers);
       expect(mockPrismaService.user.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({ id: { not: mockUser.id } }),
-        }),
+          where: expect.objectContaining({
+            id: { not: mockUser.id },
+          }) as unknown,
+        }) as unknown,
       );
     });
 
@@ -504,7 +509,11 @@ describe('UsersService', () => {
 
       await service.findAll(query, undefined);
 
-      const callArgs = mockPrismaService.user.findMany.mock.calls[0][0];
+      const mockCalls = mockPrismaService.user.findMany.mock.calls;
+      const firstCall = mockCalls[0] as unknown[];
+      const callArgs = firstCall[0] as {
+        where: { id?: unknown };
+      };
       expect(callArgs.where.id).toBeUndefined();
     });
   });

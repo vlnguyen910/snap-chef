@@ -36,7 +36,8 @@ export class CollectionService {
     if (!owner) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
     if (current_user_id) {
       const currentUser = await this.userServicer.findOne(current_user_id);
-      if (!currentUser) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
+      if (!currentUser)
+        throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
     }
 
     const isOwner = owner_id === current_user_id;
@@ -90,7 +91,8 @@ export class CollectionService {
       },
     });
 
-    if (!collection) throw new NotFoundException(ErrorMessages.COLLECTION_NOT_FOUND);
+    if (!collection)
+      throw new NotFoundException(ErrorMessages.COLLECTION_NOT_FOUND);
 
     if (collection.owner_id !== user_id)
       throw new ForbiddenException(ErrorMessages.NO_RIGHT_EDIT_COLLECTION);
@@ -119,7 +121,8 @@ export class CollectionService {
     user_id: string,
   ) {
     const collection = await this.findOne(collection_id, user_id);
-    if (!collection) throw new NotFoundException(ErrorMessages.COLLECTION_NOT_FOUND);
+    if (!collection)
+      throw new NotFoundException(ErrorMessages.COLLECTION_NOT_FOUND);
 
     if (collection.owner_id !== user_id)
       throw new ForbiddenException(ErrorMessages.NO_RIGHT_EDIT_COLLECTION);

@@ -53,7 +53,8 @@ export class AuthService {
     const user = await this.userService.findByEmail(email);
     if (!user || !user.password)
       throw new UnauthorizedException(ErrorMessages.INVALID_CREDENTIALS);
-    if (!user.is_active) throw new ForbiddenException(ErrorMessages.USER_BANNED);
+    if (!user.is_active)
+      throw new ForbiddenException(ErrorMessages.USER_BANNED);
 
     const isMatchPassword = await argon2.verify(user.password, password);
     if (!isMatchPassword)
@@ -163,9 +164,7 @@ export class AuthService {
           user_id: user.id,
         });
       } else if (oauthAccount.provider_id !== provider_id) {
-        throw new ConflictException(
-          ErrorMessages.GOOGLE_ACCOUNT_CONFLICT,
-        );
+        throw new ConflictException(ErrorMessages.GOOGLE_ACCOUNT_CONFLICT);
       }
     }
 
