@@ -89,6 +89,7 @@ model Recipe {
   likes       Like[]
   comments    Comment[]
   collection  Collection[]
+  categories  Category[]
 
   //Indexes
   @@index([title])
@@ -245,4 +246,16 @@ model Report {
   //Relations
   reporter User  @relation("UserReports", fields: [reporter_id], references: [id])
   handler  User? @relation("UserHandles", fields: [handler_id], references: [id])
+}
+
+model Category {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique
+  slug       String   @unique
+  is_active  Boolean
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  //Relations
+  recipe Recipe[]
 }
