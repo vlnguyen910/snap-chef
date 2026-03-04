@@ -20,6 +20,7 @@ import { CollectionModule } from './modules/collections/collection.module';
 import { AppController } from './app.controller';
 import { AdminModule } from './modules/admin/admin.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { CategoriesModule } from './modules/categories/categories.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     CollectionModule,
     AdminModule,
     ReportsModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [PrismaService],
