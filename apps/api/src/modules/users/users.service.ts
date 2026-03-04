@@ -236,7 +236,8 @@ export class UsersService {
     if (!profile) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
     if (current_user_id) {
       const currentUser = await this.findOne(current_user_id);
-      if (!currentUser) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
+      if (!currentUser)
+        throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
     }
 
     const { page, limit } = query;
@@ -290,7 +291,8 @@ export class UsersService {
     if (!user) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
     if (current_user_id) {
       const currentUser = await this.findOne(current_user_id);
-      if (!currentUser) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
+      if (!currentUser)
+        throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
     }
 
     const { page, limit } = query;

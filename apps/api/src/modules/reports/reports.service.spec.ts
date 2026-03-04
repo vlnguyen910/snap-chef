@@ -355,9 +355,9 @@ describe('ReportsService', () => {
     it('should throw NotFoundException if report is not found', async () => {
       prisma.report.findUnique.mockResolvedValue(null);
 
-      await expect(service.update('non-existent-id', updateDto)).rejects.toThrow(
-        new NotFoundException(ErrorMessages.REPORT_NOT_FOUND),
-      );
+      await expect(
+        service.update('non-existent-id', updateDto),
+      ).rejects.toThrow(new NotFoundException(ErrorMessages.REPORT_NOT_FOUND));
     });
   });
 });

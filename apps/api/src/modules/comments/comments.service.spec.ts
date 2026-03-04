@@ -142,9 +142,9 @@ describe('CommentsService', () => {
     it('should throw NotFoundException if recipe does not exist', async () => {
       mockPrismaService.recipe.findUnique.mockResolvedValue(null);
 
-      await expect(service.create(mockUser.id, 'ghost-recipe', dto)).rejects.toThrow(
-        new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND),
-      );
+      await expect(
+        service.create(mockUser.id, 'ghost-recipe', dto),
+      ).rejects.toThrow(new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND));
       expect(mockPrismaService.comment.create).not.toHaveBeenCalled();
     });
 
@@ -154,9 +154,9 @@ describe('CommentsService', () => {
     it('should throw NotFoundException if user does not exist', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.create('ghost-user', mockRecipe.id, dto)).rejects.toThrow(
-        new NotFoundException(ErrorMessages.USER_NOT_FOUND),
-      );
+      await expect(
+        service.create('ghost-user', mockRecipe.id, dto),
+      ).rejects.toThrow(new NotFoundException(ErrorMessages.USER_NOT_FOUND));
       expect(mockPrismaService.comment.create).not.toHaveBeenCalled();
     });
   });
@@ -207,7 +207,10 @@ describe('CommentsService', () => {
       const mockComments = [mockComment, { ...mockComment, id: 2 }];
       mockPrismaService.comment.findMany.mockResolvedValue(mockComments);
 
-      const result = await service.findAllCommentsOfRecipe(mockRecipe.id, query);
+      const result = await service.findAllCommentsOfRecipe(
+        mockRecipe.id,
+        query,
+      );
 
       expect(result).toEqual(mockComments);
       expect(mockPrismaService.comment.findMany).toHaveBeenCalledWith(
@@ -225,7 +228,10 @@ describe('CommentsService', () => {
     it('should apply correct skip for pagination', async () => {
       mockPrismaService.comment.findMany.mockResolvedValue([]);
 
-      await service.findAllCommentsOfRecipe(mockRecipe.id, { page: 2, limit: 5 });
+      await service.findAllCommentsOfRecipe(mockRecipe.id, {
+        page: 2,
+        limit: 5,
+      });
 
       expect(mockPrismaService.comment.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ skip: 5, take: 5 }),
@@ -238,7 +244,10 @@ describe('CommentsService', () => {
     it('should return empty array when no comments exist', async () => {
       mockPrismaService.comment.findMany.mockResolvedValue([]);
 
-      const result = await service.findAllCommentsOfRecipe(mockRecipe.id, query);
+      const result = await service.findAllCommentsOfRecipe(
+        mockRecipe.id,
+        query,
+      );
 
       expect(result).toEqual([]);
     });
@@ -261,7 +270,9 @@ describe('CommentsService', () => {
       const result = await service.deleteComment(1, mockUser.id);
 
       expect(result).toEqual({ message: 'Comment deleted' });
-      expect(mockPrismaService.comment.delete).toHaveBeenCalledWith({ where: { id: 1 } });
+      expect(mockPrismaService.comment.delete).toHaveBeenCalledWith({
+        where: { id: 1 },
+      });
     });
 
     /**
@@ -304,7 +315,10 @@ describe('CommentsService', () => {
 
     beforeEach(() => {
       mockPrismaService.comment.findUnique.mockResolvedValue(mockComment);
-      mockPrismaService.comment.update.mockResolvedValue({ ...mockComment, ...updateDto });
+      mockPrismaService.comment.update.mockResolvedValue({
+        ...mockComment,
+        ...updateDto,
+      });
     });
 
     /**
@@ -326,9 +340,9 @@ describe('CommentsService', () => {
     it('should throw NotFoundException if comment does not exist', async () => {
       mockPrismaService.comment.findUnique.mockResolvedValue(null);
 
-      await expect(service.updateComment(999, mockUser.id, updateDto)).rejects.toThrow(
-        new NotFoundException(ErrorMessages.COMMENT_NOT_FOUND),
-      );
+      await expect(
+        service.updateComment(999, mockUser.id, updateDto),
+      ).rejects.toThrow(new NotFoundException(ErrorMessages.COMMENT_NOT_FOUND));
     });
 
     /**
@@ -336,7 +350,9 @@ describe('CommentsService', () => {
      * Khác deleteComment: recipe author KHÔNG được sửa comment của người khác.
      */
     it('should throw UnauthorizedException if user is not the commenter', async () => {
-      await expect(service.updateComment(1, 'other-user', updateDto)).rejects.toThrow(
+      await expect(
+        service.updateComment(1, 'other-user', updateDto),
+      ).rejects.toThrow(
         new UnauthorizedException(ErrorMessages.NO_RIGHT_UPDATE_COMMENT),
       );
     });
