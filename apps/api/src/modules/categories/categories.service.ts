@@ -1,18 +1,59 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { PrismaService } from 'src/common/db/prisma.service';
+import { generateSlug } from 'src/common/utils/slugify.util';
+import { Category, UserRoles } from 'src/generated/prisma/client';
 
 @Injectable()
 export class CategoriesService {
-  create(createCategoryDto: CreateCategoryDto) {
-    return 'This action adds a new category';
+  constructor(
+    private readonly prisma: PrismaService,
+  ) { }
+
+  async create(payload: CreateCategoryDto) {
+    const slug = await generateSlug(payload.name);
+
+    const slugExisted = await this.prisma.category.findFirst({
+      where: { slug },
+    })
+    if (slugExisted)
+      throw new ConflictException('This category already created');
+
+    return await this.prisma.category.create({
+      data: {
+        ...payload,
+        slug
+      }
+    })
   }
 
-  findAll() {
-    return `This action returns all categories`;
+  async findAll(isActiveOnly: boolean = true): Promise<Category[]> {
+    return await this.prisma.category.findMany({
+      where: isActiveOnly ? { is_active: true } : undefined,
+      orderBy: { name: 'asc' },
+    })
   }
 
-  update(id: number, updateCategoryDto: UpdateCategoryDto) {
-    return `This action updates a #${id} category`;
+  async update(id: number, payload: UpdateCategoryDto): Promise<Category> {
+    const category = await this.prisma.category.findUnique({
+      where: { id },
+    })
+    if (!category)
+      throw new NotFoundException('Category not found');
+
+    if (payload.name) {
+      const newSlug = await generateSlug(payload.name);
+      const existedSlug = await this.prisma.category.findFirst({
+        where: { slug: newSlug },
+      })
+      if (existedSlug)
+        throw new ConflictException('Category is duplicated');
+    }
+
+    return await this.prisma.category.update({
+      where: { id },
+      data: { ...payload },
+    })
   }
 }
