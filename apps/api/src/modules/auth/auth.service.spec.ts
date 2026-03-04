@@ -15,6 +15,7 @@ import {
 } from '@nestjs/common';
 import { OAuthProvider, UserRoles } from 'src/generated/prisma/client';
 import { ErrorMessages } from 'src/common/constants';
+import { JwtTokenType } from 'src/common/enums';
 
 // ─── Mock argon2 ────────────────────────────────────────────────────────────
 // argon2 is a native addon module. jest.mock() factory is HOISTED to the top
@@ -28,7 +29,10 @@ jest.mock('argon2', () => {
 });
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const argon2Mocked = require('argon2') as { verify: jest.Mock; hash: jest.Mock };
+const argon2Mocked = require('argon2') as {
+  verify: jest.Mock;
+  hash: jest.Mock;
+};
 
 // ─── Mock uuid ───────────────────────────────────────────────────────────────
 // Đảm bảo token/jti luôn là giá trị cố định để dễ assert
@@ -128,7 +132,10 @@ describe('AuthService', () => {
   // Xử lý đăng nhập bằng email/password. Trả về access_token và refresh_token.
   // ──────────────────────────────────────────────────────────────────────────
   describe('login()', () => {
-    const loginDto = { email: 'test@example.com', password: 'correct-password' };
+    const loginDto = {
+      email: 'test@example.com',
+      password: 'correct-password',
+    };
 
     beforeEach(() => {
       mockUsersService.findByEmail.mockResolvedValue(mockActiveUser);
@@ -221,7 +228,10 @@ describe('AuthService', () => {
 
     beforeEach(() => {
       mockUsersService.findByEmail.mockResolvedValue(null);
-      mockUsersService.create.mockResolvedValue({ ...mockActiveUser, id: 'new-user-id' });
+      mockUsersService.create.mockResolvedValue({
+        ...mockActiveUser,
+        id: 'new-user-id',
+      });
       argon2Mocked.hash.mockResolvedValue('hashed-password');
 
       mockRedisService.setCache.mockResolvedValue(undefined);
@@ -272,7 +282,10 @@ describe('AuthService', () => {
 
     beforeEach(() => {
       mockRedisService.getCache.mockResolvedValue('user-uuid-1');
-      mockUsersService.update.mockResolvedValue({ ...mockActiveUser, is_verified: true });
+      mockUsersService.update.mockResolvedValue({
+        ...mockActiveUser,
+        is_verified: true,
+      });
       mockRedisService.delCache.mockResolvedValue(undefined);
     });
 
@@ -289,7 +302,9 @@ describe('AuthService', () => {
         'user-uuid-1',
         { is_verified: true },
       );
-      expect(mockRedisService.delCache).toHaveBeenCalledWith('verify_email:valid-token');
+      expect(mockRedisService.delCache).toHaveBeenCalledWith(
+        'verify_email:valid-token',
+      );
     });
 
     /**
@@ -317,7 +332,7 @@ describe('AuthService', () => {
       email: 'test@example.com',
       role: UserRoles.USER,
       is_verified: true,
-      type: 'refresh' as any,
+      type: JwtTokenType.RefreshToken,
     };
 
     /**
@@ -368,7 +383,9 @@ describe('AuthService', () => {
     it('should cache reset token and send reset email if user exists', async () => {
       mockUsersService.findByEmail.mockResolvedValue(mockActiveUser);
 
-      const result = await service.forgetPassword({ email: 'test@example.com' });
+      const result = await service.forgetPassword({
+        email: 'test@example.com',
+      });
 
       expect(result.message).toBeDefined();
       expect(mockRedisService.setCache).toHaveBeenCalledWith(
@@ -386,7 +403,9 @@ describe('AuthService', () => {
     it('should return same message even if user does not exist (security)', async () => {
       mockUsersService.findByEmail.mockResolvedValue(null);
 
-      const result = await service.forgetPassword({ email: 'ghost@example.com' });
+      const result = await service.forgetPassword({
+        email: 'ghost@example.com',
+      });
 
       expect(result.message).toBeDefined();
       expect(mockMailService.sendResetPassword).not.toHaveBeenCalled();
@@ -415,7 +434,9 @@ describe('AuthService', () => {
         password: 'new-password',
       });
 
-      expect(result).toEqual({ message: 'Password has been reset successfully' });
+      expect(result).toEqual({
+        message: 'Password has been reset successfully',
+      });
       expect(mockUsersService.update).toHaveBeenCalledWith(
         'user-uuid-1',
         'user-uuid-1',
@@ -435,7 +456,9 @@ describe('AuthService', () => {
 
       await expect(
         service.resetPassword({ token: 'expired-token', password: 'new-pass' }),
-      ).rejects.toThrow(new BadRequestException(ErrorMessages.INVALID_OR_EXPIRED_TOKEN));
+      ).rejects.toThrow(
+        new BadRequestException(ErrorMessages.INVALID_OR_EXPIRED_TOKEN),
+      );
     });
   });
 
@@ -489,7 +512,10 @@ describe('AuthService', () => {
      */
     it('should create new user and oauth account if user does not exist', async () => {
       mockUsersService.findByEmail.mockResolvedValue(null);
-      mockUsersService.create.mockResolvedValue({ ...mockActiveUser, id: 'new-google-user' });
+      mockUsersService.create.mockResolvedValue({
+        ...mockActiveUser,
+        id: 'new-google-user',
+      });
       mockOauthService.createOauthAccount.mockResolvedValue(undefined);
 
       const result = await service.googleLogin({ user: mockGoogleUser });
@@ -541,7 +567,9 @@ describe('AuthService', () => {
         provider_id: 'different-google-id',
       });
 
-      await expect(service.googleLogin({ user: mockGoogleUser })).rejects.toThrow(
+      await expect(
+        service.googleLogin({ user: mockGoogleUser }),
+      ).rejects.toThrow(
         new ConflictException(ErrorMessages.GOOGLE_ACCOUNT_CONFLICT),
       );
     });
@@ -551,9 +579,13 @@ describe('AuthService', () => {
      * Trả về NotFoundException.
      */
     it('should throw NotFoundException if google user is missing from request', async () => {
-      await expect(service.googleLogin({ user: null as any })).rejects.toThrow(
-        new NotFoundException(ErrorMessages.NO_GOOGLE_USER),
-      );
+      await expect(
+        service.googleLogin({
+          user: null as unknown as Parameters<
+            typeof service.googleLogin
+          >[0]['user'],
+        }),
+      ).rejects.toThrow(new NotFoundException(ErrorMessages.NO_GOOGLE_USER));
     });
   });
 });

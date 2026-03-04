@@ -12,7 +12,10 @@ import {
 } from '@nestjs/common';
 import { RecipeStatus } from 'src/generated/prisma/enums';
 import { ErrorMessages } from 'src/common/constants';
-import { NotificationType, NotificationResourceType } from 'src/generated/prisma/enums';
+import {
+  NotificationType,
+  NotificationResourceType,
+} from 'src/generated/prisma/enums';
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 const mockUser = {
@@ -46,10 +49,29 @@ const mockRecipeWithCount = {
 
 // ─── Mock Dependencies ────────────────────────────────────────────────────────
 
-// Mock prisma.$transaction để gọi callback ngay lập tức với chính mockPrismaService
-const mockTransaction = jest.fn((cb: (tx: any) => Promise<any>) => cb(mockPrismaService));
+// Strongly-typed shape for our Prisma mock so downstream mock.calls accesses
+// are not `any` and satisfy the ESLint `no-unsafe-*` rules.
+type MockPrismaService = {
+  $transaction: jest.Mock;
+  recipe: {
+    create: jest.Mock;
+    findMany: jest.Mock;
+    findUnique: jest.Mock;
+    update: jest.Mock;
+  };
+  recipeIngredient: { create: jest.Mock; deleteMany: jest.Mock };
+  step: { deleteMany: jest.Mock; createMany: jest.Mock };
+  like: { findUnique: jest.Mock; create: jest.Mock; delete: jest.Mock };
+};
 
-const mockPrismaService = {
+// Mock prisma.$transaction để gọi callback ngay lập tức với chính mockPrismaService
+const mockTransaction = jest.fn(
+  (cb: (tx: MockPrismaService) => Promise<unknown>) =>
+    // We use a forward reference via a getter; the object itself is defined below.
+    cb(mockPrismaService),
+);
+
+const mockPrismaService: MockPrismaService = {
   $transaction: mockTransaction,
   recipe: {
     create: jest.fn(),
@@ -136,14 +158,16 @@ describe('RecipesService', () => {
       cooking_time: 20,
       servings: 2,
       thumbnail_url: 'https://example.com/thumb.jpg',
-      steps: [{ order_index: 1, content: 'Boil water', image_url: null }],
-      ingredients: [{ name: 'Pasta', quantity: '200g', unit: 'g' }],
+      steps: [{ order_index: 1, content: 'Boil water' }],
+      ingredients: [{ name: 'Pasta', quantity: 200, unit: 'g' }],
     };
 
     beforeEach(() => {
       mockUsersService.findOne.mockResolvedValue(mockAuthor);
       mockPrismaService.recipe.create.mockResolvedValue(mockRecipe);
-      mockIngredientsService.upsertByName.mockResolvedValue({ id: 'ingredient-uuid-1' });
+      mockIngredientsService.upsertByName.mockResolvedValue({
+        id: 'ingredient-uuid-1',
+      });
       mockPrismaService.recipeIngredient.create.mockResolvedValue({});
     });
 
@@ -188,10 +212,12 @@ describe('RecipesService', () => {
     it('should throw BadRequestException if order_index does not start from 1', async () => {
       const dtoWrongStart = {
         ...validDto,
-        steps: [{ order_index: 2, content: 'Step 2', image_url: null }],
+        steps: [{ order_index: 2, content: 'Step 2' }],
       };
 
-      await expect(service.create(mockAuthor.id, dtoWrongStart)).rejects.toThrow(
+      await expect(
+        service.create(mockAuthor.id, dtoWrongStart),
+      ).rejects.toThrow(
         new BadRequestException(ErrorMessages.ORDER_INDEX_START_FROM_1),
       );
     });
@@ -203,12 +229,14 @@ describe('RecipesService', () => {
       const dtoDuplicates = {
         ...validDto,
         steps: [
-          { order_index: 1, content: 'Step 1', image_url: null },
-          { order_index: 1, content: 'Duplicate', image_url: null },
+          { order_index: 1, content: 'Step 1' },
+          { order_index: 1, content: 'Duplicate' },
         ],
       };
 
-      await expect(service.create(mockAuthor.id, dtoDuplicates)).rejects.toThrow(
+      await expect(
+        service.create(mockAuthor.id, dtoDuplicates),
+      ).rejects.toThrow(
         new BadRequestException(ErrorMessages.DUPLICATE_ORDER_INDEX),
       );
     });
@@ -220,8 +248,8 @@ describe('RecipesService', () => {
       const dtoGap = {
         ...validDto,
         steps: [
-          { order_index: 1, content: 'Step 1', image_url: null },
-          { order_index: 3, content: 'Step 3', image_url: null },
+          { order_index: 1, content: 'Step 1' },
+          { order_index: 3, content: 'Step 3' },
         ],
       };
 
@@ -242,7 +270,9 @@ describe('RecipesService', () => {
      * Trả về danh sách recipe với comments_count và likes_count được map từ _count.
      */
     it('should return mapped recipes with counts', async () => {
-      mockPrismaService.recipe.findMany.mockResolvedValue([mockRecipeWithCount]);
+      mockPrismaService.recipe.findMany.mockResolvedValue([
+        mockRecipeWithCount,
+      ]);
 
       const result = await service.findAll(params);
 
@@ -273,9 +303,14 @@ describe('RecipesService', () => {
 
       await service.findAll({ ...params, search: 'pasta' });
 
-      const call = mockPrismaService.recipe.findMany.mock.calls[0][0];
+      const mockCalls = mockPrismaService.recipe.findMany.mock.calls;
+      const firstCall = mockCalls[0] as unknown[];
+      const call = firstCall[0] as {
+        where: { OR?: unknown[]; status?: unknown };
+      };
       expect(call.where.OR).toBeDefined();
-      expect(call.where.OR[0]).toMatchObject({
+
+      expect(call.where.OR![0]).toMatchObject({
         title: { contains: 'pasta', mode: 'insensitive' },
       });
     });
@@ -321,7 +356,9 @@ describe('RecipesService', () => {
      */
     it('should fetch from DB and cache when cache is empty', async () => {
       mockRedisService.getCache.mockResolvedValue(null);
-      mockPrismaService.recipe.findUnique.mockResolvedValue(mockRecipeWithCount);
+      mockPrismaService.recipe.findUnique.mockResolvedValue(
+        mockRecipeWithCount,
+      );
       mockPrismaService.like.findUnique.mockResolvedValue(null);
 
       await service.findOne(mockRecipe.id);
@@ -351,7 +388,9 @@ describe('RecipesService', () => {
      */
     it('should include is_liked=true if user has liked the recipe', async () => {
       mockRedisService.getCache.mockResolvedValue(recipeData);
-      mockPrismaService.like.findUnique.mockResolvedValue({ user_id: mockUser.id });
+      mockPrismaService.like.findUnique.mockResolvedValue({
+        user_id: mockUser.id,
+      });
 
       const result = await service.findOne(mockRecipe.id, mockUser.id);
 
@@ -364,7 +403,12 @@ describe('RecipesService', () => {
   // Cập nhật recipe trong transaction. Kiểm tra quyền author.
   // ──────────────────────────────────────────────────────────────────────────
   describe('update()', () => {
-    const recipeData = { ...mockRecipe, comments_count: 0, likes_count: 0, is_liked: false };
+    const recipeData = {
+      ...mockRecipe,
+      comments_count: 0,
+      likes_count: 0,
+      is_liked: false,
+    };
 
     const updatedRecipe = {
       ...mockRecipe,
@@ -386,14 +430,14 @@ describe('RecipesService', () => {
      * Cập nhật scalar fields (title, description...) thành công.
      */
     it('should update scalar fields and return updated recipe', async () => {
-      const result = await service.update(
-        mockRecipe.id,
-        mockAuthor.id,
-        { title: 'Updated Title' },
-      );
+      const result = await service.update(mockRecipe.id, mockAuthor.id, {
+        title: 'Updated Title',
+      });
 
       expect(result).toEqual(updatedRecipe);
-      expect(mockRedisService.delCache).toHaveBeenCalledWith(`recipe:${mockRecipe.id}`);
+      expect(mockRedisService.delCache).toHaveBeenCalledWith(
+        `recipe:${mockRecipe.id}`,
+      );
     });
 
     /**
@@ -405,10 +449,12 @@ describe('RecipesService', () => {
       mockPrismaService.recipeIngredient.create.mockResolvedValue({});
 
       await service.update(mockRecipe.id, mockAuthor.id, {
-        ingredients: [{ name: 'Tomato', quantity: '2', unit: 'pcs' }],
+        ingredients: [{ name: 'Tomato', quantity: 2, unit: 'pcs' }],
       });
 
-      expect(mockPrismaService.recipeIngredient.deleteMany).toHaveBeenCalledWith({
+      expect(
+        mockPrismaService.recipeIngredient.deleteMany,
+      ).toHaveBeenCalledWith({
         where: { recipe_id: mockRecipe.id },
       });
       expect(mockIngredientsService.upsertByName).toHaveBeenCalledTimes(1);
@@ -422,7 +468,7 @@ describe('RecipesService', () => {
       mockPrismaService.step.createMany.mockResolvedValue({ count: 1 });
 
       await service.update(mockRecipe.id, mockAuthor.id, {
-        steps: [{ order_index: 1, content: 'New step', image_url: null }],
+        steps: [{ order_index: 1, content: 'New step' }],
       });
 
       expect(mockPrismaService.step.deleteMany).toHaveBeenCalledWith({
@@ -503,7 +549,9 @@ describe('RecipesService', () => {
      * User đã like → xóa like (unlike) và trả về is_liked=false. Không gửi notification.
      */
     it('should delete like and return is_liked=false (unlike)', async () => {
-      mockPrismaService.like.findUnique.mockResolvedValue({ user_id: mockUser.id });
+      mockPrismaService.like.findUnique.mockResolvedValue({
+        user_id: mockUser.id,
+      });
       mockPrismaService.like.delete.mockResolvedValue({});
 
       const result = await service.likeRecipe(mockUser.id, mockRecipe.id);
@@ -519,9 +567,9 @@ describe('RecipesService', () => {
     it('should throw BadRequestException if user does not exist', async () => {
       mockUsersService.findOne.mockResolvedValue(null);
 
-      await expect(service.likeRecipe('ghost-id', mockRecipe.id)).rejects.toThrow(
-        new BadRequestException(ErrorMessages.USER_NOT_FOUND),
-      );
+      await expect(
+        service.likeRecipe('ghost-id', mockRecipe.id),
+      ).rejects.toThrow(new BadRequestException(ErrorMessages.USER_NOT_FOUND));
     });
 
     /**
@@ -530,9 +578,9 @@ describe('RecipesService', () => {
     it('should throw NotFoundException if recipe does not exist', async () => {
       mockPrismaService.recipe.findUnique.mockResolvedValue(null);
 
-      await expect(service.likeRecipe(mockUser.id, 'ghost-recipe')).rejects.toThrow(
-        new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND),
-      );
+      await expect(
+        service.likeRecipe(mockUser.id, 'ghost-recipe'),
+      ).rejects.toThrow(new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND));
     });
 
     /**
@@ -545,7 +593,9 @@ describe('RecipesService', () => {
       });
       mockPrismaService.like.findUnique.mockResolvedValue(null);
 
-      await expect(service.likeRecipe(mockUser.id, mockRecipe.id)).rejects.toThrow(
+      await expect(
+        service.likeRecipe(mockUser.id, mockRecipe.id),
+      ).rejects.toThrow(
         new BadRequestException(ErrorMessages.CANNOT_LIKE_OWN_RECIPE),
       );
     });
@@ -560,7 +610,9 @@ describe('RecipesService', () => {
      * Trả về danh sách recipe với comments_count và likes_count được map.
      */
     it('should return all recipes for a user with mapped counts', async () => {
-      mockPrismaService.recipe.findMany.mockResolvedValue([mockRecipeWithCount]);
+      mockPrismaService.recipe.findMany.mockResolvedValue([
+        mockRecipeWithCount,
+      ]);
 
       const result = await service.getUserRecipes(mockAuthor.id);
 

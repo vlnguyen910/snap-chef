@@ -138,16 +138,22 @@ describe('NotificationService', () => {
      * Nếu Prisma throw → service re-throw (không nuốt lỗi).
      */
     it('should propagate error if DB operation fails', async () => {
-      mockPrismaService.notification.create.mockRejectedValue(new Error('DB Error'));
+      mockPrismaService.notification.create.mockRejectedValue(
+        new Error('DB Error'),
+      );
 
-      await expect(service.createNotification(createDto)).rejects.toThrow('DB Error');
+      await expect(service.createNotification(createDto)).rejects.toThrow(
+        'DB Error',
+      );
     });
 
     /**
      * Nếu Prisma throw → WebSocket không được gọi.
      */
     it('should not send WebSocket event if DB operation fails', async () => {
-      mockPrismaService.notification.create.mockRejectedValue(new Error('DB Error'));
+      mockPrismaService.notification.create.mockRejectedValue(
+        new Error('DB Error'),
+      );
 
       await expect(service.createNotification(createDto)).rejects.toThrow();
       expect(mockNotificationGateway.sendToUser).not.toHaveBeenCalled();
@@ -163,7 +169,9 @@ describe('NotificationService', () => {
      * Trả về danh sách notifications với sender info, sắp xếp theo created_at desc.
      */
     it('should return notifications for a user ordered by newest first', async () => {
-      mockPrismaService.notification.findMany.mockResolvedValue([mockNotification]);
+      mockPrismaService.notification.findMany.mockResolvedValue([
+        mockNotification,
+      ]);
 
       const result = await service.getNotifications('user-uuid-1');
 
@@ -261,7 +269,7 @@ describe('NotificationService', () => {
       expect(mockPrismaService.notification.deleteMany).toHaveBeenCalledWith({
         where: {
           created_at: {
-            lte: expect.any(Date),
+            lte: expect.any(Date) as unknown,
           },
         },
       });

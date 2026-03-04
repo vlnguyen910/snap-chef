@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { IngredientsService } from './ingredients.service';
 import { PrismaService } from 'src/common/db/prisma.service';
+import { Prisma } from 'src/generated/prisma/client';
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 const mockIngredient = {
@@ -72,7 +73,10 @@ describe('IngredientsService', () => {
      * Tên chỉ có chữ thường → không thay đổi.
      */
     it('should normalize uppercase names to lowercase', async () => {
-      mockPrismaService.ingredient.create.mockResolvedValue({ ...mockIngredient, name: 'basil' });
+      mockPrismaService.ingredient.create.mockResolvedValue({
+        ...mockIngredient,
+        name: 'basil',
+      });
 
       await service.create({ name: 'BASIL' });
 
@@ -148,7 +152,10 @@ describe('IngredientsService', () => {
         },
       };
 
-      const result = await service.upsertByName('garlic', mockTx as any);
+      const result = await service.upsertByName(
+        'garlic',
+        mockTx as unknown as Prisma.TransactionClient,
+      );
 
       expect(result).toEqual(mockIngredient);
       // Phải dùng tx.ingredient.upsert, không phải this.prisma.ingredient.upsert
