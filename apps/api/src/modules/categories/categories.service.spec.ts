@@ -12,7 +12,6 @@ jest.mock('src/common/utils/slugify.util', () => ({
 
 describe('CategoriesService', () => {
   let service: CategoriesService;
-  let prismaService: PrismaService;
 
   const mockPrismaService = {
     category: {
@@ -43,8 +42,7 @@ describe('CategoriesService', () => {
     }).compile();
 
     service = module.get<CategoriesService>(CategoriesService);
-    prismaService = module.get<PrismaService>(PrismaService);
-    
+
     jest.clearAllMocks();
   });
 
@@ -58,15 +56,21 @@ describe('CategoriesService', () => {
     it('should successfully create a new category', async () => {
       const payload = { name: 'Test Category', is_active: true };
       const slug = 'test-category';
-      
+
       (slugifyUtil.generateSlug as jest.Mock).mockResolvedValue(slug);
       mockPrismaService.category.findFirst.mockResolvedValue(null);
-      mockPrismaService.category.create.mockResolvedValue({ ...mockCategory, ...payload, slug });
+      mockPrismaService.category.create.mockResolvedValue({
+        ...mockCategory,
+        ...payload,
+        slug,
+      });
 
       const result = await service.create(payload);
 
       expect(slugifyUtil.generateSlug).toHaveBeenCalledWith(payload.name);
-      expect(mockPrismaService.category.findFirst).toHaveBeenCalledWith({ where: { slug } });
+      expect(mockPrismaService.category.findFirst).toHaveBeenCalledWith({
+        where: { slug },
+      });
       expect(mockPrismaService.category.create).toHaveBeenCalledWith({
         data: { ...payload, slug },
       });
@@ -83,7 +87,7 @@ describe('CategoriesService', () => {
       await expect(service.create(payload)).rejects.toThrow(
         new ConflictException(ErrorMessages.CATEGORY_ALREADY_EXISTS),
       );
-      
+
       expect(mockPrismaService.category.create).not.toHaveBeenCalled();
     });
   });
@@ -117,7 +121,7 @@ describe('CategoriesService', () => {
   describe('update', () => {
     const updatePayload = { is_active: false };
     const updatePayloadWithName = { name: 'Updated Category' };
-    
+
     it('should throw NotFoundException if category does not exist', async () => {
       mockPrismaService.category.findUnique.mockResolvedValue(null);
 
@@ -129,7 +133,10 @@ describe('CategoriesService', () => {
 
     it('should successfully update a category without name payload', async () => {
       mockPrismaService.category.findUnique.mockResolvedValue(mockCategory);
-      mockPrismaService.category.update.mockResolvedValue({ ...mockCategory, ...updatePayload });
+      mockPrismaService.category.update.mockResolvedValue({
+        ...mockCategory,
+        ...updatePayload,
+      });
 
       const result = await service.update(mockCategory.id, updatePayload);
 
@@ -144,31 +151,51 @@ describe('CategoriesService', () => {
 
     it('should successfully update a category with new name and slug', async () => {
       const newSlug = 'updated-category';
-      
+
       mockPrismaService.category.findUnique.mockResolvedValue(mockCategory);
       (slugifyUtil.generateSlug as jest.Mock).mockResolvedValue(newSlug);
-      mockPrismaService.category.findFirst.mockResolvedValue(null); // Slug is available
-      mockPrismaService.category.update.mockResolvedValue({ ...mockCategory, ...updatePayloadWithName, slug: newSlug });
+      mockPrismaService.category.findFirst.mockResolvedValue(null);
+      mockPrismaService.category.update.mockResolvedValue({
+        ...mockCategory,
+        ...updatePayloadWithName,
+        slug: newSlug,
+      });
 
-      const result = await service.update(mockCategory.id, updatePayloadWithName);
+      const result = await service.update(
+        mockCategory.id,
+        updatePayloadWithName,
+      );
 
-      expect(slugifyUtil.generateSlug).toHaveBeenCalledWith(updatePayloadWithName.name);
-      expect(mockPrismaService.category.findFirst).toHaveBeenCalledWith({ where: { slug: newSlug } });
+      expect(slugifyUtil.generateSlug).toHaveBeenCalledWith(
+        updatePayloadWithName.name,
+      );
+      expect(mockPrismaService.category.findFirst).toHaveBeenCalledWith({
+        where: { slug: newSlug },
+      });
       expect(mockPrismaService.category.update).toHaveBeenCalledWith({
         where: { id: mockCategory.id },
         data: { ...updatePayloadWithName },
       });
-      expect(result).toEqual({ ...mockCategory, ...updatePayloadWithName, slug: newSlug });
+      expect(result).toEqual({
+        ...mockCategory,
+        ...updatePayloadWithName,
+        slug: newSlug,
+      });
     });
 
     it('should throw ConflictException if new name generates a duplicate slug', async () => {
       const newSlug = 'updated-category';
-      
+
       mockPrismaService.category.findUnique.mockResolvedValue(mockCategory);
       (slugifyUtil.generateSlug as jest.Mock).mockResolvedValue(newSlug);
-      mockPrismaService.category.findFirst.mockResolvedValue({ id: 2, slug: newSlug }); // Slug already used
+      mockPrismaService.category.findFirst.mockResolvedValue({
+        id: 2,
+        slug: newSlug,
+      }); // Slug already used
 
-      await expect(service.update(mockCategory.id, updatePayloadWithName)).rejects.toThrow(
+      await expect(
+        service.update(mockCategory.id, updatePayloadWithName),
+      ).rejects.toThrow(
         new ConflictException(ErrorMessages.CATEGORY_DUPLICATED),
       );
       expect(mockPrismaService.category.update).not.toHaveBeenCalled();

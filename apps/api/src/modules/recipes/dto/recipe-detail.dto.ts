@@ -1,4 +1,10 @@
-import { Recipe, Step, Ingredient, User } from 'src/generated/prisma/client';
+import {
+  Recipe,
+  Step,
+  Ingredient,
+  User,
+  Category,
+} from 'src/generated/prisma/client';
 
 export type RecipeDetail = Pick<
   Recipe,
@@ -17,6 +23,7 @@ export type RecipeDetail = Pick<
     ingredient: Pick<Ingredient, 'name'>;
   }[];
   steps: Pick<Step, 'order_index' | 'image_url' | 'content'>[];
+  categories: Pick<Category, 'id' | 'name' | 'slug'>[];
   comments_count: number;
   likes_count: number;
   is_liked: boolean;
