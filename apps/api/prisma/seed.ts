@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { PrismaClient, UserRoles } from '../src/generated/prisma/client';
-import type { User, Recipe } from '../src/generated/prisma/client';
+import type { User, Recipe, Category } from '../src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg'
 
 // 1. Setup the Postgres driver
@@ -21,6 +21,7 @@ async function main() {
   await prisma.step.deleteMany();
   await prisma.ingredient.deleteMany();
   await prisma.recipe.deleteMany();
+  await prisma.category.deleteMany();
   await prisma.notification.deleteMany();
   await prisma.report.deleteMany();
   await prisma.oauthAccount.deleteMany();
@@ -61,7 +62,25 @@ async function main() {
   })
   console.log('Admin account create');
 
-  // 3. TẠO RECIPES & TƯƠNG TÁC
+  // 3. TẠO CATEGORIES
+  const categoriesData = [
+    { name: 'Ăn sáng', slug: 'an-sang', is_active: true },
+    { name: 'Ăn trưa', slug: 'an-trua', is_active: true },
+    { name: 'Ăn tối', slug: 'an-toi', is_active: true },
+    { name: 'Ăn vặt', slug: 'an-vat', is_active: true },
+    { name: 'Món tráng miệng', slug: 'mon-trang-mieng', is_active: true },
+    { name: 'Đồ uống', slug: 'do-uong', is_active: true },
+    { name: 'Ăn chay', slug: 'an-chay', is_active: true },
+    { name: 'Healthy', slug: 'healthy', is_active: true },
+  ];
+  const categories: Category[] = [];
+  for (const cat of categoriesData) {
+    const category = await prisma.category.create({ data: cat });
+    categories.push(category);
+  }
+  console.log(`🏷️ Created ${categories.length} categories`);
+
+  // 4. TẠO RECIPES & TƯƠNG TÁC
   const recipes: Recipe[] = [];
   for (const user of users) {
     for (let j = 0; j < 5; j++) {
@@ -106,6 +125,11 @@ async function main() {
               { order_index: 2, content: faker.lorem.sentence(), image_url: faker.image.url() },
             ],
           },
+          categories: {
+            connect: [
+              { id: categories[Math.floor(Math.random() * categories.length)]!.id }
+            ]
+          }
         },
       });
       recipes.push(recipe);
@@ -134,7 +158,7 @@ async function main() {
   }
   console.log(`🍲 Created ${recipes.length} recipes with likes & comments`);
 
-  // 4. TẠO FOLLOW
+  // 5. TẠO FOLLOW
   const mainUser = users[0]!;
   for (let i = 1; i < users.length; i++) {
     const followingUser = users[i]!;

@@ -40,4 +40,9 @@ export const ErrorMessages = {
 
   // ─── Reports ─────────────────────────────────────────────────────────────────
   REPORT_NOT_FOUND: 'Report not found',
+
+  // ─── Categories ──────────────────────────────────────────────────────────────
+  CATEGORY_NOT_FOUND: 'Category not found',
+  CATEGORY_ALREADY_EXISTS: 'This category already created',
+  CATEGORY_DUPLICATED: 'Category is duplicated',
 };

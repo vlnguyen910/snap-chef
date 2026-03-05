@@ -4,6 +4,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from 'src/common/db/prisma.service';
 import { generateSlug } from 'src/common/utils/slugify.util';
 import { Category, UserRoles } from 'src/generated/prisma/client';
+import { ErrorMessages } from 'src/common/constants';
 
 @Injectable()
 export class CategoriesService {
@@ -18,7 +19,7 @@ export class CategoriesService {
       where: { slug },
     })
     if (slugExisted)
-      throw new ConflictException('This category already created');
+      throw new ConflictException(ErrorMessages.CATEGORY_ALREADY_EXISTS);
 
     return await this.prisma.category.create({
       data: {
@@ -40,7 +41,7 @@ export class CategoriesService {
       where: { id },
     })
     if (!category)
-      throw new NotFoundException('Category not found');
+      throw new NotFoundException(ErrorMessages.CATEGORY_NOT_FOUND);
 
     if (payload.name) {
       const newSlug = await generateSlug(payload.name);
@@ -48,7 +49,7 @@ export class CategoriesService {
         where: { slug: newSlug },
       })
       if (existedSlug)
-        throw new ConflictException('Category is duplicated');
+        throw new ConflictException(ErrorMessages.CATEGORY_DUPLICATED);
     }
 
     return await this.prisma.category.update({
