@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
+  ArrayUnique,
   IsArray,
   IsInt,
   IsNotEmpty,
@@ -61,4 +62,10 @@ export class CreateRecipeDto {
   @ValidateNested({ each: true })
   @Type(() => CreateStepItemDto)
   steps!: CreateStepItemDto[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @IsString({ each: true })
+  category_slugs?: string[];
 }

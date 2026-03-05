@@ -1,6 +1,6 @@
-import slugify from "slugify";
+import slugify from 'slugify';
 
-export const generateSlug = async (text: string): Promise<string> => {
+export const generateSlug = (text: string): string => {
   return slugify(text, {
     replacement: '_',
     remove: undefined,
@@ -8,5 +8,5 @@ export const generateSlug = async (text: string): Promise<string> => {
     strict: true,
     locale: 'vi',
     trim: true,
-  })
-}
+  });
+};
