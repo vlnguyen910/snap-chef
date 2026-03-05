@@ -443,7 +443,6 @@ export class RecipesService {
         },
         categories: {
           select: {
-            id: true,
             name: true,
             slug: true,
           },
