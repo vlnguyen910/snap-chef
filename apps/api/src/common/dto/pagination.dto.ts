@@ -1,5 +1,12 @@
-import { IsOptional, IsInt, Min, Max, IsString } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsOptional,
+  IsInt,
+  Min,
+  Max,
+  IsString,
+  IsArray,
+} from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 import { PAGINATION } from 'src/common/constants/pagination.constrant';
 
 //Base dto
@@ -24,6 +31,15 @@ class PaginationDto {
 
 export class RecipePaginationDto extends PaginationDto {
   limit: number = PAGINATION.RECIPES.DEFAULT_LIMIT;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) return value.map(String);
+    return String(value).split(',');
+  })
+  category_slugs?: string[];
 }
 
 export class CommentPaginationDto extends PaginationDto {
