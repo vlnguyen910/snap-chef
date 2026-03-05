@@ -23,7 +23,7 @@ export type RecipeDetail = Pick<
     ingredient: Pick<Ingredient, 'name'>;
   }[];
   steps: Pick<Step, 'order_index' | 'image_url' | 'content'>[];
-  categories: Pick<Category, 'id' | 'name' | 'slug'>[];
+  categories: Pick<Category, 'name' | 'slug'>[];
   comments_count: number;
   likes_count: number;
   is_liked: boolean;
