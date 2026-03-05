@@ -26,6 +26,11 @@ const mockUser = {
 
 const mockAuthor = { ...mockUser, id: 'author-uuid-1', username: 'author' };
 
+const mockCategories = [
+  { name: 'Italian', slug: 'italian' },
+  { name: 'Pasta', slug: 'pasta' },
+];
+
 const mockRecipe = {
   id: 'recipe-uuid-1',
   title: 'Test Recipe',
@@ -40,6 +45,7 @@ const mockRecipe = {
   steps: [{ order_index: 1, content: 'Step 1', image_url: null }],
   user: { username: 'author', avatar_url: null },
   ingredients: [],
+  categories: mockCategories,
 };
 
 const mockRecipeWithCount = {
@@ -60,8 +66,9 @@ type MockPrismaService = {
     update: jest.Mock;
   };
   recipeIngredient: { create: jest.Mock; deleteMany: jest.Mock };
-  step: { deleteMany: jest.Mock; createMany: jest.Mock };
+  step: { deleteMany: jest.Mock; createMany: jest.Mock; findMany: jest.Mock };
   like: { findUnique: jest.Mock; create: jest.Mock; delete: jest.Mock };
+  category: { findMany: jest.Mock };
 };
 
 // Mock prisma.$transaction để gọi callback ngay lập tức với chính mockPrismaService
@@ -86,11 +93,15 @@ const mockPrismaService: MockPrismaService = {
   step: {
     deleteMany: jest.fn(),
     createMany: jest.fn(),
+    findMany: jest.fn(),
   },
   like: {
     findUnique: jest.fn(),
     create: jest.fn(),
     delete: jest.fn(),
+  },
+  category: {
+    findMany: jest.fn(),
   },
 };
 
@@ -160,11 +171,16 @@ describe('RecipesService', () => {
       thumbnail_url: 'https://example.com/thumb.jpg',
       steps: [{ order_index: 1, content: 'Boil water' }],
       ingredients: [{ name: 'Pasta', quantity: 200, unit: 'g' }],
+      category_slugs: ['italian', 'pasta'],
     };
 
     beforeEach(() => {
       mockUsersService.findOne.mockResolvedValue(mockAuthor);
+      mockPrismaService.category.findMany.mockResolvedValue(
+        mockCategories.map((c) => ({ slug: c.slug })),
+      );
       mockPrismaService.recipe.create.mockResolvedValue(mockRecipe);
+      mockPrismaService.step.findMany.mockResolvedValue(mockRecipe.steps);
       mockIngredientsService.upsertByName.mockResolvedValue({
         id: 'ingredient-uuid-1',
       });
@@ -179,8 +195,88 @@ describe('RecipesService', () => {
 
       expect(result).toHaveProperty('recipe');
       expect(result).toHaveProperty('ingredients');
+      expect(result.recipe).toHaveProperty('categories');
       expect(mockPrismaService.$transaction).toHaveBeenCalledTimes(1);
       expect(mockPrismaService.recipe.create).toHaveBeenCalledTimes(1);
+    });
+
+    /**
+     * Tạo recipe với category_slugs → Prisma connect categories và include trong kết quả.
+     */
+    it('should connect categories and include them in the response', async () => {
+      await service.create(mockAuthor.id, validDto);
+
+      expect(mockPrismaService.recipe.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            categories: {
+              connect: [{ slug: 'italian' }, { slug: 'pasta' }],
+            },
+          }),
+          include: expect.objectContaining({
+            categories: expect.objectContaining({
+              select: expect.objectContaining({
+                name: true,
+                slug: true,
+              }),
+            }),
+          }),
+        }),
+      );
+    });
+
+    /**
+     * Tạo recipe không có category_slugs → categories connect undefined.
+     */
+    it('should handle create without category_slugs', async () => {
+      const dtoWithoutCategories = { ...validDto };
+      delete (dtoWithoutCategories as Record<string, unknown>).category_slugs;
+
+      await service.create(mockAuthor.id, dtoWithoutCategories);
+
+      expect(mockPrismaService.recipe.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            categories: { connect: undefined },
+          }),
+        }),
+      );
+    });
+
+    /**
+     * Gửi category_slugs trùng nhau → BadRequestException: DUPLICATE_CATEGORIES.
+     */
+    it('should throw BadRequestException if category_slugs are duplicated', async () => {
+      const dtoDuplicateCategories = {
+        ...validDto,
+        category_slugs: ['italian', 'italian'],
+      };
+
+      await expect(
+        service.create(mockAuthor.id, dtoDuplicateCategories),
+      ).rejects.toThrow(
+        new BadRequestException(ErrorMessages.DUPLICATE_CATEGORIES),
+      );
+      expect(mockPrismaService.recipe.create).not.toHaveBeenCalled();
+    });
+
+    /**
+     * Gửi category_slugs không tồn tại trong DB → BadRequestException: Invalid categories.
+     */
+    it('should throw BadRequestException if category_slugs do not exist in DB', async () => {
+      mockPrismaService.category.findMany.mockResolvedValue([
+        { slug: 'italian' },
+      ]);
+
+      const dtoInvalidCategory = {
+        ...validDto,
+        category_slugs: ['italian', 'non-existent'],
+      };
+
+      await expect(
+        service.create(mockAuthor.id, dtoInvalidCategory),
+      ).rejects.toThrow(BadRequestException);
+      expect(mockPrismaService.recipe.create).not.toHaveBeenCalled();
     });
 
     /**
@@ -316,6 +412,27 @@ describe('RecipesService', () => {
     });
 
     /**
+     * Filter theo category_slugs: whereCondition.categories.some được set.
+     */
+    it('should include category filter in where condition', async () => {
+      mockPrismaService.recipe.findMany.mockResolvedValue([]);
+
+      await service.findAll({
+        ...params,
+        category_slugs: ['italian', 'pasta'],
+      });
+
+      const mockCalls = mockPrismaService.recipe.findMany.mock.calls;
+      const firstCall = mockCalls[0] as unknown[];
+      const call = firstCall[0] as {
+        where: { categories?: { some: { slug: { in: string[] } } } };
+      };
+      expect(call.where.categories).toEqual({
+        some: { slug: { in: ['italian', 'pasta'] } },
+      });
+    });
+
+    /**
      * Không có recipe nào → trả về mảng rỗng.
      */
     it('should return empty array when no recipes exist', async () => {
@@ -415,6 +532,7 @@ describe('RecipesService', () => {
       title: 'Updated Title',
       ingredients: [],
       steps: [],
+      categories: [{ name: 'Dessert', slug: 'dessert' }],
     };
 
     beforeEach(() => {
@@ -475,6 +593,29 @@ describe('RecipesService', () => {
         where: { recipe_id: mockRecipe.id },
       });
       expect(mockPrismaService.step.createMany).toHaveBeenCalledTimes(1);
+    });
+
+    /**
+     * Cập nhật category_slugs: Prisma set categories relation.
+     */
+    it('should update categories when category_slugs are provided', async () => {
+      mockPrismaService.category.findMany.mockResolvedValue([
+        { slug: 'dessert' },
+      ]);
+      const result = await service.update(mockRecipe.id, mockAuthor.id, {
+        category_slugs: ['dessert'],
+      });
+
+      expect(mockPrismaService.recipe.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            categories: {
+              set: [{ slug: 'dessert' }],
+            },
+          }),
+        }),
+      );
+      expect(result).toEqual(updatedRecipe);
     });
 
     /**

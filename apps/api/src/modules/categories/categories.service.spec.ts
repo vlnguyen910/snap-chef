@@ -57,7 +57,7 @@ describe('CategoriesService', () => {
       const payload = { name: 'Test Category', is_active: true };
       const slug = 'test-category';
 
-      (slugifyUtil.generateSlug as jest.Mock).mockResolvedValue(slug);
+      (slugifyUtil.generateSlug as jest.Mock).mockReturnValue(slug);
       mockPrismaService.category.findFirst.mockResolvedValue(null);
       mockPrismaService.category.create.mockResolvedValue({
         ...mockCategory,
@@ -81,7 +81,7 @@ describe('CategoriesService', () => {
       const payload = { name: 'Test Category', is_active: true };
       const slug = 'test-category';
 
-      (slugifyUtil.generateSlug as jest.Mock).mockResolvedValue(slug);
+      (slugifyUtil.generateSlug as jest.Mock).mockReturnValue(slug);
       mockPrismaService.category.findFirst.mockResolvedValue(mockCategory); // Slug exists
 
       await expect(service.create(payload)).rejects.toThrow(
@@ -153,7 +153,7 @@ describe('CategoriesService', () => {
       const newSlug = 'updated-category';
 
       mockPrismaService.category.findUnique.mockResolvedValue(mockCategory);
-      (slugifyUtil.generateSlug as jest.Mock).mockResolvedValue(newSlug);
+      (slugifyUtil.generateSlug as jest.Mock).mockReturnValue(newSlug);
       mockPrismaService.category.findFirst.mockResolvedValue(null);
       mockPrismaService.category.update.mockResolvedValue({
         ...mockCategory,
@@ -187,7 +187,7 @@ describe('CategoriesService', () => {
       const newSlug = 'updated-category';
 
       mockPrismaService.category.findUnique.mockResolvedValue(mockCategory);
-      (slugifyUtil.generateSlug as jest.Mock).mockResolvedValue(newSlug);
+      (slugifyUtil.generateSlug as jest.Mock).mockReturnValue(newSlug);
       mockPrismaService.category.findFirst.mockResolvedValue({
         id: 2,
         slug: newSlug,

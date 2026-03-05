@@ -41,6 +41,7 @@ src/modules/categories/
 
 ```typescript
 // Mock generateSlug (từ src/common/utils/slugify.util)
+// LƯU Ý: generateSlug là hàm đồng bộ → dùng mockReturnValue, KHÔNG dùng mockResolvedValue
 jest.mock('src/common/utils/slugify.util', () => ({
   generateSlug: jest.fn(),
 }));
@@ -57,11 +58,16 @@ const mockPrismaService = {
 };
 ```
 
+> [!IMPORTANT]
+> `generateSlug` là hàm **đồng bộ** (synchronous). Khi mock, phải dùng `mockReturnValue()` thay vì `mockResolvedValue()`. Dùng sai sẽ khiến slug trở thành `Promise {}` thay vì string.
+
 ---
 
 ## 3. CategoriesService
 
 File: `src/modules/categories/categories.service.spec.ts` — **9 test cases**
+
+> Ngoài ra, `categories.controller.spec.ts` có **1 test case** kiểm tra controller được khởi tạo thành công (đã mock `PrismaService`).
 
 ---
 

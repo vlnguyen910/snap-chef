@@ -37,7 +37,7 @@ export class RecipesService {
   async create(user_id: string, dto: CreateRecipeDto) {
     const user = await this.userService.findOne(user_id);
     if (!user) throw new BadRequestException(ErrorMessages.USER_NOT_FOUND);
-
+    await this.checkValidCategories(dto.category_slugs);
     this.validateOrderIndices(dto.steps.map((step) => step.order_index));
 
     return await this.prisma.$transaction(async (tx) => {
@@ -52,6 +52,14 @@ export class RecipesService {
           status: RecipeStatus.DRAFT,
           categories: {
             connect: dto.category_slugs?.map((slug) => ({ slug })),
+          },
+        },
+        include: {
+          categories: {
+            select: {
+              name: true,
+              slug: true,
+            },
           },
         },
       });
@@ -136,7 +144,6 @@ export class RecipesService {
         },
         categories: {
           select: {
-            id: true,
             name: true,
             slug: true,
           },
@@ -193,6 +200,14 @@ export class RecipesService {
 
     await this.redis.delCache(cacheKey);
 
+    if (category_slugs) {
+      await this.checkValidCategories(category_slugs);
+    }
+
+    if (steps) {
+      this.validateOrderIndices(steps.map((step) => step.order_index));
+    }
+
     return await this.prisma.$transaction(async (tx) => {
       await tx.recipe.update({
         where: { id },
@@ -237,7 +252,6 @@ export class RecipesService {
           steps: { orderBy: { order_index: 'asc' } },
           categories: {
             select: {
-              id: true,
               name: true,
               slug: true,
             },
@@ -470,5 +484,30 @@ export class RecipesService {
     });
 
     return !!like;
+  }
+
+  private async checkValidCategories(category_slugs?: string[]): Promise<void> {
+    if (!category_slugs || category_slugs.length === 0) return;
+
+    const uniqueSlugs = new Set(category_slugs);
+    if (uniqueSlugs.size !== category_slugs.length) {
+      throw new BadRequestException(ErrorMessages.DUPLICATE_CATEGORIES);
+    }
+
+    const existingCategories = await this.prisma.category.findMany({
+      where: {
+        slug: { in: category_slugs },
+      },
+      select: { slug: true },
+    });
+    const existingSlugs = existingCategories.map((category) => category.slug);
+    const invalidSlugs = category_slugs.filter(
+      (slug) => !existingSlugs.includes(slug),
+    );
+    if (invalidSlugs.length > 0) {
+      throw new BadRequestException(
+        `Invalid categories: ${invalidSlugs.join(', ')}`,
+      );
+    }
   }
 }

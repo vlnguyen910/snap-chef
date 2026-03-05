@@ -45,4 +45,5 @@ export const ErrorMessages = {
   CATEGORY_NOT_FOUND: 'Category not found',
   CATEGORY_ALREADY_EXISTS: 'This category already created',
   CATEGORY_DUPLICATED: 'Category is duplicated',
+  DUPLICATE_CATEGORIES: 'Duplicate category slugs are not allowed',
 };
