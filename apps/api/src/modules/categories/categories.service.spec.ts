@@ -174,7 +174,7 @@ describe('CategoriesService', () => {
       });
       expect(mockPrismaService.category.update).toHaveBeenCalledWith({
         where: { id: mockCategory.id },
-        data: { ...updatePayloadWithName },
+        data: { ...updatePayloadWithName, slug: newSlug },
       });
       expect(result).toEqual({
         ...mockCategory,
@@ -209,7 +209,7 @@ describe('CategoriesService', () => {
       });
       expect(mockPrismaService.category.update).toHaveBeenCalledWith({
         where: { id: mockCategory.id },
-        data: { ...updatePayloadSameName },
+        data: { ...updatePayloadSameName, slug: sameSlug },
       });
       expect(result).toEqual({
         ...mockCategory,

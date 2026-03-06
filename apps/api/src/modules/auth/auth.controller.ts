@@ -54,7 +54,6 @@ export class AuthController {
       path: '/auth/refresh',
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { refresh_token, ...rest } = data;
     return rest;
   }
@@ -133,10 +132,12 @@ export class AuthController {
     return await this.authService.forgetPassword(body);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('reset-password')
   async resetPassword(
+    @GetUser() user: TokenPayload,
     @Body() body: ResetPasswordDto,
   ): Promise<{ message: string }> {
-    return await this.authService.resetPassword(body);
+    return await this.authService.resetPassword(user.jti, body);
   }
 }

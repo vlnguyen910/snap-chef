@@ -1,4 +1,10 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { PrismaService } from 'src/common/db/prisma.service';
@@ -76,6 +82,13 @@ export class ReportsService {
   async update(id: string, payload: UpdateReportDto) {
     const report = await this.findOne(id);
     if (!report) throw new NotFoundException(ErrorMessages.REPORT_NOT_FOUND);
+
+    if (payload.handler_id) {
+      const user = await this.userService.findOne(payload.handler_id);
+      if (!user) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
+      if (user.role !== UserRoles.ADMIN)
+        throw new ForbiddenException(ErrorMessages.INSUFFICIENT_AUTHORITY);
+    }
 
     return await this.prisma.report.update({
       where: { id },

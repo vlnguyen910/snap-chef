@@ -61,10 +61,10 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   getFollowing(
     @Param('id') profile_id: string,
-    @GetUser() current_user: TokenPayload | undefined,
+    @GetUser() current_user: TokenPayload,
     @Query() query: UserPaginationDto,
   ) {
-    return this.usersService.getFollowing(profile_id, current_user?.sub, query);
+    return this.usersService.getFollowing(profile_id, current_user.sub, query);
   }
 
   @Get(':id')

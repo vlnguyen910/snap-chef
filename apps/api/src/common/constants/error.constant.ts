@@ -2,7 +2,7 @@ export const ErrorMessages = {
   // ─── Auth ───────────────────────────────────────────────────────────────────
   INVALID_CREDENTIALS: 'Email or password is incorrect',
   USER_BANNED: 'User has been banned',
-  EMAIL_NOT_VERIFIED: 'You need verify your email first',
+  EMAIL_NOT_VERIFIED: 'You need to verify your email first',
   EMAIL_ALREADY_IN_USE: 'Email is already in use',
   INVALID_TOKEN: 'Invalid Token',
   INVALID_OR_EXPIRED_TOKEN: 'Invalid or expired token',
@@ -29,21 +29,22 @@ export const ErrorMessages = {
 
   // ─── Comments ────────────────────────────────────────────────────────────────
   COMMENT_NOT_FOUND: 'Comment not found',
-  NO_RIGHT_DELETE_COMMENT: 'You not have right to delete this comment',
-  NO_RIGHT_UPDATE_COMMENT: 'You not have right to update this comment',
+  NO_RIGHT_DELETE_COMMENT: 'You do not have right to delete this comment',
+  NO_RIGHT_UPDATE_COMMENT: 'You do not have right to update this comment',
 
   // ─── Collections ─────────────────────────────────────────────────────────────
   COLLECTION_NOT_FOUND: 'Collection not found',
   COLLECTION_FORBIDDEN:
-    'Collection is not exist or you have no right to see this',
+    'Collection does not exist or you have no right to see this',
   NO_RIGHT_EDIT_COLLECTION: 'You have no right to edit this',
 
   // ─── Reports ─────────────────────────────────────────────────────────────────
   REPORT_NOT_FOUND: 'Report not found',
+  INSUFFICIENT_AUTHORITY: 'The user does not have sufficient privileges',
 
   // ─── Categories ──────────────────────────────────────────────────────────────
   CATEGORY_NOT_FOUND: 'Category not found',
-  CATEGORY_ALREADY_EXISTS: 'This category already created',
+  CATEGORY_ALREADY_EXISTS: 'This category already exsited',
   CATEGORY_DUPLICATED: 'Category is duplicated',
   DUPLICATE_CATEGORIES: 'Duplicate category slugs are not allowed',
 };

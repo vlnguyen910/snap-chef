@@ -56,7 +56,7 @@ export class AdminService {
       },
     });
 
-    await this.redis.delCache(`user:${user?.id}`);
+    await this.redis.delCache(`user:${user.id}`);
     return updatedUser;
   }
 

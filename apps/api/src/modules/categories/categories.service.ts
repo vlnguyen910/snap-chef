@@ -45,21 +45,33 @@ export class CategoriesService {
     if (!category)
       throw new NotFoundException(ErrorMessages.CATEGORY_NOT_FOUND);
 
+    let slug: string | undefined;
+
     if (payload.name) {
-      const newSlug = generateSlug(payload.name);
+      slug = generateSlug(payload.name);
       const existedSlug = await this.prisma.category.findFirst({
         where: {
-          slug: newSlug,
+          slug,
           id: { not: id },
         },
       });
       if (existedSlug)
         throw new ConflictException(ErrorMessages.CATEGORY_DUPLICATED);
+
+      return await this.prisma.category.update({
+        where: { id },
+        data: {
+          name: payload.name,
+          slug,
+        },
+      }); 
     }
 
     return await this.prisma.category.update({
       where: { id },
-      data: { ...payload },
+      data: {
+        ...payload,
+      },
     });
   }
 }
