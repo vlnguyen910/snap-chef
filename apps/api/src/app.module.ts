@@ -21,6 +21,10 @@ import { AppController } from './app.controller';
 import { AdminModule } from './modules/admin/admin.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
+import { CustomThrottlerGuard } from './common/guards';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -42,6 +46,24 @@ import { CategoriesModule } from './modules/categories/categories.module';
         options: getRedisOptions(redisConfig.keepAlive),
       }),
     }),
+    ThrottlerModule.forRootAsync({
+      inject: [redisConfiguration.KEY],
+      useFactory: (redisConfig: ConfigType<typeof redisConfiguration>) => ({
+        throttlers: [
+          {
+            name: 'short',
+            ttl: 1000,
+            limit: 5,
+          },
+          {
+            name: 'long',
+            ttl: 60000,
+            limit: 20,
+          },
+        ],
+        storage: new ThrottlerStorageRedisService(redisConfig.url),
+      }),
+    }),
     RedisModule,
     UsersModule,
     CommentsModule,
@@ -54,6 +76,12 @@ import { CategoriesModule } from './modules/categories/categories.module';
     CategoriesModule,
   ],
   controllers: [AppController],
-  providers: [PrismaService],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: CustomThrottlerGuard,
+    },
+    PrismaService,
+  ],
 })
 export class AppModule {}
