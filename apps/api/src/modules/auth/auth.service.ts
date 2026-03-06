@@ -192,7 +192,7 @@ export class AuthService {
     };
   }
 
-  async resetPassword(body: ResetPasswordDto): Promise<{ message: string }> {
+  async resetPassword(jti: string, body: ResetPasswordDto): Promise<{ message: string }> {
     const { token, password } = body;
     const cacheKey = `reset_password:${token}`;
     const userId = await this.redis.getCache<string>(cacheKey);
@@ -203,17 +203,12 @@ export class AuthService {
 
     const hashedPassword = await argon2.hash(password);
 
-    // We need to use prisma directly or add updatePassword to useService
-    // Since userService.update checks current_user match, we might need a system-level update
-    // But userService.update signatures: update(id, user_id, payload). user_id is for auth check.
-    // If we pass userId as both, it should bypass the check if implemented that way,
-    // BUT userService.update checks `if (user.id !== user_id)`. So passing same ID works.
-
     await this.userService.update(userId, userId, {
       password: hashedPassword,
     });
 
     await this.redis.delCache(cacheKey);
+    await this.logout(jti);
 
     return { message: 'Password has been reset successfully' };
   }
