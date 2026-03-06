@@ -5,3 +5,7 @@ reviews:
   auto_review:
     enabled: true
     drafts: false
+  path_filters:
+    - "!apps/api/prisma/migrations/**"
+    - "!apps/api/prisma/seed.ts"
+    - "!apps/api/src/generated/prisma/**"

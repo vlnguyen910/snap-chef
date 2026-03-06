@@ -17,7 +17,7 @@ export class AdminService {
     private readonly userService: UsersService,
     private readonly redis: RedisService,
     private readonly recipeService: RecipesService,
-  ) { }
+  ) {}
 
   async getUsers(query: UserPaginationDto) {
     const { limit, page } = query;
