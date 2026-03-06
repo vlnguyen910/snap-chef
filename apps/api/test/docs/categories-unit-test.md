@@ -65,7 +65,7 @@ const mockPrismaService = {
 
 ## 3. CategoriesService
 
-File: `src/modules/categories/categories.service.spec.ts` — **9 test cases**
+File: `src/modules/categories/categories.service.spec.ts` — **10 test cases**
 
 > Ngoài ra, `categories.controller.spec.ts` có **1 test case** kiểm tra controller được khởi tạo thành công (đã mock `PrismaService`).
 
@@ -110,7 +110,8 @@ Cập nhật thông tin category. Nếu có trường `name` trong `payload`, sy
 | 6 | `should throw NotFoundException if category does not exist` | Error path | Gọi `prisma.category.findUnique` trả về `null` → throw `NotFoundException` (`ErrorMessages.CATEGORY_NOT_FOUND`) |
 | 7 | `should successfully update a category without name payload` | Happy path | Cập nhật các trường không ảnh hưởng đến slug (như `is_active`) → không check trùng slug → thực thi update thành công |
 | 8 | `should successfully update a category with new name and slug` | Happy path | Update có `name` → tạo slug mới bằng `generateSlug` → check `findFirst` không trùng → thực thi update thành công với `slug` mới |
-| 9 | `should throw ConflictException if new name generates a duplicate slug` | Error path | Update có `name` → tạo slug mới → `findFirst` phát hiện trùng với record khác → throw `ConflictException` (`ErrorMessages.CATEGORY_DUPLICATED`) |
+| 9 | `should successfully update a category with the same name` | Happy path | Update bằng chính tên ban đầu → tạo lại đúng `slug` cũ → check `findFirst` (`{ slug, id: { not: id } }`) không vướng record **khác** → update thành công |
+| 10 | `should throw ConflictException if new name generates a duplicate slug` | Error path | Update có `name` → tạo slug mới → `findFirst` phát hiện trùng với record khác → throw `ConflictException` (`ErrorMessages.CATEGORY_DUPLICATED`) |
 
 ---
 
@@ -118,7 +119,7 @@ Cập nhật thông tin category. Nếu có trường `name` trong `payload`, sy
 
 ```
 Test Suites: 1 passed, 1 total
-Tests:       9 passed, 9 total
+Tests:       10 passed, 10 total
 ```
 
 ```bash
@@ -132,5 +133,5 @@ pnpm run test categories.service.spec.ts --coverage --collectCoverageFrom="**/mo
 
 ---
 
-*Tài liệu cập nhật lần cuối: **2026-03-05**. Cập nhật khi thêm hoặc thay đổi test case.*
+*Tài liệu cập nhật lần cuối: **2026-03-06**. Cập nhật khi thêm hoặc thay đổi test case.*
 

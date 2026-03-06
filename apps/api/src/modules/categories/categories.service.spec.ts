@@ -170,7 +170,7 @@ describe('CategoriesService', () => {
         updatePayloadWithName.name,
       );
       expect(mockPrismaService.category.findFirst).toHaveBeenCalledWith({
-        where: { slug: newSlug },
+        where: { slug: newSlug, id: { not: mockCategory.id } },
       });
       expect(mockPrismaService.category.update).toHaveBeenCalledWith({
         where: { id: mockCategory.id },
@@ -180,6 +180,41 @@ describe('CategoriesService', () => {
         ...mockCategory,
         ...updatePayloadWithName,
         slug: newSlug,
+      });
+    });
+
+    it('should successfully update a category with the same name', async () => {
+      const updatePayloadSameName = { name: mockCategory.name };
+      const sameSlug = mockCategory.slug;
+
+      mockPrismaService.category.findUnique.mockResolvedValue(mockCategory);
+      (slugifyUtil.generateSlug as jest.Mock).mockReturnValue(sameSlug);
+      mockPrismaService.category.findFirst.mockResolvedValue(null);
+      mockPrismaService.category.update.mockResolvedValue({
+        ...mockCategory,
+        ...updatePayloadSameName,
+        slug: sameSlug,
+      });
+
+      const result = await service.update(
+        mockCategory.id,
+        updatePayloadSameName,
+      );
+
+      expect(slugifyUtil.generateSlug).toHaveBeenCalledWith(
+        updatePayloadSameName.name,
+      );
+      expect(mockPrismaService.category.findFirst).toHaveBeenCalledWith({
+        where: { slug: sameSlug, id: { not: mockCategory.id } },
+      });
+      expect(mockPrismaService.category.update).toHaveBeenCalledWith({
+        where: { id: mockCategory.id },
+        data: { ...updatePayloadSameName },
+      });
+      expect(result).toEqual({
+        ...mockCategory,
+        ...updatePayloadSameName,
+        slug: sameSlug,
       });
     });
 
