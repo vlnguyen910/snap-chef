@@ -29,6 +29,7 @@ import { ResetPasswordDto } from './dto/request/reset-password.dto';
 import { RefreshTokenResponseDto } from './dto/respone/refresh-token-respone.dto';
 import { cookieConfiguration } from 'src/config';
 import type { ConfigType } from '@nestjs/config';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -38,6 +39,7 @@ export class AuthController {
     private readonly cookieConfig: ConfigType<typeof cookieConfiguration>,
   ) {}
 
+  @Throttle({ short: { ttl: 1000, limit: 3 } })
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(
@@ -54,10 +56,12 @@ export class AuthController {
       path: '/auth/refresh',
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { refresh_token, ...rest } = data;
     return rest;
   }
 
+  @Throttle({ short: { ttl: 60000, limit: 3 } })
   @Post('sign-up')
   async signUp(@Body() body: SignUpDto) {
     return this.authService.signUp(body);
@@ -132,6 +136,7 @@ export class AuthController {
     return await this.authService.forgetPassword(body);
   }
 
+  @Throttle({ short: { ttl: 60000, limit: 2 } })
   @UseGuards(JwtAuthGuard)
   @Post('reset-password')
   async resetPassword(

@@ -429,7 +429,7 @@ describe('AuthService', () => {
      * Happy path: token hợp lệ → hash password mới → cập nhật DB → xóa token khỏi Redis.
      */
     it('should reset password and delete cache token', async () => {
-      const result = await service.resetPassword({
+      const result = await service.resetPassword('mock-jti', {
         token: 'valid-reset-token',
         password: 'new-password',
       });
@@ -455,7 +455,10 @@ describe('AuthService', () => {
       mockRedisService.getCache.mockResolvedValue(null);
 
       await expect(
-        service.resetPassword({ token: 'expired-token', password: 'new-pass' }),
+        service.resetPassword('mock-jti', {
+          token: 'expired-token',
+          password: 'new-pass',
+        }),
       ).rejects.toThrow(
         new BadRequestException(ErrorMessages.INVALID_OR_EXPIRED_TOKEN),
       );

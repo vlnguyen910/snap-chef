@@ -64,7 +64,7 @@ export class CategoriesService {
           name: payload.name,
           slug,
         },
-      }); 
+      });
     }
 
     return await this.prisma.category.update({
