@@ -17,7 +17,7 @@ export class AdminService {
     private readonly userService: UsersService,
     private readonly redis: RedisService,
     private readonly recipeService: RecipesService,
-  ) {}
+  ) { }
 
   async getUsers(query: UserPaginationDto) {
     const { limit, page } = query;
@@ -67,6 +67,7 @@ export class AdminService {
     const recipeList = await this.prisma.recipe.findMany({
       skip,
       take: limit,
+      where: { deleted_at: null },
       orderBy: {
         created_at: 'desc',
       },
