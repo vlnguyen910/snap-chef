@@ -58,6 +58,7 @@ const mockPrismaService = {
   },
   user: {
     findMany: jest.fn(),
+    findUnique: jest.fn(),
   },
 };
 
@@ -304,6 +305,7 @@ describe('ReportsService', () => {
     beforeEach(() => {
       // Mock findOne() inside update()
       prisma.report.findUnique.mockResolvedValue(mockReport);
+      prisma.user.findUnique.mockResolvedValue(mockAdmin);
     });
 
     it('should update and return the updated report', async () => {
