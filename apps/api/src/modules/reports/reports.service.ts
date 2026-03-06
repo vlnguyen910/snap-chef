@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { PrismaService } from 'src/common/db/prisma.service';
@@ -14,6 +14,8 @@ import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class ReportsService {
+  private readonly logger = new Logger(ReportsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationService: NotificationService,
@@ -36,7 +38,7 @@ export class ReportsService {
       select: { id: true },
     });
 
-    await Promise.all(
+    const results = await Promise.allSettled(
       admins.map((admin) =>
         this.notificationService.createNotification({
           senderId: reporter_id,
@@ -48,6 +50,15 @@ export class ReportsService {
         }),
       ),
     );
+
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        this.logger.error(
+          `Failed to create notification for admin ${admins[index]?.id} regarding report ${report.id} from user ${reporter_id}`,
+          result.reason,
+        );
+      }
+    });
 
     return report;
   }

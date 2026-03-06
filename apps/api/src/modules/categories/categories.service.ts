@@ -12,7 +12,7 @@ import { ErrorMessages } from 'src/common/constants';
 
 @Injectable()
 export class CategoriesService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(payload: CreateCategoryDto) {
     const slug = generateSlug(payload.name);
@@ -50,7 +50,7 @@ export class CategoriesService {
       const existedSlug = await this.prisma.category.findFirst({
         where: {
           slug: newSlug,
-          id: { not: id }
+          id: { not: id },
         },
       });
       if (existedSlug)
