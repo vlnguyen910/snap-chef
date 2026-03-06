@@ -192,7 +192,10 @@ export class AuthService {
     };
   }
 
-  async resetPassword(jti: string, body: ResetPasswordDto): Promise<{ message: string }> {
+  async resetPassword(
+    jti: string,
+    body: ResetPasswordDto,
+  ): Promise<{ message: string }> {
     const { token, password } = body;
     const cacheKey = `reset_password:${token}`;
     const userId = await this.redis.getCache<string>(cacheKey);

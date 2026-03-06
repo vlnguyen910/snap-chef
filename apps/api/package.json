@@ -21,6 +21,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@nest-lab/throttler-storage-redis": "^1.2.0",
     "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/common": "^11.1.14",
@@ -32,6 +33,7 @@
     "@nestjs/platform-express": "^11.1.14",
     "@nestjs/platform-socket.io": "^11.1.14",
     "@nestjs/schedule": "^6.1.1",
+    "@nestjs/throttler": "^6.5.0",
     "@nestjs/websockets": "^11.1.14",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",

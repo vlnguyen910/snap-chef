@@ -305,7 +305,7 @@ describe('ReportsService', () => {
     beforeEach(() => {
       // Mock findOne() inside update()
       prisma.report.findUnique.mockResolvedValue(mockReport);
-      prisma.user.findUnique.mockResolvedValue(mockAdmin);
+      mockUsersService.findOne.mockResolvedValue(mockAdmin);
     });
 
     it('should update and return the updated report', async () => {
