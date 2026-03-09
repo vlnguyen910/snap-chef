@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/db/prisma.service';
+import { RecipeStatus } from 'src/generated/prisma/enums';
 
 @Injectable()
 export class FeedService {
@@ -14,13 +15,56 @@ export class FeedService {
    * @param limit Số lượng bài viết mỗi lần lấy
    * @returns Object chứa mảng data và nextCursor
    */
-  async getUserFeed(userId: string, cursor?: string, limit: number = 10) {
-    // Boilerplate: Chuẩn bị query Prisma
-    // TODO: Viết logic query Prisma ở đây (Join với bảng Follow để lọc)
-    
+
+  async getUserFeed(userId?: string, cursor?: string, limit: number = 10) {
+    if (!userId) return this.getTrendingRecipes(limit);
+
+    const feed = await this.prisma.recipe.findMany({
+      take: limit + 1,
+      skip: cursor ? 1 : 0, // nếu có cursor thì là không recipe để lấy tiếp nên bỏ qua cái lấy thừa của limit + 1
+      ...(cursor ? { cursor: { id: cursor } } : {}),
+      where: {
+        status: RecipeStatus.PUBLISHED,
+        deleted_at: null,
+        user: {
+          followedBy: {
+            some: {
+              follower_id: userId,
+            },
+          },
+        },
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            avatar_url: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
+        },
+      },
+    });
+
+    let nextCursor: string | null = null;
+    if (feed.length > limit) {
+      const nextItem = feed.pop(); // lấy recipe bị thừa ra
+      if (nextItem) nextCursor = nextItem.id;
+    }
+
+    if (feed.length === 0 && !cursor) return this.getTrendingRecipes(limit);
+
     return {
-      data: [],
-      nextCursor: null,
+      data: feed,
+      nextCursor,
     };
   }
 
@@ -31,12 +75,42 @@ export class FeedService {
    * @param limit Số lượng bài viết
    */
   async getTrendingRecipes(limit: number = 10) {
-     // Boilerplate: Lấy các recipes `PUBLISHED`
-     // TODO: Viết logic query cơ bản lấy bài mới nhất/nhiều like nhất
-     
-     return {
-        data: [],
-        nextCursor: null,
-     };
+    // Boilerplate: Lấy các recipes `PUBLISHED`
+    // TODO: Viết logic query cơ bản lấy bài mới nhất/nhiều like nhất
+    const recipes = await this.prisma.recipe.findMany({
+      take: limit,
+      where: {
+        status: RecipeStatus.PUBLISHED,
+        deleted_at: null,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            avatar_url: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
+        },
+      },
+      orderBy: {
+        likes: {
+          _count: 'desc',
+        },
+        comments: {
+          _count: 'desc',
+        },
+      },
+    });
+
+    return {
+      data: recipes,
+      nextCursor: null,
+    };
   }
 }
