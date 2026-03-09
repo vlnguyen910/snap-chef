@@ -21,6 +21,7 @@ import { AppController } from './app.controller';
 import { AdminModule } from './modules/admin/admin.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { FeedModule } from './modules/feed/feed.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { CustomThrottlerGuard } from './common/guards';
@@ -74,6 +75,7 @@ import { APP_GUARD } from '@nestjs/core';
     AdminModule,
     ReportsModule,
     CategoriesModule,
+    FeedModule,
   ],
   controllers: [AppController],
   providers: [
