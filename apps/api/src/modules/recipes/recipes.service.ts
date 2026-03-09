@@ -88,7 +88,7 @@ export class RecipesService {
     const skip = (page - 1) * limit;
 
     const whereCondition: RecipeWhereInput = {
-      // status: 'PUBLISHED',
+      status: 'PUBLISHED',
       deleted_at: null,
     };
 
@@ -128,18 +128,7 @@ export class RecipesService {
         user: {
           select: {
             username: true,
-            email: true,
             avatar_url: true,
-            role: true,
-          },
-        },
-        ingredients: {
-          select: {
-            quantity: true,
-            unit: true,
-            ingredient: {
-              select: { name: true },
-            },
           },
         },
         categories: {
