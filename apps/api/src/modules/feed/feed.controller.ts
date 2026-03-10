@@ -3,12 +3,7 @@ import { FeedService } from './feed.service';
 import { OptionalJwtAuthGuard } from '../../common/guards';
 import { GetUser } from '../../common/decorators';
 import { TokenPayload } from '../../common/interfaces';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiBearerAuth,
-  ApiQuery,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('Feed')
 @Controller('feed')
