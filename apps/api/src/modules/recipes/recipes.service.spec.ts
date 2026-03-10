@@ -69,6 +69,7 @@ type MockPrismaService = {
   step: { deleteMany: jest.Mock; createMany: jest.Mock; findMany: jest.Mock };
   like: { findUnique: jest.Mock; create: jest.Mock; delete: jest.Mock };
   category: { findMany: jest.Mock };
+  block: { findFirst: jest.Mock };
 };
 
 // Mock prisma.$transaction để gọi callback ngay lập tức với chính mockPrismaService
@@ -100,6 +101,9 @@ const mockPrismaService: MockPrismaService = {
     create: jest.fn(),
     delete: jest.fn(),
   },
+  block: {
+    findFirst: jest.fn(),
+  },
   category: {
     findMany: jest.fn(),
   },
@@ -111,6 +115,7 @@ const mockIngredientsService = {
 
 const mockUsersService = {
   findOne: jest.fn(),
+  getBlockedUserIds: jest.fn(),
 };
 
 const mockRedisService = {
@@ -442,6 +447,20 @@ describe('RecipesService', () => {
 
       expect(result).toEqual([]);
     });
+
+    /**
+     * Exclude recipes authored by blocked users
+     */
+    it('should exclude recipes from blocked users if current_user_id is provided', async () => {
+      mockPrismaService.recipe.findMany.mockResolvedValue([]);
+      mockUsersService.getBlockedUserIds.mockResolvedValue(['blocked-user-1']);
+
+      await service.findAll({ ...params, current_user_id: mockUser.id });
+
+      const mockCalls = mockPrismaService.recipe.findMany.mock.calls;
+      const call = mockCalls[0][0];
+      expect(call.where.author_id).toEqual({ notIn: ['blocked-user-1'] });
+    });
   });
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -505,6 +524,7 @@ describe('RecipesService', () => {
      */
     it('should include is_liked=true if user has liked the recipe', async () => {
       mockRedisService.getCache.mockResolvedValue(recipeData);
+      mockPrismaService.block.findFirst.mockResolvedValue(null);
       mockPrismaService.like.findUnique.mockResolvedValue({
         user_id: mockUser.id,
       });
@@ -512,6 +532,21 @@ describe('RecipesService', () => {
       const result = await service.findOne(mockRecipe.id, mockUser.id);
 
       expect(result.is_liked).toBe(true);
+    });
+
+    /**
+     * Filter blocked users
+     */
+    it('should throw NotFoundException if author is blocked', async () => {
+      mockRedisService.getCache.mockResolvedValue(recipeData);
+      mockPrismaService.block.findFirst.mockResolvedValue({
+        blocker_id: mockUser.id,
+        blocked_id: recipeData.author_id,
+      });
+
+      await expect(service.findOne(mockRecipe.id, mockUser.id)).rejects.toThrow(
+        new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND),
+      );
     });
   });
 
@@ -658,6 +693,7 @@ describe('RecipesService', () => {
      * Happy path: user chưa like → tạo like record và gửi notification.
      */
     it('should create like and return is_liked=true', async () => {
+      mockPrismaService.block.findFirst.mockResolvedValue(null);
       mockPrismaService.like.findUnique.mockResolvedValue(null);
       mockPrismaService.like.create.mockResolvedValue({});
 
@@ -671,6 +707,7 @@ describe('RecipesService', () => {
      * Gửi LIKE notification đến author khi like.
      */
     it('should send LIKE notification to recipe author', async () => {
+      mockPrismaService.block.findFirst.mockResolvedValue(null);
       mockPrismaService.like.findUnique.mockResolvedValue(null);
       mockPrismaService.like.create.mockResolvedValue({});
 
@@ -687,9 +724,24 @@ describe('RecipesService', () => {
     });
 
     /**
+     * Throw error if blocked
+     */
+    it('should throw NotFoundException if users have blocked each other', async () => {
+      mockPrismaService.block.findFirst.mockResolvedValue({
+        blocker_id: mockUser.id,
+        blocked_id: mockAuthor.id,
+      });
+
+      await expect(
+        service.likeRecipe(mockUser.id, mockRecipe.id),
+      ).rejects.toThrow(new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND));
+    });
+
+    /**
      * User đã like → xóa like (unlike) và trả về is_liked=false. Không gửi notification.
      */
     it('should delete like and return is_liked=false (unlike)', async () => {
+      mockPrismaService.block.findFirst.mockResolvedValue(null);
       mockPrismaService.like.findUnique.mockResolvedValue({
         user_id: mockUser.id,
       });

@@ -36,6 +36,19 @@ export class CommentsService {
     });
     if (!user) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
 
+    const isBlocked = await this.prisma.block.findFirst({
+      where: {
+        OR: [
+          { blocker_id: user_id, blocked_id: recipe.author_id },
+          { blocker_id: recipe.author_id, blocked_id: user_id },
+        ],
+      },
+    });
+
+    if (isBlocked) {
+      throw new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND);
+    }
+
     await this.prisma.comment.create({
       data: {
         user_id,

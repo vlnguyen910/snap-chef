@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -43,6 +44,11 @@ export class UsersService {
 
     if (current_user_id) {
       whereCondition.id = { not: current_user_id };
+
+      const blockedIds = await this.getBlockedUserIds(current_user_id);
+      if (blockedIds.length > 0) {
+        whereCondition.id.notIn = blockedIds;
+      }
     }
 
     if (search) {
@@ -116,6 +122,20 @@ export class UsersService {
     if (!currentUser || !followingUser)
       throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
 
+    // Check if either user has blocked the other
+    const isBlocked = await this.prisma.block.findFirst({
+      where: {
+        OR: [
+          { blocker_id: current_id, blocked_id: following_id },
+          { blocker_id: following_id, blocked_id: current_id },
+        ],
+      },
+    });
+
+    if (isBlocked) {
+      throw new BadRequestException('Cannot follow this user');
+    }
+
     let isFollowed: boolean | null = null;
     const followedUser = await this.prisma.follow.findUnique({
       where: {
@@ -148,14 +168,16 @@ export class UsersService {
     }
 
     //Trigger notification
-    await this.notificationService.createNotification({
-      receiverId: following_id,
-      senderId: current_id,
-      type: NotificationType.FOLLOW,
-      message: NotificationMessages.NEW_FOLLOW(followingUser.username),
-      resourceId: following_id,
-      resourceType: NotificationResourceType.USER,
-    });
+    if (isFollowed) {
+      await this.notificationService.createNotification({
+        receiverId: following_id,
+        senderId: current_id,
+        type: NotificationType.FOLLOW,
+        message: NotificationMessages.NEW_FOLLOW(followingUser.username),
+        resourceId: following_id,
+        resourceType: NotificationResourceType.USER,
+      });
+    }
 
     const message = isFollowed
       ? 'You have followed this user'
@@ -163,6 +185,102 @@ export class UsersService {
     return {
       message,
     };
+  }
+
+  async blockUser(current_id: string, target_id: string) {
+    if (current_id === target_id) {
+      throw new BadRequestException('You cannot block yourself');
+    }
+
+    const targetUser = await this.findOne(target_id);
+    if (!targetUser) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
+
+    const existingBlock = await this.prisma.block.findUnique({
+      where: {
+        blocker_id_blocked_id: {
+          blocker_id: current_id,
+          blocked_id: target_id,
+        },
+      },
+    });
+
+    if (existingBlock) {
+      throw new BadRequestException('User is already blocked');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      // 1. Create block record
+      await tx.block.create({
+        data: {
+          blocker_id: current_id,
+          blocked_id: target_id,
+        },
+      });
+
+      // 2. Remove follow relation where current user follows target user
+      await tx.follow.deleteMany({
+        where: {
+          follower_id: current_id,
+          following_id: target_id,
+        },
+      });
+
+      // 3. Remove follow relation where target user follows current user
+      await tx.follow.deleteMany({
+        where: {
+          follower_id: target_id,
+          following_id: current_id,
+        },
+      });
+    });
+
+    return { message: 'User blocked successfully' };
+  }
+
+  async unblockUser(current_id: string, target_id: string) {
+    const existingBlock = await this.prisma.block.findUnique({
+      where: {
+        blocker_id_blocked_id: {
+          blocker_id: current_id,
+          blocked_id: target_id,
+        },
+      },
+    });
+
+    if (!existingBlock) {
+      throw new BadRequestException('User is not blocked');
+    }
+
+    await this.prisma.block.delete({
+      where: {
+        blocker_id_blocked_id: {
+          blocker_id: current_id,
+          blocked_id: target_id,
+        },
+      },
+    });
+
+    return { message: 'User unblocked successfully' };
+  }
+
+  async getBlockedUserIds(user_id: string): Promise<string[]> {
+    const blocks = await this.prisma.block.findMany({
+      where: {
+        OR: [{ blocker_id: user_id }, { blocked_id: user_id }],
+      },
+      select: {
+        blocker_id: true,
+        blocked_id: true,
+      },
+    });
+
+    const blockedIds = new Set<string>();
+    for (const block of blocks) {
+      if (block.blocker_id !== user_id) blockedIds.add(block.blocker_id);
+      if (block.blocked_id !== user_id) blockedIds.add(block.blocked_id);
+    }
+
+    return Array.from(blockedIds);
   }
 
   async getLikedRecipes(user_id: string) {
@@ -202,6 +320,21 @@ export class UsersService {
   }
 
   async getPublicProfile(target_id: string, current_id: string | undefined) {
+    if (current_id) {
+      const isBlocked = await this.prisma.block.findFirst({
+        where: {
+          OR: [
+            { blocker_id: current_id, blocked_id: target_id },
+            { blocker_id: target_id, blocked_id: current_id },
+          ],
+        },
+      });
+
+      if (isBlocked) {
+        throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
+      }
+    }
+
     const targetUser = await this.getCurrentProfile(target_id);
     if (!targetUser) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
 
@@ -243,11 +376,21 @@ export class UsersService {
     const { page, limit } = query;
     const skip = (page - 1) * limit;
 
+    let blockedIds: string[] = [];
+    if (current_user_id) {
+      blockedIds = await this.getBlockedUserIds(current_user_id);
+    }
+
     const followers = await this.prisma.follow.findMany({
       skip,
       take: limit,
       orderBy: { created_at: 'desc' },
-      where: { following_id: profile_id },
+      where: {
+        following_id: profile_id,
+        ...(blockedIds.length > 0 && {
+          follower_id: { notIn: blockedIds },
+        }),
+      },
       select: {
         follower: {
           select: {
@@ -298,11 +441,21 @@ export class UsersService {
     const { page, limit } = query;
     const skip = (page - 1) * limit;
 
+    let blockedIds: string[] = [];
+    if (current_user_id) {
+      blockedIds = await this.getBlockedUserIds(current_user_id);
+    }
+
     const following = await this.prisma.follow.findMany({
       skip,
       take: limit,
       orderBy: { created_at: 'desc' },
-      where: { follower_id: profile_id },
+      where: {
+        follower_id: profile_id,
+        ...(blockedIds.length > 0 && {
+          following_id: { notIn: blockedIds },
+        }),
+      },
       select: {
         following: {
           select: {

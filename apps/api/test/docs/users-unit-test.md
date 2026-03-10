@@ -229,11 +229,41 @@ Lấy danh sách user với pagination. Loại current user khỏi kết quả.
 
 ---
 
+### 4.11 `getBlockedUserIds(user_id)`
+
+Lấy danh sách ID của các user đã block hoặc bị block bởi user hiện tại.
+
+| # | Test case | Loại | Mô tả |
+|---|---|---|---|
+| 24 | `should return a list of unique blocked user ids` | Happy path | `prisma.block.findMany` trả về danh sách, service map và trả về array các ID duy nhất |
+
+---
+
+### 4.12 `blockUser(current_id, target_id)`
+
+Block một user. Xóa mọi quan hệ follow giữa 2 user.
+
+| # | Test case | Loại | Mô tả |
+|---|---|---|---|
+| 25 | `should block a user and remove follows` | Happy path | `prisma.block.create` và `prisma.follow.deleteMany` được gọi thành công |
+
+---
+
+### 4.13 `unblockUser(current_id, target_id)`
+
+Unblock một user.
+
+| # | Test case | Loại | Mô tả |
+|---|---|---|---|
+| 26 | `should unblock a user successfully` | Happy path | `prisma.block.delete` được gọi thành công |
+
+---
+
 ## 5. Coverage hiện tại
 
 ```
 Test Suites: 1 passed
-Tests:       22 passed, 0 failed
+Tests:       26 passed, 0 failed
 ```
 
 Chạy lệnh sau để xem coverage chi tiết:

@@ -114,6 +114,7 @@ Tạo comment mới cho recipe. Gửi COMMENT notification đến recipe author.
 | 3 | `should send COMMENT notification to recipe author` | Happy path | `createNotification` được gọi với `receiverId: recipe.author_id`, `type: COMMENT`, `resourceType: RECIPE` |
 | 4 | `should throw NotFoundException if recipe does not exist` | Error path | `recipe.findUnique` trả về `null` → throw `RECIPE_NOT_FOUND`, không tạo comment |
 | 5 | `should throw NotFoundException if user does not exist` | Error path | `user.findUnique` trả về `null` → throw `USER_NOT_FOUND`, không tạo comment |
+| 6 | `should throw NotFoundException if users blocked each other` | Error path | Users block nhau → throw `RECIPE_NOT_FOUND` |
 
 ---
 
@@ -123,8 +124,8 @@ Tìm comment theo ID. Dùng nội bộ trong `deleteComment()` và `updateCommen
 
 | # | Test case | Loại | Mô tả |
 |---|---|---|---|
-| 6 | `should return a comment with user and recipe included` | Happy path | `findUnique({ where: { id }, include: { user: true, recipe: true } })` |
-| 7 | `should return null when comment is not found` | Edge case | Prisma trả về `null` → service trả về `null` (không throw) |
+| 7 | `should return a comment with user and recipe included` | Happy path | `findUnique({ where: { id }, include: { user: true, recipe: true } })` |
+| 8 | `should return null when comment is not found` | Edge case | Prisma trả về `null` → service trả về `null` (không throw) |
 
 ---
 
@@ -134,9 +135,9 @@ Lấy tất cả comments của một recipe với pagination, sắp xếp mới
 
 | # | Test case | Loại | Mô tả |
 |---|---|---|---|
-| 8 | `should return paginated comments for a recipe` | Happy path | `findMany({ where: { recipe_id }, skip: 0, take: 10 })` |
-| 9 | `should apply correct skip for pagination` | Happy path | `page:2, limit:5` → `skip: 5, take: 5` |
-| 10 | `should return empty array when no comments exist` | Edge case | Prisma trả về `[]` → service trả về `[]` |
+| 9 | `should return paginated comments for a recipe` | Happy path | `findMany({ where: { recipe_id }, skip: 0, take: 10 })` |
+| 10 | `should apply correct skip for pagination` | Happy path | `page:2, limit:5` → `skip: 5, take: 5` |
+| 11 | `should return empty array when no comments exist` | Edge case | Prisma trả về `[]` → service trả về `[]` |
 
 ---
 
@@ -148,10 +149,10 @@ Xóa comment. Cho phép cả **commenter** lẫn **recipe author** xóa.
 
 | # | Test case | Loại | Mô tả |
 |---|---|---|---|
-| 11 | `should delete comment when called by the commenter` | Happy path | `comment.user_id === user_id` → xóa thành công |
-| 12 | `should delete comment when called by the recipe author` | Happy path | `comment.recipe.author_id === user_id` → xóa thành công (moderation right) |
-| 13 | `should throw NotFoundException if comment does not exist` | Error path | `findOneById` trả về `null` → throw `COMMENT_NOT_FOUND` |
-| 14 | `should throw UnauthorizedException if user has no right to delete` | Error path | User không phải commenter cũng không phải author → throw `NO_RIGHT_DELETE_COMMENT` |
+| 12 | `should delete comment when called by the commenter` | Happy path | `comment.user_id === user_id` → xóa thành công |
+| 13 | `should delete comment when called by the recipe author` | Happy path | `comment.recipe.author_id === user_id` → xóa thành công (moderation right) |
+| 14 | `should throw NotFoundException if comment does not exist` | Error path | `findOneById` trả về `null` → throw `COMMENT_NOT_FOUND` |
+| 15 | `should throw UnauthorizedException if user has no right to delete` | Error path | User không phải commenter cũng không phải author → throw `NO_RIGHT_DELETE_COMMENT` |
 
 ---
 
@@ -163,9 +164,9 @@ Cập nhật nội dung comment. **Chỉ commenter** mới được sửa, khác
 
 | # | Test case | Loại | Mô tả |
 |---|---|---|---|
-| 15 | `should update comment and return success message` | Happy path | `comment.user_id === user_id` → `comment.update({ where: { id }, data: { content, rating } })` |
-| 16 | `should throw NotFoundException if comment does not exist` | Error path | `findOneById` trả về `null` → throw `COMMENT_NOT_FOUND` |
-| 17 | `should throw UnauthorizedException if user is not the commenter` | Error path | `comment.user_id !== user_id` → throw `NO_RIGHT_UPDATE_COMMENT` (recipe author cũng không được sửa) |
+| 16 | `should update comment and return success message` | Happy path | `comment.user_id === user_id` → `comment.update({ where: { id }, data: { content, rating } })` |
+| 17 | `should throw NotFoundException if comment does not exist` | Error path | `findOneById` trả về `null` → throw `COMMENT_NOT_FOUND` |
+| 18 | `should throw UnauthorizedException if user is not the commenter` | Error path | `comment.user_id !== user_id` → throw `NO_RIGHT_UPDATE_COMMENT` (recipe author cũng không được sửa) |
 
 ---
 
@@ -173,7 +174,7 @@ Cập nhật nội dung comment. **Chỉ commenter** mới được sửa, khác
 
 ```
 Test Suites: 1 passed
-Tests:       17 passed, 0 failed
+Tests:       18 passed, 0 failed
 ```
 
 ```bash
