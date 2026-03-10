@@ -146,6 +146,12 @@ export class RecipesService {
             slug: true,
           },
         },
+        categories: {
+          select: {
+            name: true,
+            slug: true,
+          },
+        },
         _count: {
           select: {
             comments: true,
@@ -427,6 +433,59 @@ export class RecipesService {
       where: { recipe_id: recipeId },
       orderBy: { order_index: 'asc' },
     });
+
+    if (!recipe) throw new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND);
+
+    return this.mapRecipeCounts(recipe) as Omit<RecipeDetail, 'is_liked'>;
+  }
+
+  private mapRecipeCounts = <
+    T extends { _count?: { comments: number; likes: number } | null },
+  >(
+    recipe: T,
+  ): Omit<T, '_count'> & { comments_count: number; likes_count: number } => {
+    const { _count, ...rest } = recipe;
+    return {
+      ...rest,
+      comments_count: _count?.comments || 0,
+      likes_count: _count?.likes || 0,
+    };
+  };
+
+  private async checkUserLiked(user_id: string, recipe_id: string) {
+    const like = await this.prisma.like.findUnique({
+      where: {
+        user_id_recipe_id: { user_id, recipe_id },
+      },
+      select: { user_id: true },
+    });
+
+    return !!like;
+  }
+
+  private async checkValidCategories(category_slugs?: string[]): Promise<void> {
+    if (!category_slugs || category_slugs.length === 0) return;
+
+    const uniqueSlugs = new Set(category_slugs);
+    if (uniqueSlugs.size !== category_slugs.length) {
+      throw new BadRequestException(ErrorMessages.DUPLICATE_CATEGORIES);
+    }
+
+    const existingCategories = await this.prisma.category.findMany({
+      where: {
+        slug: { in: category_slugs },
+      },
+      select: { slug: true },
+    });
+    const existingSlugs = existingCategories.map((category) => category.slug);
+    const invalidSlugs = category_slugs.filter(
+      (slug) => !existingSlugs.includes(slug),
+    );
+    if (invalidSlugs.length > 0) {
+      throw new BadRequestException(
+        `Invalid categories: ${invalidSlugs.join(', ')}`,
+      );
+    }
   }
 
   private async fetchRecipeFromDatabase(
