@@ -1,6 +1,14 @@
 # Snap Chef
 
-Snap Chef is a money splitting and sharing application designed to make expense management easy among groups. This repository is a monorepo managed by [Turborepo](https://turbo.build/repo).
+Snap Chef is a culinary application for sharing and discovering recipes. It features a robust backend API and a modern frontend interface, organized as a monorepo and managed by [Turborepo](https://turbo.build/repo).
+
+## Key Features
+
+- **Authentication:** Email/Password, Phone OTP via Firebase, and Google OAuth2. Token blacklisting for enhanced security.
+- **Social & Feed:** Dynamic newsfeed, user following, recipe likes, comments, and collections.
+- **Security:** Built-in rate limiting and robust JWT authentication strategies.
+- **Documentation:** Auto-generated API documentation using Swagger UI.
+- **Real-time:** WebSockets integration for real-time notifications, backed by Redis.
 
 ## Project Structure
 
@@ -8,8 +16,8 @@ This project is organized as a monorepo with the following structure:
 
 ### Apps
 
-- **`apps/api`**: The backend API built with [NestJS](https://nestjs.com/). It handles user authentication, group management, and expense tracking logic.
-- **`apps/web`**: The frontend web application built with [Vite](https://vitejs.dev/), [React](https://react.dev/), and TypeScript. It provides the user interface for managing groups and expenses.
+- **`apps/api`**: The backend API built with [NestJS](https://nestjs.com/). It handles user authentication, recipe management, social interactions, and serves the Swagger documentation.
+- **`apps/web`**: The frontend web application built with [Vite](https://vitejs.dev/), [React](https://react.dev/), and TypeScript. It provides the user interface for discovering recipes and interacting with the community.
 
 ### Packages
 
