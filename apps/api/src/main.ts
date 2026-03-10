@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common/pipes/validation.pipe';
 import { getAppConfig } from './config';
 import cookieParser from 'cookie-parser';
@@ -33,6 +34,16 @@ async function bootstrap() {
   });
   app.use(cookieParser());
   app.setGlobalPrefix('api');
+
+  const config = new DocumentBuilder()
+    .setTitle('Snap Chef API')
+    .setDescription('The Snap Chef API documentation')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, documentFactory);
+
   await app.listen(appPort);
 }
 void bootstrap();
