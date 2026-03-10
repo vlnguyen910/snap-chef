@@ -1,6 +1,12 @@
 # Snap Chef API
 
-This is the backend API for the Snap Chef application, built with [NestJS](https://nestjs.com/).
+This is the backend API for the Snap Chef application, a culinary platform for sharing and discovering recipes. It is built with [NestJS](https://nestjs.com/) and provides comprehensive REST endpoints.
+
+## Features
+- **Auth:** Email, Phone OTP (Firebase), Google OAuth, Token Blacklisting.
+- **Social:** User followings, dynamic newsfeed, recipe likes, and comments.
+- **Docs:** Interactive API documentation via Swagger UI at `/api/docs`.
+- **Security:** Global rate limiting and JWT guards.
 
 ## Getting Started
 

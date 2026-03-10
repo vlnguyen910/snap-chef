@@ -14,11 +14,12 @@ This is the backend API for **Snap Chef**, a culinary application for sharing an
 *   **Package Manager:** pnpm
 
 ## Key Features & Architecture
-*   **Authentication:** Local (Email/Password) and OAuth (Google). Handles login, registration, email verification, and token management.
-*   **Users:** Profile management, follow/unfollow functionality.
-*   **Recipes:** Full CRUD for recipes, including ingredients, cooking steps, and status (Draft, Published, etc.).
+*   **Authentication & Security:** Local (Email/Password), Phone OTP (Firebase), and OAuth (Google). Token management features Redis-based token blacklisting. Global rate limiting is enabled.
+*   **Users:** Profile management, follow/unfollow functionality, and blocking.
+*   **Recipes & Feed:** Full CRUD for recipes, categories, ingredients, and dynamic paginated Newsfeed.
 *   **Interactions:** Likes, Comments, and Collections.
 *   **Notifications:** Real-time system using WebSockets (Gateway) backed by Redis.
+*   **Documentation:** Comprehensive API documentation generated automatically with Swagger UI (`/api/docs`).
 *   **Search:** Database indexing on key fields (usernames, recipe titles, ingredients).
 
 ## Development Guide
