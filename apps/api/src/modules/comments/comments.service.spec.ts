@@ -50,6 +50,9 @@ const mockPrismaService = {
     delete: jest.fn(),
     update: jest.fn(),
   },
+  block: {
+    findFirst: jest.fn(),
+  },
 };
 
 const mockNotificationService = {
@@ -106,6 +109,7 @@ describe('CommentsService', () => {
      * Happy path: recipe và user tồn tại → tạo comment → gửi notification → trả về message.
      */
     it('should create comment and return success message', async () => {
+      mockPrismaService.block.findFirst.mockResolvedValue(null);
       const result = await service.create(mockUser.id, mockRecipe.id, dto);
 
       expect(result).toEqual({ message: 'Comment Created' });
@@ -123,6 +127,7 @@ describe('CommentsService', () => {
      * Gửi COMMENT notification đến recipe author sau khi tạo comment.
      */
     it('should send COMMENT notification to recipe author', async () => {
+      mockPrismaService.block.findFirst.mockResolvedValue(null);
       await service.create(mockUser.id, mockRecipe.id, dto);
 
       expect(mockNotificationService.createNotification).toHaveBeenCalledWith(
@@ -149,15 +154,17 @@ describe('CommentsService', () => {
     });
 
     /**
-     * User không tồn tại → NotFoundException.
+     * Throw Error nếu blocked
      */
-    it('should throw NotFoundException if user does not exist', async () => {
-      mockPrismaService.user.findUnique.mockResolvedValue(null);
+    it('should throw NotFoundException if users blocked each other', async () => {
+      mockPrismaService.block.findFirst.mockResolvedValue({
+        blocker_id: mockUser.id,
+        blocked_id: mockRecipe.author_id,
+      });
 
       await expect(
-        service.create('ghost-user', mockRecipe.id, dto),
-      ).rejects.toThrow(new NotFoundException(ErrorMessages.USER_NOT_FOUND));
-      expect(mockPrismaService.comment.create).not.toHaveBeenCalled();
+        service.create(mockUser.id, mockRecipe.id, dto),
+      ).rejects.toThrow(new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND));
     });
   });
 

@@ -44,9 +44,22 @@ model User {
   notificationSent     Notification[] @relation("SenderNotification")
   reporter             Report[]       @relation("UserReports")
   reportHandler        Report[]       @relation("UserHandles")
+  blocking             Block[]        @relation("blockerRelation")
+  blockedBy            Block[]        @relation("blockedRelation")
 
   //Indexes
   @@index([username])
+}
+
+model Block {
+  blocker_id String
+  blocked_id String
+  created_at DateTime @default(now())
+
+  blocker User @relation("blockerRelation", fields: [blocker_id], references: [id], onDelete: Cascade)
+  blocked User @relation("blockedRelation", fields: [blocked_id], references: [id], onDelete: Cascade)
+
+  @@id([blocker_id, blocked_id])
 }
 
 model OauthAccount {

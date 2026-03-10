@@ -83,14 +83,23 @@ export class RecipesService {
     limit: number;
     search?: string;
     category_slugs?: string[];
+    current_user_id?: string;
   }) {
-    const { page, limit, search, category_slugs } = params;
+    const { page, limit, search, category_slugs, current_user_id } = params;
     const skip = (page - 1) * limit;
 
     const whereCondition: RecipeWhereInput = {
       status: 'PUBLISHED',
       deleted_at: null,
     };
+
+    if (current_user_id) {
+      const blockedIds =
+        await this.userService.getBlockedUserIds(current_user_id);
+      if (blockedIds.length > 0) {
+        whereCondition.author_id = { notIn: blockedIds };
+      }
+    }
 
     if (category_slugs && category_slugs.length > 0) {
       whereCondition.categories = {
@@ -157,6 +166,21 @@ export class RecipesService {
     if (!recipeData) {
       recipeData = await this.fetchRecipeFromDatabase(id);
       await this.redis.setCache(cacheKey, recipeData, 10);
+    }
+
+    if (user_id) {
+      const isBlocked = await this.prisma.block.findFirst({
+        where: {
+          OR: [
+            { blocker_id: user_id, blocked_id: recipeData.author_id },
+            { blocker_id: recipeData.author_id, blocked_id: user_id },
+          ],
+        },
+      });
+
+      if (isBlocked) {
+        throw new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND);
+      }
     }
 
     const is_liked = user_id ? await this.checkUserLiked(user_id, id) : false;
@@ -262,6 +286,19 @@ export class RecipesService {
     if (!recipe) throw new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND);
     if (recipe.author_id === user_id)
       throw new BadRequestException(ErrorMessages.CANNOT_LIKE_OWN_RECIPE);
+
+    const isBlocked = await this.prisma.block.findFirst({
+      where: {
+        OR: [
+          { blocker_id: user_id, blocked_id: recipe.author_id },
+          { blocker_id: recipe.author_id, blocked_id: user_id },
+        ],
+      },
+    });
+
+    if (isBlocked) {
+      throw new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND);
+    }
 
     const isLiked = await this.checkUserLiked(user_id, recipe_id);
     if (isLiked) {

@@ -7,6 +7,7 @@ import {
   UseGuards,
   Put,
   Query,
+  Delete,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -92,5 +93,16 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.update(id, user.sub, updateUserDto);
+  }
+  @Post(':id/block')
+  @UseGuards(JwtAuthGuard)
+  blockUser(@GetUser() user: TokenPayload, @Param('id') target_id: string) {
+    return this.usersService.blockUser(user.sub, target_id);
+  }
+
+  @Delete(':id/block')
+  @UseGuards(JwtAuthGuard)
+  unblockUser(@GetUser() user: TokenPayload, @Param('id') target_id: string) {
+    return this.usersService.unblockUser(user.sub, target_id);
   }
 }

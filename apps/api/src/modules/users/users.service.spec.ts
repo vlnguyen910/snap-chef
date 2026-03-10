@@ -47,10 +47,19 @@ const mockPrismaService = {
     create: jest.fn(),
     delete: jest.fn(),
     findMany: jest.fn(),
+    deleteMany: jest.fn(),
   },
   like: {
     findMany: jest.fn(),
   },
+  block: {
+    findFirst: jest.fn(),
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+    create: jest.fn(),
+    delete: jest.fn(),
+  },
+  $transaction: jest.fn((callback) => callback(mockPrismaService)),
 };
 
 const mockRedisService = {
@@ -488,6 +497,7 @@ describe('UsersService', () => {
         { id: 'user-3', username: 'user3', avatar_url: '' },
       ];
       mockPrismaService.user.findMany.mockResolvedValue(mockUsers);
+      mockPrismaService.block.findMany.mockResolvedValue([]);
 
       const result = await service.findAll(query, mockUser.id);
 
@@ -515,6 +525,69 @@ describe('UsersService', () => {
         where: { id?: unknown };
       };
       expect(callArgs.where.id).toBeUndefined();
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // PHẦN 11: getBlockedUserIds()
+  // ──────────────────────────────────────────────────────────────────────────
+  describe('getBlockedUserIds()', () => {
+    it('should return a list of unique blocked user ids', async () => {
+      mockPrismaService.block.findMany.mockResolvedValue([
+        { blocker_id: mockUser.id, blocked_id: 'user-3' },
+        { blocker_id: 'user-4', blocked_id: mockUser.id },
+      ]);
+
+      const result = await service.getBlockedUserIds(mockUser.id);
+      expect(result).toStrictEqual(['user-3', 'user-4']);
+      expect(mockPrismaService.block.findMany).toHaveBeenCalledWith({
+        where: {
+          OR: [{ blocker_id: mockUser.id }, { blocked_id: mockUser.id }],
+        },
+        select: {
+          blocker_id: true,
+          blocked_id: true,
+        },
+      });
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // PHẦN 12: blockUser()
+  // ──────────────────────────────────────────────────────────────────────────
+  describe('blockUser()', () => {
+    beforeEach(() => {
+      mockRedisService.getCache.mockResolvedValue(mockUser2); // for findOne(target_id)
+    });
+
+    it('should block a user and remove follows', async () => {
+      mockPrismaService.block.findUnique.mockResolvedValue(null);
+      mockPrismaService.block.create.mockResolvedValue({});
+      mockPrismaService.follow.deleteMany.mockResolvedValue({});
+
+      const result = await service.blockUser(mockUser.id, mockUser2.id);
+
+      expect(result.message).toBe('User blocked successfully');
+      expect(mockPrismaService.block.create).toHaveBeenCalled();
+      expect(mockPrismaService.follow.deleteMany).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // PHẦN 13: unblockUser()
+  // ──────────────────────────────────────────────────────────────────────────
+  describe('unblockUser()', () => {
+    it('should unblock a user successfully', async () => {
+      mockPrismaService.block.findUnique.mockResolvedValue({
+        blocker_id: mockUser.id,
+        blocked_id: mockUser2.id,
+      });
+      mockPrismaService.block.delete.mockResolvedValue({});
+
+      const result = await service.unblockUser(mockUser.id, mockUser2.id);
+
+      expect(result.message).toBe('User unblocked successfully');
+      expect(mockPrismaService.block.delete).toHaveBeenCalled();
     });
   });
 });
