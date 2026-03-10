@@ -15,13 +15,20 @@ import { CollectionService } from './collection.service';
 import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt-auth.guard';
 import { UpdateCollectionDto } from './dto/update-collection';
 import { TokenPayload } from 'src/common/interfaces';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiTags('Collections')
 @Controller('collections')
 export class CollectionController {
   constructor(private collectionService: CollectionService) {}
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Post()
+  @ApiOperation({
+    summary: 'Create collection',
+    description: 'Create a new recipe collection for the current user.',
+  })
   async create(
     @GetUser() user: TokenPayload,
     @Body() payload: CreateCollectionDto,
@@ -31,6 +38,10 @@ export class CollectionController {
 
   @UseGuards(OptionalJwtAuthGuard)
   @Get('user/:user_id')
+  @ApiOperation({
+    summary: 'Get user collections',
+    description: 'Retrieve collections created by a specific user.',
+  })
   async getUserCollections(
     @Param('user_id') user_id: string,
     @GetUser() currentUser?: TokenPayload | null,
@@ -43,6 +54,10 @@ export class CollectionController {
 
   @UseGuards(OptionalJwtAuthGuard)
   @Get(':id')
+  @ApiOperation({
+    summary: 'Get collection details',
+    description: 'Retrieve details of a specific collection by its ID.',
+  })
   async getCollectionDetail(
     @Param('id') id: string,
     @GetUser() currentUser?: TokenPayload | null,
@@ -51,7 +66,12 @@ export class CollectionController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Post(':id/recipe/:recipe_id')
+  @ApiOperation({
+    summary: 'Add recipe to collection',
+    description: 'Add a recipe to a specific collection.',
+  })
   async addRecipeToCollection(
     @Param('id') collection_id: string,
     @Param('recipe_id') recipe_id: string,
@@ -65,7 +85,12 @@ export class CollectionController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Put(':id')
+  @ApiOperation({
+    summary: 'Update collection',
+    description: 'Update a specific collection owned by the current user.',
+  })
   async updateCollection(
     @Param('id') collection_id: string,
     @Body() payload: UpdateCollectionDto,

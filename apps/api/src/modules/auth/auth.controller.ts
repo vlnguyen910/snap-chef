@@ -12,6 +12,7 @@ import {
   Request,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { LoginDto } from './dto/request/login.dto';
 import { LoginResponseDto } from './dto/respone/login-respone.dto';
 import { SignUpDto } from './dto/request/sign-up.dto';
@@ -31,6 +32,7 @@ import { cookieConfiguration } from 'src/config';
 import type { ConfigType } from '@nestjs/config';
 import { Throttle } from '@nestjs/throttler';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -42,6 +44,10 @@ export class AuthController {
   @Throttle({ short: { ttl: 1000, limit: 3 } })
   @HttpCode(HttpStatus.OK)
   @Post('login')
+  @ApiOperation({
+    summary: 'User login',
+    description: 'Authenticate a user with email or phone and password.',
+  })
   async login(
     @Body() body: LoginDto,
     @Res({ passthrough: true }) res: Response,
@@ -63,12 +69,21 @@ export class AuthController {
 
   @Throttle({ short: { ttl: 60000, limit: 3 } })
   @Post('sign-up')
+  @ApiOperation({
+    summary: 'User sign up',
+    description: 'Register a new user account with email or phone.',
+  })
   async signUp(@Body() body: SignUpDto) {
     return this.authService.signUp(body);
   }
 
   @Post('refresh')
   @UseGuards(RefreshTokenGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Refresh access token',
+    description: 'Get a new access token using a valid refresh token.',
+  })
   async refreshToken(
     @GetUser() userPayload: TokenPayload,
   ): Promise<RefreshTokenResponseDto> {
@@ -79,7 +94,12 @@ export class AuthController {
 
   @Post('logout')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'User logout',
+    description: 'Invalidate the current refresh token and log out the user.',
+  })
   async logout(
     @GetUser() user: TokenPayload,
     @Res({ passthrough: true }) res: Response,
@@ -97,6 +117,10 @@ export class AuthController {
   }
 
   @Get('verify-email')
+  @ApiOperation({
+    summary: 'Verify email or phone',
+    description: 'Verify a user account using an OTP sent via email or SMS.',
+  })
   async verifyUser(
     @Query() payload: VerifyEmailDto,
   ): Promise<{ message: string }> {
@@ -105,10 +129,18 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(GoogleOAuthGuard)
+  @ApiOperation({
+    summary: 'Google OAuth login',
+    description: 'Redirect to Google for OAuth2 authentication.',
+  })
   async googleAuth() {}
 
   @Get('google-redirect')
   @UseGuards(GoogleOAuthGuard)
+  @ApiOperation({
+    summary: 'Google OAuth redirect',
+    description: 'Callback URL for Google OAuth2 authentication.',
+  })
   async googleAuthRedirect(
     @Request() req: any,
     @Res({ passthrough: true }) res: Response,
@@ -130,6 +162,11 @@ export class AuthController {
   }
 
   @Post('forget-password')
+  @ApiOperation({
+    summary: 'Forget password',
+    description:
+      'Request a password reset OTP for a given email or phone number.',
+  })
   async forgetPassword(
     @Body() body: ForgetPasswordDto,
   ): Promise<{ message: string }> {
@@ -138,7 +175,12 @@ export class AuthController {
 
   @Throttle({ short: { ttl: 60000, limit: 2 } })
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Post('reset-password')
+  @ApiOperation({
+    summary: 'Reset password',
+    description: 'Reset the user password using an authenticated session.',
+  })
   async resetPassword(
     @GetUser() user: TokenPayload,
     @Body() body: ResetPasswordDto,

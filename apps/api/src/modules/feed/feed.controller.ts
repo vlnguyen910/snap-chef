@@ -3,13 +3,34 @@ import { FeedService } from './feed.service';
 import { OptionalJwtAuthGuard } from '../../common/guards';
 import { GetUser } from '../../common/decorators';
 import { TokenPayload } from '../../common/interfaces';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 
+@ApiTags('Feed')
 @Controller('feed')
 export class FeedController {
   constructor(private readonly feedService: FeedService) {}
 
   @Get()
   @UseGuards(OptionalJwtAuthGuard) // Bắt buộc đăng nhập để xem Feed cá nhân
+  @ApiOperation({
+    summary: 'Get user feed',
+    description: 'Retrieve a customized recipe feed for the user.',
+  })
+  @ApiQuery({
+    name: 'cursor',
+    required: false,
+    description: 'Cursor for pagination',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Number of items to return',
+  })
   async getFeed(
     @GetUser() user?: TokenPayload, // Lấy userId từ JWT Token
     @Query('cursor') cursor?: string,
