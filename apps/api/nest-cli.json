@@ -10,6 +10,9 @@
         "outDir": "dist/src",
         "watchAssets": true
       }
+    ],
+    "plugins": [
+      "@nestjs/swagger"
     ]
   }
 }
