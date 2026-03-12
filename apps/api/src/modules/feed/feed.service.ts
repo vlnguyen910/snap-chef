@@ -98,14 +98,18 @@ export class FeedService {
           },
         },
       },
-      orderBy: {
-        likes: {
-          _count: 'desc',
+      orderBy: [
+        {
+          likes: {
+            _count: 'desc',
+          },
         },
-        comments: {
-          _count: 'desc',
+        {
+          comments: {
+            _count: 'desc',
+          },
         },
-      },
+      ],
     });
 
     return {
