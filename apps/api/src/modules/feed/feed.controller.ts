@@ -11,9 +11,21 @@ export class FeedController {
   constructor(private readonly feedService: FeedService) {}
 
   @ApiOperation({ summary: 'Get personalized recipe feed' })
-  @ApiResponse({ status: 200, description: 'Return list of recipes for the feed' })
-  @ApiQuery({ name: 'cursor', required: false, description: 'Cursor for pagination' })
-  @ApiQuery({ name: 'limit', required: false, description: 'Number of items to return', example: 10 })
+  @ApiResponse({
+    status: 200,
+    description: 'Return list of recipes for the feed',
+  })
+  @ApiQuery({
+    name: 'cursor',
+    required: false,
+    description: 'Cursor for pagination',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Number of items to return',
+    example: 10,
+  })
   @Get()
   @UseGuards(OptionalJwtAuthGuard) // Bắt buộc đăng nhập để xem Feed cá nhân
   async getFeed(
@@ -33,4 +45,3 @@ export class FeedController {
     return result;
   }
 }
-

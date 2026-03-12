@@ -15,7 +15,12 @@ import { CollectionService } from './collection.service';
 import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt-auth.guard';
 import { UpdateCollectionDto } from './dto/update-collection';
 import { TokenPayload } from 'src/common/interfaces';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Collections')
 @Controller('collections')
@@ -94,4 +99,3 @@ export class CollectionController {
     );
   }
 }
-

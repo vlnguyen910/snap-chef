@@ -80,4 +80,3 @@ export class UserPaginationDto extends PaginationDto {
   })
   limit: number = PAGINATION.USERS.DEFAULT_LIMIT;
 }
-

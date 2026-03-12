@@ -14,7 +14,12 @@ import { JwtAuthGuard, RolesGuard } from 'src/common/guards';
 import { UserRoles } from 'src/generated/prisma/enums';
 import { GetUser, Roles } from 'src/common/decorators';
 import { TokenPayload } from 'src/common/interfaces';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Reports')
 @ApiBearerAuth()
@@ -56,4 +61,3 @@ export class ReportsController {
     return this.reportsService.update(id, updateReportDto);
   }
 }
-

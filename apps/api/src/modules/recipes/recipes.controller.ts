@@ -15,7 +15,6 @@ import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
 import { TokenPayload } from 'src/common/interfaces';
 import { GetUser } from 'src/common/decorators/user.decorator';
-import { AuthGuard } from '@nestjs/passport';
 import { CommentsService } from '../comments/comments.service';
 import { CreateCommentsDto } from '../comments/dto/create-comments.dto';
 import { UpdateCommentDto } from '../comments/dto/update-comment.dto';
@@ -25,7 +24,12 @@ import {
   CommentPaginationDto,
   RecipePaginationDto,
 } from 'src/common/dto/pagination.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Recipes')
 @Controller('recipes')
@@ -51,10 +55,7 @@ export class RecipesController {
   @ApiResponse({ status: 200, description: 'Return list of recipes' })
   @Get()
   @UseGuards(OptionalJwtAuthGuard)
-  findAll(
-    @Query() query: RecipePaginationDto,
-    @GetUser() user?: TokenPayload,
-  ) {
+  findAll(@Query() query: RecipePaginationDto, @GetUser() user?: TokenPayload) {
     return this.recipesService.findAll({
       ...query,
       current_user_id: user?.sub,

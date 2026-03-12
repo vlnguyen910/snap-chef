@@ -17,7 +17,12 @@ import {
 } from 'src/common/dto/pagination.dto';
 import { Roles } from 'src/common/decorators';
 import { UserStatusUpdateDto } from './dto/user-status-update.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
@@ -63,4 +68,3 @@ export class AdminController {
     return await this.adminServicer.deleteRecipe(recipe_id);
   }
 }
-

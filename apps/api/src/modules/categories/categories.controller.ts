@@ -15,7 +15,12 @@ import { JwtAuthGuard, RolesGuard } from 'src/common/guards';
 import { Roles } from 'src/common/decorators';
 import { UserRoles } from 'src/generated/prisma/enums';
 import { Category } from 'src/generated/prisma/client';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Categories')
 @Controller('categories')
@@ -52,4 +57,3 @@ export class CategoriesController {
     return this.categoriesService.update(id, payload);
   }
 }
-

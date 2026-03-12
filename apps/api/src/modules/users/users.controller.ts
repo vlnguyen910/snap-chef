@@ -17,7 +17,12 @@ import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt-auth.guard'
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserPaginationDto } from 'src/common/dto/pagination.dto';
 import { TokenPayload } from 'src/common/interfaces';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Users')
 @Controller('users')
