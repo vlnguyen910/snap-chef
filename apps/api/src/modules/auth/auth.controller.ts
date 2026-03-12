@@ -30,7 +30,9 @@ import { RefreshTokenResponseDto } from './dto/respone/refresh-token-respone.dto
 import { cookieConfiguration } from 'src/config';
 import type { ConfigType } from '@nestjs/config';
 import { Throttle } from '@nestjs/throttler';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiCookieAuth } from '@nestjs/swagger';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -40,6 +42,9 @@ export class AuthController {
   ) {}
 
   @Throttle({ short: { ttl: 1000, limit: 3 } })
+  @ApiOperation({ summary: 'Login user and set refresh token cookie' })
+  @ApiResponse({ status: 200, description: 'Login successful', type: LoginResponseDto })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(
@@ -62,11 +67,17 @@ export class AuthController {
   }
 
   @Throttle({ short: { ttl: 60000, limit: 3 } })
+  @ApiOperation({ summary: 'Sign up a new user' })
+  @ApiResponse({ status: 201, description: 'User registered successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
   @Post('sign-up')
   async signUp(@Body() body: SignUpDto) {
     return this.authService.signUp(body);
   }
 
+  @ApiOperation({ summary: 'Refresh access token using refresh token cookie' })
+  @ApiResponse({ status: 201, description: 'Token refreshed successfully', type: RefreshTokenResponseDto })
+  @ApiCookieAuth('refresh_token')
   @Post('refresh')
   @UseGuards(RefreshTokenGuard)
   async refreshToken(
@@ -77,6 +88,9 @@ export class AuthController {
     return data;
   }
 
+  @ApiOperation({ summary: 'Logout user and clear refresh token cookie' })
+  @ApiResponse({ status: 200, description: 'Logged out successfully' })
+  @ApiBearerAuth()
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -96,6 +110,8 @@ export class AuthController {
     return { message: 'Logged out successfully' };
   }
 
+  @ApiOperation({ summary: 'Verify user email using token' })
+  @ApiResponse({ status: 200, description: 'Email verified successfully' })
   @Get('verify-email')
   async verifyUser(
     @Query() payload: VerifyEmailDto,
@@ -103,10 +119,12 @@ export class AuthController {
     return await this.authService.verifyEmail(payload);
   }
 
+  @ApiOperation({ summary: 'Initiate Google OAuth login' })
   @Get('google')
   @UseGuards(GoogleOAuthGuard)
   async googleAuth() {}
 
+  @ApiOperation({ summary: 'Google OAuth callback' })
   @Get('google-redirect')
   @UseGuards(GoogleOAuthGuard)
   async googleAuthRedirect(
@@ -129,6 +147,8 @@ export class AuthController {
     return rest;
   }
 
+  @ApiOperation({ summary: 'Send reset password email' })
+  @ApiResponse({ status: 201, description: 'Reset email sent' })
   @Post('forget-password')
   async forgetPassword(
     @Body() body: ForgetPasswordDto,
@@ -137,6 +157,9 @@ export class AuthController {
   }
 
   @Throttle({ short: { ttl: 60000, limit: 2 } })
+  @ApiOperation({ summary: 'Reset password using token' })
+  @ApiResponse({ status: 201, description: 'Password reset successfully' })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('reset-password')
   async resetPassword(
@@ -146,3 +169,4 @@ export class AuthController {
     return await this.authService.resetPassword(user.jti, body);
   }
 }
+
