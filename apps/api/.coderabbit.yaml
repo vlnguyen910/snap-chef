@@ -1,7 +1,0 @@
-language: "en-US"
-reviews:
-  profile: "chill"
-  review_status: true
-  auto_review:
-    enabled: true
-    drafts: false

@@ -9,7 +9,6 @@ import { jwtConfiguration } from 'src/config';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from '../users/users.module';
 import { CommentsModule } from '../comments/comments.module';
-import { RedisModule } from 'src/common/redis/redis.module';
 import { NotificationModule } from '../notifications/notification.module';
 
 @Module({
@@ -20,7 +19,6 @@ import { NotificationModule } from '../notifications/notification.module';
     ConfigModule.forFeature(jwtConfiguration),
     UsersModule,
     CommentsModule,
-    RedisModule,
     NotificationModule,
   ],
   controllers: [RecipesController],

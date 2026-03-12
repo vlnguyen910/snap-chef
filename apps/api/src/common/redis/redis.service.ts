@@ -33,7 +33,7 @@ export class RedisService {
   }
 
   async delCache(key: string) {
-    this.logger.log(`Cache key ${key} is invalidate`);
     await this.client.del(key);
+    this.logger.log(`Cache key ${key} is invalidate`);
   }
 }

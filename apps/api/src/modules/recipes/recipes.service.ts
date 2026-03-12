@@ -10,7 +10,7 @@ import { UpdateRecipeDto } from './dto/update-recipe.dto';
 import { PrismaService } from 'src/common/db/prisma.service';
 import { IngredientsService } from '../ingredients/ingredients.service';
 import { RecipeStatus } from 'src/generated/prisma/enums';
-import { RecipeIngredient } from 'src/generated/prisma/client';
+import { Prisma, RecipeIngredient, Step } from 'src/generated/prisma/client';
 import { UsersService } from '../users/users.service';
 import { RecipeWhereInput } from 'src/generated/prisma/models/Recipe';
 import { RedisService } from 'src/common/redis/redis.service';
@@ -20,10 +20,12 @@ import {
   NotificationType,
   NotificationResourceType,
 } from 'src/generated/prisma/enums';
-import { NotificationMessages } from 'src/common/constants';
+import { NotificationMessages, ErrorMessages } from 'src/common/constants';
 
 @Injectable()
 export class RecipesService {
+  private readonly logger = new Logger(RecipesService.name);
+
   constructor(
     private prisma: PrismaService,
     private ingredientsService: IngredientsService,
@@ -32,36 +34,11 @@ export class RecipesService {
     private notificationService: NotificationService,
   ) {}
 
-  private readonly logger = new Logger(RecipesService.name);
-
-  private validateOrderIndices(orderIndices: number[]): void {
-    const sortedIndices = [...orderIndices].sort((a, b) => a - b);
-
-    if (sortedIndices.length === 0) {
-      throw new BadRequestException('At least one step is required');
-    }
-
-    if (orderIndices.length !== new Set(orderIndices).size) {
-      throw new BadRequestException('Order index can not be duplicated');
-    }
-
-    if (sortedIndices[0] !== 1) {
-      throw new BadRequestException('order_index must start from 1');
-    }
-
-    for (let i = 0; i < sortedIndices.length - 1; i++) {
-      if (sortedIndices[i + 1] !== sortedIndices[i]! + 1) {
-        throw new BadRequestException('Order index must be continuous');
-      }
-    }
-  }
-
   async create(user_id: string, dto: CreateRecipeDto) {
     const user = await this.userService.findOne(user_id);
-    if (!user) throw new BadRequestException('User is not exist');
-
-    const orderIndices = dto.steps.map((step) => step.order_index);
-    this.validateOrderIndices(orderIndices);
+    if (!user) throw new BadRequestException(ErrorMessages.USER_NOT_FOUND);
+    await this.checkValidCategories(dto.category_slugs);
+    this.validateOrderIndices(dto.steps.map((step) => step.order_index));
 
     return await this.prisma.$transaction(async (tx) => {
       const recipe = await tx.recipe.create({
@@ -73,58 +50,62 @@ export class RecipesService {
           servings: dto.servings,
           thumbnail_url: dto.thumbnail_url,
           status: RecipeStatus.DRAFT,
-
-          steps: {
-            create: dto.steps.map((step) => ({
-              order_index: step.order_index,
-              image_url: step.image_url,
-              content: step.content,
-            })),
+          categories: {
+            connect: dto.category_slugs?.map((slug) => ({ slug })),
           },
         },
         include: {
-          steps: {
-            orderBy: { order_index: 'asc' },
+          categories: {
+            select: {
+              name: true,
+              slug: true,
+            },
           },
         },
       });
 
-      const recipeIngredients: RecipeIngredient[] = [];
-      for (const items of dto.ingredients) {
-        // Add new ingredient if it not in db
-        const ingredient = await this.ingredientsService.upsertByName(
-          items.name,
-          tx,
-        );
-
-        const recipeIngredient = await tx.recipeIngredient.create({
-          data: {
-            recipe_id: recipe.id,
-            ingredient_id: ingredient.id,
-            quantity: items.quantity,
-            unit: items.unit,
-          },
-          include: {
-            ingredient: true,
-          },
-        });
-        recipeIngredients.push(recipeIngredient);
-      }
+      const steps = await this.processSteps(tx, recipe.id, dto.steps);
+      const ingredients = await this.processIngredients(
+        tx,
+        recipe.id,
+        dto.ingredients,
+      );
 
       return {
-        recipe,
-        ingredients: recipeIngredients,
+        recipe: { ...recipe, steps },
+        ingredients,
       };
     });
   }
 
-  async findAll(params: { page: number; limit: number; search?: string }) {
-    const { page, limit, search } = params;
+  async findAll(params: {
+    page: number;
+    limit: number;
+    search?: string;
+    category_slugs?: string[];
+    current_user_id?: string;
+  }) {
+    const { page, limit, search, category_slugs, current_user_id } = params;
     const skip = (page - 1) * limit;
 
     const whereCondition: RecipeWhereInput = {
-      // status: 'PUBLISHED',
+      status: 'PUBLISHED',
+      deleted_at: null,
     };
+
+    if (current_user_id) {
+      const blockedIds =
+        await this.userService.getBlockedUserIds(current_user_id);
+      if (blockedIds.length > 0) {
+        whereCondition.author_id = { notIn: blockedIds };
+      }
+    }
+
+    if (category_slugs && category_slugs.length > 0) {
+      whereCondition.categories = {
+        some: { slug: { in: category_slugs } },
+      };
+    }
 
     if (search) {
       whereCondition.OR = [
@@ -156,18 +137,13 @@ export class RecipesService {
         user: {
           select: {
             username: true,
-            email: true,
             avatar_url: true,
-            role: true,
           },
         },
-        ingredients: {
+        categories: {
           select: {
-            quantity: true,
-            unit: true,
-            ingredient: {
-              select: { name: true },
-            },
+            name: true,
+            slug: true,
           },
         },
         _count: {
@@ -179,14 +155,7 @@ export class RecipesService {
       },
     });
 
-    return recipes.map((recipe) => {
-      const { _count, ...rest } = recipe;
-      return {
-        ...rest,
-        comments_count: _count.comments,
-        likes_count: _count.likes,
-      };
-    });
+    return recipes.map(this.mapRecipeCounts);
   }
 
   async findOne(id: string, user_id?: string) {
@@ -195,58 +164,25 @@ export class RecipesService {
     let recipeData =
       await this.redis.getCache<Omit<RecipeDetail, 'is_liked'>>(cacheKey);
     if (!recipeData) {
-      const recipe = await this.prisma.recipe.findUnique({
-        where: { id },
-        select: {
-          id: true,
-          author_id: true,
-          title: true,
-          thumbnail_url: true,
-          cooking_time: true,
-          servings: true,
-          created_at: true,
-          user: {
-            select: {
-              username: true,
-              avatar_url: true,
-            },
-          },
-          ingredients: {
-            select: {
-              quantity: true,
-              unit: true,
-              ingredient: {
-                select: { name: true },
-              },
-            },
-          },
-          steps: {
-            select: {
-              order_index: true,
-              image_url: true,
-              content: true,
-            },
-          },
-          _count: {
-            select: {
-              comments: true,
-              likes: true,
-            },
-          },
+      recipeData = await this.fetchRecipeFromDatabase(id);
+      await this.redis.setCache(cacheKey, recipeData, 10);
+    }
+
+    if (user_id) {
+      const isBlocked = await this.prisma.block.findFirst({
+        where: {
+          OR: [
+            { blocker_id: user_id, blocked_id: recipeData.author_id },
+            { blocker_id: recipeData.author_id, blocked_id: user_id },
+          ],
         },
       });
 
-      if (!recipe) throw new NotFoundException('Recipe is not exist');
-
-      const { _count, ...rest } = recipe;
-      recipeData = {
-        ...rest,
-        comments_count: _count.comments,
-        likes_count: _count.likes,
-      } as Omit<RecipeDetail, 'is_liked'>;
-
-      await this.redis.setCache(cacheKey, recipeData, 10);
+      if (isBlocked) {
+        throw new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND);
+      }
     }
+
     const is_liked = user_id ? await this.checkUserLiked(user_id, id) : false;
 
     // Ensure we only return the allowed user fields, even if cache was malformed
@@ -265,23 +201,37 @@ export class RecipesService {
   }
 
   async update(id: string, user_id: string, updateRecipeDto: UpdateRecipeDto) {
-    const { ingredients, steps, ...scalarFields } = updateRecipeDto;
+    const { ingredients, steps, category_slugs, ...scalarFields } =
+      updateRecipeDto;
     const cacheKey = `recipe:${id}`;
 
     const oldRecipe = await this.findOne(id);
-    if (!oldRecipe) throw new NotFoundException('Recipe not found');
+    if (!oldRecipe) throw new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND);
 
     if (oldRecipe.author_id !== user_id)
-      throw new UnauthorizedException(
-        'You have no right to perform this action',
-      );
+      throw new UnauthorizedException(ErrorMessages.NO_PERMISSION);
 
     await this.redis.delCache(cacheKey);
+
+    if (category_slugs) {
+      await this.checkValidCategories(category_slugs);
+    }
+
+    if (steps) {
+      this.validateOrderIndices(steps.map((step) => step.order_index));
+    }
 
     return await this.prisma.$transaction(async (tx) => {
       await tx.recipe.update({
         where: { id },
-        data: scalarFields,
+        data: {
+          ...(scalarFields as Parameters<typeof tx.recipe.update>[0]['data']),
+          ...(category_slugs && {
+            categories: {
+              set: category_slugs.map((slug) => ({ slug })),
+            },
+          }),
+        },
       });
 
       if (ingredients && ingredients.length > 0) {
@@ -290,22 +240,7 @@ export class RecipesService {
           where: { recipe_id: id },
         });
 
-        for (const item of ingredients) {
-          const ingredient = await this.ingredientsService.upsertByName(
-            item.name,
-            tx,
-          );
-
-          await tx.recipeIngredient.create({
-            data: {
-              recipe_id: id,
-              ingredient_id: ingredient.id,
-              quantity: item.quantity,
-              unit: item.unit,
-            },
-          });
-          this.logger.log(`An ingredient has been created`);
-        }
+        await this.processIngredients(tx, id, ingredients);
       }
 
       if (steps && steps.length > 0) {
@@ -314,15 +249,7 @@ export class RecipesService {
           where: { recipe_id: id },
         });
 
-        await tx.step.createMany({
-          data: steps.map((step) => ({
-            recipe_id: id,
-            order_index: step.order_index,
-            content: step.content,
-            image_url: step.image_url,
-          })),
-        });
-        this.logger.log(`${steps.length} steps have been created`);
+        await this.processSteps(tx, id, steps);
       }
 
       return await tx.recipe.findUnique({
@@ -336,34 +263,42 @@ export class RecipesService {
             },
           },
           steps: { orderBy: { order_index: 'asc' } },
+          categories: {
+            select: {
+              name: true,
+              slug: true,
+            },
+          },
         },
       });
     });
   }
 
-  private async checkUserLiked(user_id: string, recipe_id: string) {
-    const like = await this.prisma.like.findUnique({
-      where: {
-        user_id_recipe_id: { user_id, recipe_id },
-      },
-      select: { user_id: true },
-    });
-
-    return !!like;
-  }
-
   async likeRecipe(user_id: string, recipe_id: string) {
     const user = await this.userService.findOne(user_id);
-    if (!user) throw new BadRequestException('User is not exist');
+    if (!user) throw new BadRequestException(ErrorMessages.USER_NOT_FOUND);
 
     const recipe = await this.prisma.recipe.findUnique({
       where: { id: recipe_id },
       select: { author_id: true, title: true },
     });
 
-    if (!recipe) throw new NotFoundException('Recipe not found');
+    if (!recipe) throw new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND);
     if (recipe.author_id === user_id)
-      throw new BadRequestException('You cannot like your own recipe');
+      throw new BadRequestException(ErrorMessages.CANNOT_LIKE_OWN_RECIPE);
+
+    const isBlocked = await this.prisma.block.findFirst({
+      where: {
+        OR: [
+          { blocker_id: user_id, blocked_id: recipe.author_id },
+          { blocker_id: recipe.author_id, blocked_id: user_id },
+        ],
+      },
+    });
+
+    if (isBlocked) {
+      throw new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND);
+    }
 
     const isLiked = await this.checkUserLiked(user_id, recipe_id);
     if (isLiked) {
@@ -418,13 +353,186 @@ export class RecipesService {
       },
     });
 
-    return recipes.map((recipe) => {
-      const { _count, ...recipeData } = recipe;
-      return {
-        ...recipeData,
-        comments_count: _count.comments,
-        likes_count: _count.likes,
-      };
+    return recipes.map(this.mapRecipeCounts);
+  }
+
+  private validateOrderIndices(orderIndices: number[]): void {
+    const sortedIndices = [...orderIndices].sort((a, b) => a - b);
+
+    if (sortedIndices.length === 0) {
+      throw new BadRequestException(ErrorMessages.AT_LEAST_ONE_STEP);
+    }
+
+    if (orderIndices.length !== new Set(orderIndices).size) {
+      throw new BadRequestException(ErrorMessages.DUPLICATE_ORDER_INDEX);
+    }
+
+    if (sortedIndices[0] !== 1) {
+      throw new BadRequestException(ErrorMessages.ORDER_INDEX_START_FROM_1);
+    }
+
+    for (let i = 0; i < sortedIndices.length - 1; i++) {
+      if (sortedIndices[i + 1] !== sortedIndices[i]! + 1) {
+        throw new BadRequestException(ErrorMessages.ORDER_INDEX_CONTINUOUS);
+      }
+    }
+  }
+
+  private async processIngredients(
+    tx: Prisma.TransactionClient,
+    recipeId: string,
+    ingredients: { name: string; quantity: number; unit: string }[],
+  ): Promise<RecipeIngredient[]> {
+    const recipeIngredients: RecipeIngredient[] = [];
+    for (const item of ingredients) {
+      // Add new ingredient if it not in db
+      const ingredient = await this.ingredientsService.upsertByName(
+        item.name,
+        tx,
+      );
+
+      const recipeIngredient = await tx.recipeIngredient.create({
+        data: {
+          recipe_id: recipeId,
+          ingredient_id: ingredient.id,
+          quantity: item.quantity,
+          unit: item.unit,
+        },
+        include: {
+          ingredient: true,
+        },
+      });
+      recipeIngredients.push(recipeIngredient);
+    }
+    this.logger.log(`Ingredients have been created updated`);
+    return recipeIngredients;
+  }
+
+  private async processSteps(
+    tx: Prisma.TransactionClient,
+    recipeId: string,
+    steps: { order_index: number; content: string; image_url?: string }[],
+  ): Promise<Step[]> {
+    await tx.step.createMany({
+      data: steps.map((step) => ({
+        recipe_id: recipeId,
+        order_index: step.order_index,
+        content: step.content,
+        image_url: step.image_url,
+      })),
     });
+    this.logger.log(`${steps.length} steps have been created / updated`);
+
+    return tx.step.findMany({
+      where: { recipe_id: recipeId },
+      orderBy: { order_index: 'asc' },
+    });
+  }
+
+  private async fetchRecipeFromDatabase(
+    id: string,
+  ): Promise<Omit<RecipeDetail, 'is_liked'>> {
+    const recipe = await this.prisma.recipe.findUnique({
+      where: {
+        id,
+        deleted_at: null,
+      },
+      select: {
+        id: true,
+        author_id: true,
+        title: true,
+        thumbnail_url: true,
+        cooking_time: true,
+        servings: true,
+        created_at: true,
+        user: {
+          select: {
+            username: true,
+            avatar_url: true,
+          },
+        },
+        ingredients: {
+          select: {
+            quantity: true,
+            unit: true,
+            ingredient: {
+              select: { name: true },
+            },
+          },
+        },
+        steps: {
+          select: {
+            order_index: true,
+            image_url: true,
+            content: true,
+          },
+        },
+        categories: {
+          select: {
+            name: true,
+            slug: true,
+          },
+        },
+        _count: {
+          select: {
+            comments: true,
+            likes: true,
+          },
+        },
+      },
+    });
+
+    if (!recipe) throw new NotFoundException(ErrorMessages.RECIPE_NOT_FOUND);
+
+    return this.mapRecipeCounts(recipe) as Omit<RecipeDetail, 'is_liked'>;
+  }
+
+  private mapRecipeCounts = <
+    T extends { _count?: { comments: number; likes: number } | null },
+  >(
+    recipe: T,
+  ): Omit<T, '_count'> & { comments_count: number; likes_count: number } => {
+    const { _count, ...rest } = recipe;
+    return {
+      ...rest,
+      comments_count: _count?.comments || 0,
+      likes_count: _count?.likes || 0,
+    };
+  };
+
+  private async checkUserLiked(user_id: string, recipe_id: string) {
+    const like = await this.prisma.like.findUnique({
+      where: {
+        user_id_recipe_id: { user_id, recipe_id },
+      },
+      select: { user_id: true },
+    });
+
+    return !!like;
+  }
+
+  private async checkValidCategories(category_slugs?: string[]): Promise<void> {
+    if (!category_slugs || category_slugs.length === 0) return;
+
+    const uniqueSlugs = new Set(category_slugs);
+    if (uniqueSlugs.size !== category_slugs.length) {
+      throw new BadRequestException(ErrorMessages.DUPLICATE_CATEGORIES);
+    }
+
+    const existingCategories = await this.prisma.category.findMany({
+      where: {
+        slug: { in: category_slugs },
+      },
+      select: { slug: true },
+    });
+    const existingSlugs = existingCategories.map((category) => category.slug);
+    const invalidSlugs = category_slugs.filter(
+      (slug) => !existingSlugs.includes(slug),
+    );
+    if (invalidSlugs.length > 0) {
+      throw new BadRequestException(
+        `Invalid categories: ${invalidSlugs.join(', ')}`,
+      );
+    }
   }
 }

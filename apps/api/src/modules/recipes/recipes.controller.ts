@@ -13,9 +13,8 @@ import {
 import { RecipesService } from './recipes.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
-import type { User } from 'src/generated/prisma/client';
+import { TokenPayload } from 'src/common/interfaces';
 import { GetUser } from 'src/common/decorators/user.decorator';
-import { AuthGuard } from '@nestjs/passport';
 import { CommentsService } from '../comments/comments.service';
 import { CreateCommentsDto } from '../comments/dto/create-comments.dto';
 import { UpdateCommentDto } from '../comments/dto/update-comment.dto';
@@ -25,7 +24,14 @@ import {
   CommentPaginationDto,
   RecipePaginationDto,
 } from 'src/common/dto/pagination.dto';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('Recipes')
 @Controller('recipes')
 export class RecipesController {
   constructor(
@@ -33,55 +39,83 @@ export class RecipesController {
     private readonly commentsService: CommentsService,
   ) {}
 
+  @ApiOperation({ summary: 'Create a new recipe' })
+  @ApiResponse({ status: 201, description: 'Recipe created successfully' })
+  @ApiBearerAuth()
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(@GetUser() user: User, @Body() createRecipeDto: CreateRecipeDto) {
-    return this.recipesService.create(user.id, createRecipeDto);
+  create(
+    @GetUser() user: TokenPayload,
+    @Body() createRecipeDto: CreateRecipeDto,
+  ) {
+    return this.recipesService.create(user.sub, createRecipeDto);
   }
 
+  @ApiOperation({ summary: 'Find all recipes with pagination and filters' })
+  @ApiResponse({ status: 200, description: 'Return list of recipes' })
   @Get()
-  findAll(@Query() query: RecipePaginationDto) {
-    return this.recipesService.findAll(query);
+  @UseGuards(OptionalJwtAuthGuard)
+  findAll(@Query() query: RecipePaginationDto, @GetUser() user?: TokenPayload) {
+    return this.recipesService.findAll({
+      ...query,
+      current_user_id: user?.sub,
+    });
   }
 
+  @ApiOperation({ summary: 'Get recipe by ID' })
+  @ApiResponse({ status: 200, description: 'Return recipe detail' })
+  @ApiResponse({ status: 404, description: 'Recipe not found' })
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
-  findOne(@Param('id') id: string, @GetUser() user: User | undefined) {
-    return this.recipesService.findOne(id, user?.id);
+  findOne(@Param('id') id: string, @GetUser() user?: TokenPayload) {
+    return this.recipesService.findOne(id, user?.sub);
   }
 
+  @ApiOperation({ summary: 'Get recipes by user ID' })
+  @ApiResponse({ status: 200, description: 'Return list of user recipes' })
   @Get('user/:id')
   getUserRecipes(@Param('id') user_id: string) {
     return this.recipesService.getUserRecipes(user_id);
   }
 
+  @ApiOperation({ summary: 'Update a recipe' })
+  @ApiResponse({ status: 200, description: 'Recipe updated successfully' })
+  @ApiBearerAuth()
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   update(
     @Param('id') id: string,
-    @GetUser() user: User,
+    @GetUser() user: TokenPayload,
     @Body() updateRecipeDto: UpdateRecipeDto,
   ) {
-    return this.recipesService.update(id, user.id, updateRecipeDto);
+    return this.recipesService.update(id, user.sub, updateRecipeDto);
   }
 
-  //Social Features
+  // Social Features
+  @ApiOperation({ summary: 'Like or unlike a recipe' })
+  @ApiResponse({ status: 200, description: 'Success message' })
+  @ApiBearerAuth()
   @Post(':id/like')
-  @UseGuards(AuthGuard('jwt'))
-  likeRecipe(@GetUser() user: User, @Param('id') recipe_id: string) {
-    return this.recipesService.likeRecipe(user.id, recipe_id);
+  @UseGuards(JwtAuthGuard)
+  likeRecipe(@GetUser() user: TokenPayload, @Param('id') recipe_id: string) {
+    return this.recipesService.likeRecipe(user.sub, recipe_id);
   }
 
+  @ApiOperation({ summary: 'Add a comment to a recipe' })
+  @ApiResponse({ status: 201, description: 'Comment created' })
+  @ApiBearerAuth()
   @Post(':id/comments')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   createComment(
-    @GetUser() user: User,
+    @GetUser() user: TokenPayload,
     @Param('id') recipe_id: string,
     @Body() dto: CreateCommentsDto,
   ) {
-    return this.commentsService.create(user.id, recipe_id, dto);
+    return this.commentsService.create(user.sub, recipe_id, dto);
   }
 
+  @ApiOperation({ summary: 'Get all comments of a recipe' })
+  @ApiResponse({ status: 200, description: 'Return list of comments' })
   @Get(':id/comments')
   getAllCommentsOfRecipe(
     @Param('id') recipe_id: string,
@@ -90,22 +124,28 @@ export class RecipesController {
     return this.commentsService.findAllCommentsOfRecipe(recipe_id, query);
   }
 
+  @ApiOperation({ summary: 'Delete a comment' })
+  @ApiResponse({ status: 200, description: 'Comment deleted' })
+  @ApiBearerAuth()
   @Delete(':id/comments/:comment_id')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   deleteComment(
     @Param('comment_id', ParseIntPipe) id: number,
-    @GetUser() user: User,
+    @GetUser() user: TokenPayload,
   ) {
-    return this.commentsService.deleteComment(id, user.id);
+    return this.commentsService.deleteComment(id, user.sub);
   }
 
+  @ApiOperation({ summary: 'Update a comment' })
+  @ApiResponse({ status: 200, description: 'Comment updated' })
+  @ApiBearerAuth()
   @Patch(':id/comments/:comment_id')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   updateComment(
     @Param('comment_id', ParseIntPipe) id: number,
-    @GetUser() user: User,
+    @GetUser() user: TokenPayload,
     @Body() dto: UpdateCommentDto,
   ) {
-    return this.commentsService.updateComment(id, user.id, dto);
+    return this.commentsService.updateComment(id, user.sub, dto);
   }
 }

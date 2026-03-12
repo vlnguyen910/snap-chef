@@ -12,6 +12,7 @@ import { LoginDto } from './dto/request/login.dto';
 import argon2 from 'argon2';
 import { TokenPayload } from '../../common/interfaces';
 import { JwtTokenType } from '../../common/enums';
+import { ErrorMessages } from '../../common/constants';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { OAuthProvider, User, UserRoles } from 'src/generated/prisma/client';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,7 +25,8 @@ import { RedisService } from 'src/common/redis/redis.service';
 import { MailerService } from '../mail/mail.service';
 import { VerifyEmailDto } from './dto/request/verify-email.dto';
 import { OauthService } from '../oauth-accounts/oauth.service';
-import { randomInt } from 'crypto';
+import { ForgetPasswordDto } from './dto/request/forget-password.dto';
+import { ResetPasswordDto } from './dto/request/reset-password.dto';
 
 interface GoogleUser {
   email: string;
@@ -50,16 +52,17 @@ export class AuthService {
     const { email, password } = body;
     const user = await this.userService.findByEmail(email);
     if (!user || !user.password)
-      throw new UnauthorizedException('Email or password is incorrect');
-    if (!user.is_active) throw new ForbiddenException('User has been banned');
+      throw new UnauthorizedException(ErrorMessages.INVALID_CREDENTIALS);
+    if (!user.is_active)
+      throw new ForbiddenException(ErrorMessages.USER_BANNED);
 
     const isMatchPassword = await argon2.verify(user.password, password);
     if (!isMatchPassword)
-      throw new UnauthorizedException('Email or password is incorrect');
+      throw new UnauthorizedException(ErrorMessages.INVALID_CREDENTIALS);
 
     //TODO: Update later
     if (!user.is_verified)
-      throw new UnauthorizedException('You need verify your email first');
+      throw new UnauthorizedException(ErrorMessages.EMAIL_NOT_VERIFIED);
 
     return this.manageUserToken(user);
   }
@@ -68,7 +71,7 @@ export class AuthService {
     const { email, username, password, avatar_url } = body;
     const existingUser = await this.userService.findByEmail(email);
     if (existingUser) {
-      throw new ForbiddenException('Email is already in use');
+      throw new ForbiddenException(ErrorMessages.EMAIL_ALREADY_IN_USE);
     }
 
     const hashedPassword = await argon2.hash(password);
@@ -80,9 +83,9 @@ export class AuthService {
       role: UserRoles.USER,
     });
 
-    const cacheKey = `verify_email:${newUser.id}`;
-    const token: string = randomInt(100000, 1000000).toString();
-    await this.redis.setCache(cacheKey, token, 10);
+    const token = uuidv4();
+    const cacheKey = `verify_email:${token}`;
+    await this.redis.setCache(cacheKey, newUser.id, 15);
 
     await this.mailService.sendUserConfirmation(newUser, token);
 
@@ -90,14 +93,13 @@ export class AuthService {
   }
 
   async verifyEmail(payload: VerifyEmailDto) {
-    const { id, token } = payload;
-    const cacheKey = `verify_email:${id}`;
-    const cacheToken = await this.redis.getCache<string>(cacheKey);
+    const { token } = payload;
+    const cacheKey = `verify_email:${token}`;
+    const userId = await this.redis.getCache<string>(cacheKey);
 
-    if (!cacheToken || cacheToken !== token)
-      throw new BadRequestException('Invalid Token');
+    if (!userId) throw new BadRequestException(ErrorMessages.INVALID_TOKEN);
 
-    await this.userService.update(id, id, {
+    await this.userService.update(userId, userId, {
       is_verified: true,
     });
 
@@ -126,7 +128,7 @@ export class AuthService {
   }
 
   async googleLogin(req: { user: GoogleUser }): Promise<LoginResponseDto> {
-    if (!req.user) throw new NotFoundException('No user from Google found');
+    if (!req.user) throw new NotFoundException(ErrorMessages.NO_GOOGLE_USER);
 
     const { email, firstName, lastName, picture, provider_id } = req.user;
 
@@ -162,9 +164,7 @@ export class AuthService {
           user_id: user.id,
         });
       } else if (oauthAccount.provider_id !== provider_id) {
-        throw new ConflictException(
-          'User is already linked to a different Google account',
-        );
+        throw new ConflictException(ErrorMessages.GOOGLE_ACCOUNT_CONFLICT);
       }
     }
 
@@ -172,6 +172,48 @@ export class AuthService {
     await this.redis.setCache(cacheKey, user, 60);
 
     return this.manageUserToken(user);
+  }
+
+  async forgetPassword(body: ForgetPasswordDto): Promise<{ message: string }> {
+    const { email } = body;
+    const user = await this.userService.findByEmail(email);
+
+    if (user) {
+      const token = uuidv4();
+
+      const cacheKey = `reset_password:${token}`;
+      await this.redis.setCache(cacheKey, user.id, 15);
+
+      await this.mailService.sendResetPassword(user, token);
+    }
+
+    return {
+      message: 'An email was sent to you. Check it to reset your password',
+    };
+  }
+
+  async resetPassword(
+    jti: string,
+    body: ResetPasswordDto,
+  ): Promise<{ message: string }> {
+    const { token, password } = body;
+    const cacheKey = `reset_password:${token}`;
+    const userId = await this.redis.getCache<string>(cacheKey);
+
+    if (!userId) {
+      throw new BadRequestException(ErrorMessages.INVALID_OR_EXPIRED_TOKEN);
+    }
+
+    const hashedPassword = await argon2.hash(password);
+
+    await this.userService.update(userId, userId, {
+      password: hashedPassword,
+    });
+
+    await this.redis.delCache(cacheKey);
+    await this.logout(jti);
+
+    return { message: 'Password has been reset successfully' };
   }
 
   async isTokenABlacklisted(jti: string): Promise<boolean> {

@@ -4,4 +4,5 @@ export const NotificationMessages = {
   NEW_COMMENT: (username: string, recipeTitle: string) =>
     `${username} commented on your recipe ${recipeTitle}`,
   NEW_FOLLOW: (username: string) => `${username} followed you`,
+  NEW_REPORT: 'A new report has been submitted',
 };

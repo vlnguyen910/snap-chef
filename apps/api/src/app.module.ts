@@ -5,8 +5,9 @@ import { RecipesModule } from './modules/recipes/recipes.module';
 import { IngredientsModule } from './modules/ingredients/ingredients.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CommentsModule } from './modules/comments/comments.module';
-import { RedisModule } from '@nestjs-modules/ioredis';
+import { RedisModule as IoredisModule } from '@nestjs-modules/ioredis';
 import { ConfigModule, ConfigType } from '@nestjs/config';
+import { RedisModule } from './common/redis/redis.module';
 import {
   redisConfiguration,
   jwtConfiguration,
@@ -17,6 +18,14 @@ import { getRedisOptions } from './config/redis.options';
 import { UsersModule } from './modules/users/users.module';
 import { CollectionModule } from './modules/collections/collection.module';
 import { AppController } from './app.controller';
+import { AdminModule } from './modules/admin/admin.module';
+import { ReportsModule } from './modules/reports/reports.module';
+import { CategoriesModule } from './modules/categories/categories.module';
+import { FeedModule } from './modules/feed/feed.module';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
+import { CustomThrottlerGuard } from './common/guards';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -30,7 +39,7 @@ import { AppController } from './app.controller';
         googleConfiguration,
       ],
     }),
-    RedisModule.forRootAsync({
+    IoredisModule.forRootAsync({
       inject: [redisConfiguration.KEY],
       useFactory: (redisConfig: ConfigType<typeof redisConfiguration>) => ({
         type: 'single',
@@ -38,14 +47,43 @@ import { AppController } from './app.controller';
         options: getRedisOptions(redisConfig.keepAlive),
       }),
     }),
+    ThrottlerModule.forRootAsync({
+      inject: [redisConfiguration.KEY],
+      useFactory: (redisConfig: ConfigType<typeof redisConfiguration>) => ({
+        throttlers: [
+          {
+            name: 'short',
+            ttl: 1000,
+            limit: 5,
+          },
+          {
+            name: 'long',
+            ttl: 60000,
+            limit: 20,
+          },
+        ],
+        storage: new ThrottlerStorageRedisService(redisConfig.url),
+      }),
+    }),
+    RedisModule,
     UsersModule,
     CommentsModule,
     RecipesModule,
     IngredientsModule,
     AuthModule,
     CollectionModule,
+    AdminModule,
+    ReportsModule,
+    CategoriesModule,
+    FeedModule,
   ],
   controllers: [AppController],
-  providers: [PrismaService],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: CustomThrottlerGuard,
+    },
+    PrismaService,
+  ],
 })
 export class AppModule {}
