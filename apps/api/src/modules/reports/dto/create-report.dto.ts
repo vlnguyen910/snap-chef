@@ -24,7 +24,6 @@ export class CreateReportDto {
     description: 'Reason for the report',
     enum: ReportReason,
     example: ReportReason.INAPORIATE_CONTENT,
-
   })
   @IsNotEmpty()
   @IsEnum(ReportReason)

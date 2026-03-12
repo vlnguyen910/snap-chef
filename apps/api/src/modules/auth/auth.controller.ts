@@ -30,7 +30,13 @@ import { RefreshTokenResponseDto } from './dto/respone/refresh-token-respone.dto
 import { cookieConfiguration } from 'src/config';
 import type { ConfigType } from '@nestjs/config';
 import { Throttle } from '@nestjs/throttler';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiCookieAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiCookieAuth,
+} from '@nestjs/swagger';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -43,7 +49,11 @@ export class AuthController {
 
   @Throttle({ short: { ttl: 1000, limit: 3 } })
   @ApiOperation({ summary: 'Login user and set refresh token cookie' })
-  @ApiResponse({ status: 200, description: 'Login successful', type: LoginResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Login successful',
+    type: LoginResponseDto,
+  })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   @HttpCode(HttpStatus.OK)
   @Post('login')
@@ -76,7 +86,11 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Refresh access token using refresh token cookie' })
-  @ApiResponse({ status: 201, description: 'Token refreshed successfully', type: RefreshTokenResponseDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Token refreshed successfully',
+    type: RefreshTokenResponseDto,
+  })
   @ApiCookieAuth('refresh_token')
   @Post('refresh')
   @UseGuards(RefreshTokenGuard)
@@ -169,4 +183,3 @@ export class AuthController {
     return await this.authService.resetPassword(user.jti, body);
   }
 }
-

@@ -9,4 +9,3 @@ export class UserStatusUpdateDto {
   @IsBoolean()
   status!: boolean;
 }
-

@@ -12,7 +12,12 @@ import { NotificationService } from './notification.service';
 import { GetUser } from 'src/common/decorators/user.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { TokenPayload } from 'src/common/interfaces';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Notifications')
 @ApiBearerAuth()
@@ -46,4 +51,3 @@ export class NotificationController {
     await this.notificationService.markAllAsRead(user.sub);
   }
 }
-

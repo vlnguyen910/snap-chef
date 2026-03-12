@@ -39,7 +39,8 @@ export class CreateNotificationDto {
   message!: string;
 
   @ApiPropertyOptional({
-    description: 'ID of the resource related to the notification (e.g., recipe ID)',
+    description:
+      'ID of the resource related to the notification (e.g., recipe ID)',
     example: 'recipe-uuid-789',
   })
   @IsString()
