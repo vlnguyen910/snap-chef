@@ -25,7 +25,9 @@ import {
   CommentPaginationDto,
   RecipePaginationDto,
 } from 'src/common/dto/pagination.dto';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Recipes')
 @Controller('recipes')
 export class RecipesController {
   constructor(
@@ -33,6 +35,9 @@ export class RecipesController {
     private readonly commentsService: CommentsService,
   ) {}
 
+  @ApiOperation({ summary: 'Create a new recipe' })
+  @ApiResponse({ status: 201, description: 'Recipe created successfully' })
+  @ApiBearerAuth()
   @Post()
   @UseGuards(JwtAuthGuard)
   create(
@@ -42,22 +47,39 @@ export class RecipesController {
     return this.recipesService.create(user.sub, createRecipeDto);
   }
 
+  @ApiOperation({ summary: 'Find all recipes with pagination and filters' })
+  @ApiResponse({ status: 200, description: 'Return list of recipes' })
   @Get()
-  findAll(@Query() query: RecipePaginationDto) {
-    return this.recipesService.findAll(query);
+  @UseGuards(OptionalJwtAuthGuard)
+  findAll(
+    @Query() query: RecipePaginationDto,
+    @GetUser() user?: TokenPayload,
+  ) {
+    return this.recipesService.findAll({
+      ...query,
+      current_user_id: user?.sub,
+    });
   }
 
+  @ApiOperation({ summary: 'Get recipe by ID' })
+  @ApiResponse({ status: 200, description: 'Return recipe detail' })
+  @ApiResponse({ status: 404, description: 'Recipe not found' })
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
-  findOne(@Param('id') id: string, @GetUser() user: TokenPayload | undefined) {
+  findOne(@Param('id') id: string, @GetUser() user?: TokenPayload) {
     return this.recipesService.findOne(id, user?.sub);
   }
 
+  @ApiOperation({ summary: 'Get recipes by user ID' })
+  @ApiResponse({ status: 200, description: 'Return list of user recipes' })
   @Get('user/:id')
   getUserRecipes(@Param('id') user_id: string) {
     return this.recipesService.getUserRecipes(user_id);
   }
 
+  @ApiOperation({ summary: 'Update a recipe' })
+  @ApiResponse({ status: 200, description: 'Recipe updated successfully' })
+  @ApiBearerAuth()
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   update(
@@ -68,15 +90,21 @@ export class RecipesController {
     return this.recipesService.update(id, user.sub, updateRecipeDto);
   }
 
-  //Social Features
+  // Social Features
+  @ApiOperation({ summary: 'Like or unlike a recipe' })
+  @ApiResponse({ status: 200, description: 'Success message' })
+  @ApiBearerAuth()
   @Post(':id/like')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   likeRecipe(@GetUser() user: TokenPayload, @Param('id') recipe_id: string) {
     return this.recipesService.likeRecipe(user.sub, recipe_id);
   }
 
+  @ApiOperation({ summary: 'Add a comment to a recipe' })
+  @ApiResponse({ status: 201, description: 'Comment created' })
+  @ApiBearerAuth()
   @Post(':id/comments')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   createComment(
     @GetUser() user: TokenPayload,
     @Param('id') recipe_id: string,
@@ -85,6 +113,8 @@ export class RecipesController {
     return this.commentsService.create(user.sub, recipe_id, dto);
   }
 
+  @ApiOperation({ summary: 'Get all comments of a recipe' })
+  @ApiResponse({ status: 200, description: 'Return list of comments' })
   @Get(':id/comments')
   getAllCommentsOfRecipe(
     @Param('id') recipe_id: string,
@@ -93,8 +123,11 @@ export class RecipesController {
     return this.commentsService.findAllCommentsOfRecipe(recipe_id, query);
   }
 
+  @ApiOperation({ summary: 'Delete a comment' })
+  @ApiResponse({ status: 200, description: 'Comment deleted' })
+  @ApiBearerAuth()
   @Delete(':id/comments/:comment_id')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   deleteComment(
     @Param('comment_id', ParseIntPipe) id: number,
     @GetUser() user: TokenPayload,
@@ -102,8 +135,11 @@ export class RecipesController {
     return this.commentsService.deleteComment(id, user.sub);
   }
 
+  @ApiOperation({ summary: 'Update a comment' })
+  @ApiResponse({ status: 200, description: 'Comment updated' })
+  @ApiBearerAuth()
   @Patch(':id/comments/:comment_id')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   updateComment(
     @Param('comment_id', ParseIntPipe) id: number,
     @GetUser() user: TokenPayload,

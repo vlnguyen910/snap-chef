@@ -15,11 +15,16 @@ import { CollectionService } from './collection.service';
 import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt-auth.guard';
 import { UpdateCollectionDto } from './dto/update-collection';
 import { TokenPayload } from 'src/common/interfaces';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Collections')
 @Controller('collections')
 export class CollectionController {
   constructor(private collectionService: CollectionService) {}
 
+  @ApiOperation({ summary: 'Create a new collection' })
+  @ApiResponse({ status: 201, description: 'Collection created successfully' })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(
@@ -29,6 +34,8 @@ export class CollectionController {
     return await this.collectionService.create(user.sub, payload);
   }
 
+  @ApiOperation({ summary: 'Get collections by user ID' })
+  @ApiResponse({ status: 200, description: 'Return list of collections' })
   @UseGuards(OptionalJwtAuthGuard)
   @Get('user/:user_id')
   async getUserCollections(
@@ -41,6 +48,9 @@ export class CollectionController {
     );
   }
 
+  @ApiOperation({ summary: 'Get collection details by ID' })
+  @ApiResponse({ status: 200, description: 'Return collection details' })
+  @ApiResponse({ status: 404, description: 'Collection not found' })
   @UseGuards(OptionalJwtAuthGuard)
   @Get(':id')
   async getCollectionDetail(
@@ -50,6 +60,9 @@ export class CollectionController {
     return await this.collectionService.findOne(id, currentUser?.sub);
   }
 
+  @ApiOperation({ summary: 'Add a recipe to a collection' })
+  @ApiResponse({ status: 200, description: 'Recipe added successfully' })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post(':id/recipe/:recipe_id')
   async addRecipeToCollection(
@@ -64,6 +77,9 @@ export class CollectionController {
     );
   }
 
+  @ApiOperation({ summary: 'Update a collection' })
+  @ApiResponse({ status: 200, description: 'Collection updated successfully' })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Put(':id')
   async updateCollection(
@@ -78,3 +94,4 @@ export class CollectionController {
     );
   }
 }
+
