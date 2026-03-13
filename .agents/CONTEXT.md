@@ -1,6 +1,6 @@
 # 📋 Bối cảnh dự án Snap Chef
 
-> **Version:** 1.1.0
+> **Version:** 1.2.0
 > **Cập nhật lần cuối:** 2026-03-13
 
 ---
@@ -141,8 +141,8 @@ Frontend được xây dựng bởi thành viên trước, hiện **không còn 
 
 | Thành phần | Số lượng | Chi tiết |
 |---|---|---|
-| **Pages** | 14 | HomePage, AuthPage, CreateRecipePage, EditRecipePage, RecipeDetailPage, RecipesPage, DashboardPage, FavoritesPage, MyRecipesPage, SettingsPage, FollowListPage, UserSearchPage, ModerationPage, NotFound |
-| **Features** | 3 modules | `auth` (LoginForm, RegisterForm, useAuth), `recipes` (RecipeCard, RecipeList, RecipeListLoadMore, useRecipeActions), `moderation` (ApprovalQueue, useModeration) |
+| **Pages** | 14 | HomePage (Redesigned with Stitch), AuthPage, CreateRecipePage, EditRecipePage, RecipeDetailPage, RecipesPage, DashboardPage, FavoritesPage, MyRecipesPage, SettingsPage, FollowListPage, UserSearchPage, ModerationPage, NotFound |
+| **Features** | 4 modules | `feed` (New: FeedHero, RecipeFeedCard, FeedSidebar, FeedFilterBar), `auth` (LoginForm, RegisterForm, useAuth), `recipes` (RecipeCard, RecipeList, RecipeListLoadMore, useRecipeActions), `moderation` (ApprovalQueue, useModeration) |
 | **Common Components** | 14 | BookmarkButton, CommentForm, ErrorState, FollowButton, FollowersFollowingModal, GlobalSearch, Loading, RatingDisplay, RecipeComments, SearchInput, ShareButton, StarRating, UserProfile, UserSearch |
 | **Layout Components** | 4 | Header, MainLayout, Sidebar, UserMenu |
 | **Services** | 5 | authService, recipeService, commentService, userService, cloudinaryService |
@@ -201,3 +201,4 @@ Frontend được xây dựng bởi thành viên trước, hiện **không còn 
 |---|---|---|
 | 1.0.0 | 2026-03-13 | Khởi tạo tài liệu bối cảnh dự án |
 | 1.1.0 | 2026-03-13 | Thêm tình hình hiện tại của dự án (backend, frontend, database) |
+| 1.2.0 | 2026-03-13 | Hoàn thành redesign Trang chủ (Home Feed) theo thiết kế Stitch |
