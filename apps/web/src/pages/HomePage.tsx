@@ -1,135 +1,128 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChefHat, Search, Users, TrendingUp } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useStore } from '@/lib/store';
+import { Home, Compass, Bookmark, Plus, User, ChefHat } from 'lucide-react';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { useStore } from '@/lib/store';
+import {
+  FeedHero,
+  FeedSidebar,
+  FeedFilterBar,
+  RecipeFeedCard,
+  MOCK_RECIPES,
+  MOCK_TOP_CHEFS,
+  MOCK_TRENDING_CATEGORIES,
+} from '@/features/feed';
+
+type FilterOption = 'all' | 'popular' | 'recent';
+
+const MOBILE_NAV_ITEMS = [
+  { icon: Home, label: 'Home', to: '/' },
+  { icon: Compass, label: 'Explore', to: '/recipes' },
+  { spacer: true },
+  { icon: Bookmark, label: 'Saved', to: '/favorites' },
+  { icon: User, label: 'Profile', to: '/profile' },
+];
 
 export default function HomePage() {
+  useDocumentTitle('Snap Chef — Home Feed');
   const { isAuthenticated } = useStore();
-  useDocumentTitle('Home');
+  const [activeFilter, setActiveFilter] = useState<FilterOption>('all');
+
+  const filteredRecipes = MOCK_RECIPES; // API filtering will be added in Phase 2.3
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-orange-50 via-white to-orange-50 py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
-              <TrendingUp size={16} />
-              Join 10,000+ home chefs worldwide
+    <div className="min-h-screen bg-background-light dark:bg-background-dark">
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Left Sidebar */}
+          <FeedSidebar
+            categories={MOCK_TRENDING_CATEGORIES}
+            topChefs={MOCK_TOP_CHEFS}
+          />
+
+          {/* Main Feed */}
+          <div className="flex-1 flex flex-col gap-6 min-w-0">
+            {/* Hero */}
+            <FeedHero />
+
+            {/* Filter Bar */}
+            <FeedFilterBar active={activeFilter} onChange={setActiveFilter} />
+
+            {/* Recipe Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+              {filteredRecipes.map((recipe) => (
+                <Link to={`/recipes/${recipe.id}`} key={recipe.id} className="block">
+                  <RecipeFeedCard recipe={recipe} />
+                </Link>
+              ))}
             </div>
 
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
-              Discover, Cook, and Share
-              <span className="block text-orange-600 mt-2">Amazing Recipes</span>
-            </h1>
+            {/* Load More */}
+            <div className="flex justify-center py-6">
+              <button className="flex items-center gap-2 px-8 py-3 rounded-xl border-2 border-primary text-primary font-bold hover:bg-primary hover:text-white transition-all active:scale-95">
+                <span>Load More Recipes</span>
+                <span className="text-lg">↓</span>
+              </button>
+            </div>
 
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Your culinary journey starts here. Explore thousands of recipes, create your own masterpieces, and share them with a passionate community.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link to="/recipes">
-                <Button size="lg" className="w-full sm:w-auto">
-                  <Search size={20} className="mr-2" />
-                  Explore Recipes
-                </Button>
-              </Link>
-              <Link to={isAuthenticated ? "/profile" : "/auth/signup"}>
-                <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                  <ChefHat size={20} className="mr-2" />
-                  {isAuthenticated ? "Go to your profile" : "Start Cooking"}
-                </Button>
-              </Link>
+            {/* Mobile: Top Chefs horizontal scroll */}
+            <div className="flex lg:hidden flex-col gap-4">
+              <h3 className="text-xl font-black">Top Chefs This Week</h3>
+              <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-4">
+                {MOCK_TOP_CHEFS.map((chef) => (
+                  <div key={chef.id} className="flex flex-col items-center gap-2 min-w-[72px]">
+                    <div className="w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-primary to-orange-400">
+                      <img
+                        src={chef.avatar}
+                        alt={chef.name}
+                        className="w-full h-full rounded-full border-2 border-white object-cover"
+                      />
+                    </div>
+                    <span className="text-xs font-bold text-center leading-none">
+                      {chef.name.split(' ')[0]}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
+      </main>
 
-        {/* Decorative blob */}
-        <div className="absolute top-20 right-10 w-72 h-72 bg-orange-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-        <div className="absolute bottom-20 left-10 w-72 h-72 bg-yellow-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-16 bg-white border-y border-gray-200">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-orange-600 mb-2">1,000+</div>
-              <div className="text-gray-600">Recipes</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-orange-600 mb-2">37</div>
-              <div className="text-gray-600">Cuisines</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-orange-600 mb-2">10k+</div>
-              <div className="text-gray-600">Community Members</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">How It Works</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Three simple steps to become part of the SnapChef community
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
-                <Search className="text-orange-600" size={24} />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">1. Discover</h3>
-              <p className="text-gray-600">
-                Browse through thousands of recipes from various cuisines. Filter by ingredients, cooking time, and difficulty level.
-              </p>
-            </div>
-
-            <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
-                <ChefHat className="text-orange-600" size={24} />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">2. Cook</h3>
-              <p className="text-gray-600">
-                Follow step-by-step instructions with ingredients lists. Fork recipes and customize them to your taste.
-              </p>
-            </div>
-
-            <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
-                <Users className="text-orange-600" size={24} />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">3. Share</h3>
-              <p className="text-gray-600">
-                Share your own recipes with the community. Get feedback, ratings, and connect with fellow food lovers.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-orange-600 to-orange-500">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to Start Your Culinary Adventure?
-          </h2>
-          <p className="text-orange-100 text-lg mb-8 max-w-2xl mx-auto">
-            Join thousands of home chefs sharing their passion for cooking
-          </p>
-          <Link to={isAuthenticated ? "/profile" : "/auth/signup"}>
-            <Button size="lg" variant="outline" className="bg-white text-orange-600 hover:bg-orange-50 border-0">
-              {isAuthenticated ? "Go to your profile" : "Create Free Account"}
-            </Button>
+      {/* FAB: Add Recipe */}
+      {isAuthenticated && (
+        <div className="fixed bottom-20 md:bottom-10 right-6 md:right-10 z-40">
+          <Link to="/recipes/create">
+            <button
+              aria-label="Create new recipe"
+              className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-primary text-white shadow-xl shadow-primary/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-transform group"
+            >
+              <Plus size={28} className="group-hover:rotate-90 transition-transform" />
+            </button>
           </Link>
         </div>
-      </section>
+      )}
+
+      {/* Mobile Bottom Nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white dark:bg-background-dark border-t border-slate-100 dark:border-white/5 px-6 py-3 flex items-center justify-between z-50">
+        {MOBILE_NAV_ITEMS.map((item, idx) =>
+          'spacer' in item ? (
+            <div key={idx} className="w-10" />
+          ) : (
+            <Link
+              key={item.to}
+              to={item.to!}
+              className="text-slate-400 flex flex-col items-center gap-1 hover:text-primary transition-colors"
+            >
+              <item.icon size={22} />
+              <span className="text-[10px] font-bold">{item.label}</span>
+            </Link>
+          )
+        )}
+      </nav>
+
+      {/* Spacing for mobile bottom nav */}
+      <div className="md:hidden h-20" />
     </div>
   );
 }

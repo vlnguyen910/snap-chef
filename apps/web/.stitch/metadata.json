@@ -1,0 +1,68 @@
+{
+  "name": "projects/15925682253067639113",
+  "projectId": "15925682253067639113",
+  "title": "Trang chủ (Home Feed)",
+  "visibility": "PRIVATE",
+  "createTime": "2026-03-13T03:53:28.155967Z",
+  "updateTime": "2026-03-13T07:57:56.949008Z",
+  "projectType": "TEXT_TO_UI_PRO",
+  "origin": "STITCH",
+  "deviceType": "DESKTOP",
+  "designTheme": {
+    "colorMode": "LIGHT",
+    "font": "PLUS_JAKARTA_SANS",
+    "roundness": "ROUND_EIGHT",
+    "customColor": "#ff6933",
+    "saturation": 2
+  },
+  "screens": {
+    "home-feed": {
+      "id": "4225a7676e1843f1baa6c1fceb7db1bf",
+      "sourceScreen": "projects/15925682253067639113/screens/4225a7676e1843f1baa6c1fceb7db1bf",
+      "x": -59,
+      "y": 298,
+      "width": 1280,
+      "height": 1471,
+      "title": "Trang chủ (Home Feed)"
+    },
+    "recipe-detail": {
+      "id": "eb51c70fd65b4d69b59ead48ab9e9f00",
+      "sourceScreen": "projects/15925682253067639113/screens/eb51c70fd65b4d69b59ead48ab9e9f00",
+      "x": 1344,
+      "y": 0,
+      "width": 1280,
+      "height": 2539,
+      "title": "Chi tiết công thức (Recipe Detail)"
+    },
+    "create-recipe": {
+      "id": "ac48bab584a945cdbf99ed1651908e7e",
+      "sourceScreen": "projects/15925682253067639113/screens/ac48bab584a945cdbf99ed1651908e7e",
+      "x": 2688,
+      "y": 0,
+      "width": 1280,
+      "height": 1994,
+      "title": "Đăng công thức (Create Recipe)"
+    },
+    "user-profile": {
+      "id": "0413adc4510849b8b5c9325aa39991ec",
+      "sourceScreen": "projects/15925682253067639113/screens/0413adc4510849b8b5c9325aa39991ec",
+      "x": 4032,
+      "y": 0,
+      "width": 1280,
+      "height": 1148,
+      "title": "Trang cá nhân (User Profile)"
+    },
+    "admin-dashboard": {
+      "id": "cf37152a6396439c921a0774fbb84e90",
+      "sourceScreen": "projects/15925682253067639113/screens/cf37152a6396439c921a0774fbb84e90",
+      "x": 5376,
+      "y": 0,
+      "width": 1280,
+      "height": 1224,
+      "title": "Quản trị viên (Admin Dashboard)"
+    }
+  },
+  "metadata": {
+    "userRole": "OWNER"
+  }
+}
