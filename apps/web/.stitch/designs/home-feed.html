@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Snap Chef - Explore Recipes</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ff6933",
+                        "background-light": "#f8f6f5",
+                        "background-dark": "#23140f",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<header class="sticky top-0 z-50 w-full border-b border-primary/10 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md">
+<div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+<div class="flex items-center gap-2 text-primary shrink-0">
+<span class="material-symbols-outlined text-3xl font-bold">restaurant_menu</span>
+<h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Snap Chef</h1>
+</div>
+<div class="flex-1 max-w-2xl hidden md:block">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full bg-slate-100 dark:bg-white/10 border-none rounded-xl pl-10 pr-4 py-2 focus:ring-2 focus:ring-primary/50 text-sm" placeholder="Search for recipes, ingredients, or chefs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-2 md:gap-4 shrink-0">
+<button class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-slate-400 hidden sm:block">
+<span class="material-symbols-outlined">shopping_cart</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary/20 border-2 border-primary overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="User profile avatar smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkGABDN90HNjvx-fLpXZMd_Kg0nytRrX_sVbJCM8vkofzzv3xNWrfiwLud_gc9yXwKL4pD0p9HAvE3c-3hEQv2SrclN7uIrkMfyLPnne0sfd3w6eWliqbOwAFxbiuCitaLRc7m8fOrlfDpz1mOv5aX-UJWtjKwL7rGHI0HiCk0tfqELXoW9ETbA15QullDfHEl80g7xWhHQWk0elzcCKk5-1QB6qlWo2XwcEyOBKBJzOyt6P3QGW6syyMtL7ExfNnIaAeooOhSxv6G"/>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-4 py-6">
+<div class="flex flex-col lg:flex-row gap-8">
+<aside class="hidden lg:flex flex-col gap-8 w-64 shrink-0">
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary text-white font-semibold" href="#">
+<span class="material-symbols-outlined">home</span>
+<span>Feed</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 transition-colors text-slate-600 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span>Explore</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 transition-colors text-slate-600 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">bookmark</span>
+<span>Saved Recipes</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 transition-colors text-slate-600 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">history</span>
+<span>Cooked</span>
+</a>
+</nav>
+<div>
+<h3 class="px-4 mb-4 text-xs font-bold uppercase tracking-wider text-slate-400">Trending Categories</h3>
+<div class="flex flex-col gap-2">
+<button class="flex items-center justify-between px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-sm font-medium">
+<span>🔥 Quick &amp; Easy</span>
+<span class="text-xs text-slate-400">2.4k</span>
+</button>
+<button class="flex items-center justify-between px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-sm font-medium">
+<span>🥗 Vegan Life</span>
+<span class="text-xs text-slate-400">1.8k</span>
+</button>
+<button class="flex items-center justify-between px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-sm font-medium">
+<span>🍝 Italian Classics</span>
+<span class="text-xs text-slate-400">3.1k</span>
+</button>
+<button class="flex items-center justify-between px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-sm font-medium">
+<span>🧁 Sweet Treats</span>
+<span class="text-xs text-slate-400">950</span>
+</button>
+</div>
+</div>
+<div>
+<h3 class="px-4 mb-4 text-xs font-bold uppercase tracking-wider text-slate-400">Top Chefs</h3>
+<div class="flex flex-col gap-4 px-2">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="Portrait of Chef Marcus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJWZbtLIxJ13IpNj9MqfJt8Mh7rB7wwJR2RDV8HOWj_T3B9crJfKqO3w7rzDpEWJGvsGPdK6cSFTfqZGwTomxlLU3igqi3MLKAKtXMkHkPyBKQGMJR0I5lXMABJyvxEyr3JSJp7XiIlOWa8pQ84cawhx6AE2pPkWO2cM3b9J3Z1khQBSVceDZg7lwWiOhIt3CQpT_0LXT8XMWQYiy5kwAqMTjFuCoejDqSXoKL95CDEdj2l-2PeNT5x-m7BRBxgpHyVHldGd9-jDUt"/>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold truncate">Chef Marcus</p>
+<p class="text-xs text-slate-500">120 recipes</p>
+</div>
+<button class="text-primary text-xs font-bold">Follow</button>
+</div>
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="Portrait of Chef Elena" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUfMUKMdlSOlKqq7ekRiK-vz4QdqrwCmdR7ttRMBcHHwnP1qyORrAl50-LwpBGd4ePKSFDYlgVtByZVey8KPfXy3qkyWxzISN-foEaR2YDDFAkRk1Uy8eff1EAvfHVy1LDlbpdGOp4TxxaKMOKe4B7m7dS94qZm-8Y8FCFl5Z5iD17V4R-Ok2zD8ls9z0uZWsYzTxML2FtT70HLezXo3_Ke9qQMOaJldSXjfIClt2A6EkalqM-rHYdzp4kt_R1jyWW2LTJ3qVTXpRH"/>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold truncate">Chef Elena</p>
+<p class="text-xs text-slate-500">85 recipes</p>
+</div>
+<button class="text-primary text-xs font-bold">Follow</button>
+</div>
+</div>
+</div>
+</aside>
+<div class="flex-1 flex flex-col gap-8">
+<div class="relative h-[300px] md:h-[400px] rounded-3xl overflow-hidden group">
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="Gourmet homemade pasta dish close up" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbcQTzYJMg781tBWz_DI2ze3Tfn0zPbJKhI9YEZSfGbwtbcqQQJeUzaWw8PVzoMHiAq9r_OMjAQT83hFuYddhMwAtk3UGXp9LMV0YdHVykTQwHayzggx2AIbqNt6Evxn2Gocu50ZdF5BLi34KIjw-q6ch-G1sLwoE9aZE80l_wNPAwEP9mU5kyJU7Jg-Z2K1bkMbq5xXIuOndSO3zrkx_DuHKtKTwFvXq42F0F31dL1LyNbGi2C-_rlu14KtTwexlfqwiv-NrleC7h"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-6 md:p-10 w-full">
+<div class="flex items-center gap-2 mb-3">
+<span class="px-3 py-1 bg-primary text-white text-xs font-bold rounded-full uppercase tracking-widest">Daily Challenge</span>
+<span class="text-white/80 text-xs font-medium">Ending in 4h 22m</span>
+</div>
+<h2 class="text-white text-3xl md:text-5xl font-black mb-4 tracking-tight leading-tight max-w-xl">Master the Art of Hand-Rolled Gnocchi</h2>
+<div class="flex flex-wrap items-center gap-4">
+<button class="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-xl font-bold transition-all transform active:scale-95">Join Challenge</button>
+<div class="flex -space-x-3">
+<img class="w-8 h-8 rounded-full border-2 border-black" data-alt="User avatar 1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJAi1eLe2mLiDmdhGPa8_wj9hw5-fNWr52IMnIAYgQ0ygO8JeiyXsn0z7O1xDnIEw3qCQXtIk9v93jRYB1QMEpN-lBe3upNsbo8w6KMWM_qXmSQrfllYRQIIHxLE-8lTf8qqhX3_pqvBh1RI_-fpbp15aJ9nEYd2eoyicd5gkH8dWW86nGWCKK8BxkM0ia_JL0vQZ7WubQN4BIaXTRnX5pYcXiQZNNyzoEa6RCQ49zudFLX-1Psa3Z4_FKayMGiJTCyla6lO925rRW"/>
+<img class="w-8 h-8 rounded-full border-2 border-black" data-alt="User avatar 2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdy1-Cjxht5kJPSrhAqZGBI2ZlW1slySfEsacH1THlVebpNXcbvY-Q4RPGFZOWZ613VduRtgw6aa2bUGWfDddA9XzxyEja6xTDbh7OeAzTuCsWPs6Jtv5df7udHc5GgLQgQwxi-SY7Nl0U1rnEZ8asZ8AwQfz6T6sJ3fNAlW_V6OT4XTfmuz6dsEOd5hreGiQKZd79ymZMTw0GnwUpRqNwwZ5O3SaYI8Mj4uYsu1saUv3t8PuwDSqW2ItJSX9_QDm96iEbfC4AOGOo"/>
+<img class="w-8 h-8 rounded-full border-2 border-black" data-alt="User avatar 3" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvwWjBYvV0tXjOyhmEoD-QEZrYQE0JLkVdOGj7IXDAPZReStrKmvk5dih7sVrrXLzDNn3G9YkJhQY12dnhesEfBzVPCQpPVV4hppsDZt_G81gKWQqnTVtOcc5x0OHR2xVRW5lIPeNZI5Tvf6__8kJDqZVk-MixwrUCwBArKokY76SFZoU4AEa95Obw3huI2kCjJeF4FNyDGP7bnxvxw_RSY2P4aF3I9YuX6NLjOGyMRHqdBzEbIcx6hBmDIjaVF1XsxLIiXZ881IX6"/>
+<div class="w-8 h-8 rounded-full bg-slate-800 border-2 border-black flex items-center justify-center text-[10px] text-white font-bold">+12k</div>
+</div>
+<span class="text-white/80 text-sm font-medium">are cooking this today</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<h2 class="text-2xl font-black tracking-tight">Latest Recipes</h2>
+<div class="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-2">
+<button class="px-4 py-2 rounded-full bg-primary/10 text-primary font-bold text-sm whitespace-nowrap">All</button>
+<button class="px-4 py-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 font-medium text-sm whitespace-nowrap">Popular</button>
+<button class="px-4 py-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 font-medium text-sm whitespace-nowrap">Recent</button>
+<button class="material-symbols-outlined p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full text-slate-500">tune</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+<div class="bg-white dark:bg-white/5 rounded-2xl overflow-hidden border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-xl transition-shadow group">
+<div class="relative aspect-video overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Avocado toast with poached egg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHzsToP7ZaZviqwDcG1DtbqQMKuvzpHdkq_OpmwUV26Cp6O1qi4b5THoeC8_boFOvzDmNBry0v3SCeGDakV2wgSB7P3iJJFBZlmQEFxNUzWtn0rUJINUl929qNSK5e3yKXs5a3eVRCwVHV1yJL3bfiLlsiS_M-bLFCmO1I3lPZZdWP5I0S4Co98dlJARqKvRzhNnCOsjDmU2CExQm-9HU9-BOJXTG1wHxpCl4oMjIVTqKjAnIWFNI56M_br5UlKimq5sF0HNPzADvW"/>
+<button class="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/90 backdrop-blur shadow-sm flex items-center justify-center text-slate-600 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">bookmark</span>
+</button>
+<div class="absolute bottom-3 left-3 flex gap-2">
+<span class="px-2 py-1 rounded bg-black/60 backdrop-blur text-white text-[10px] font-bold uppercase">Beginner</span>
+</div>
+</div>
+<div class="p-5">
+<h3 class="text-lg font-bold mb-3 line-clamp-1 group-hover:text-primary transition-colors">Smoked Salmon Avocado Toast</h3>
+<div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-sm mb-4">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">schedule</span>
+<span>15 mins</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">star</span>
+<span class="font-bold text-slate-900 dark:text-white">4.9</span>
+<span>(1.2k)</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/5">
+<div class="flex items-center gap-2">
+<img class="w-6 h-6 rounded-full" data-alt="Sarah Cooks profile image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMQAcgs1sEK1dbeNqS9fGLcW7d3BDdITDVfmcUoxZ0POSRgo_J-6CM4SrDhpwqbO60NFh5wfVjuLCm8329fh-j_4sJht8nBJzmETob4MqQuGfACmcIWf_KAeVwgeBtfB5XaBZg4KsgRYAj5Ur6HNupK4mF2CZGtTR0ckfvh1WRzKn87Xud_K2amSawsE1b4ViIvrG5UkJa8-IzE-C6mySulUprQBHuqnA236YhSH_3lqvQf77r6TJ-xChPWBHgzZ23o-rxhUK6ejpZ"/>
+<span class="text-xs font-semibold">Sarah Cooks</span>
+</div>
+<span class="material-symbols-outlined text-slate-300">more_horiz</span>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-white/5 rounded-2xl overflow-hidden border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-xl transition-shadow group">
+<div class="relative aspect-video overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Beef tacos with lime and cilantro" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqnsasJB9kyummGZnwvOivdfQbsu2xej7b1pm48ahoC9NoZhctg4hH9iKCbfKMzFEuUYtdxx1ImZaEehPkquzVKvoSP0XjmFbWAMlOY33BdQGTOnAaQMKvX_bQPYElPEvuyoLeNYm5wVMm7WgAU0GZ6iw39SKzBuMfdD1KkhWFL1p0F-1pUJ00da8VLMPbirOANuxnKrbe9uZ9ANcD4KJeB9dERepC7IT_lx5GBB43tXRTuCb2s1PMaBAF_Xe3VpafKd8GJC6yEVVs"/>
+<button class="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/90 backdrop-blur shadow-sm flex items-center justify-center text-slate-600 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">bookmark</span>
+</button>
+<div class="absolute bottom-3 left-3 flex gap-2">
+<span class="px-2 py-1 rounded bg-black/60 backdrop-blur text-white text-[10px] font-bold uppercase">Intermediate</span>
+</div>
+</div>
+<div class="p-5">
+<h3 class="text-lg font-bold mb-3 line-clamp-1 group-hover:text-primary transition-colors">Spicy Beef Street Tacos</h3>
+<div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-sm mb-4">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">schedule</span>
+<span>35 mins</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">star</span>
+<span class="font-bold text-slate-900 dark:text-white">4.7</span>
+<span>(840)</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/5">
+<div class="flex items-center gap-2">
+<img class="w-6 h-6 rounded-full" data-alt="Taco Master profile image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKvFoicPa4b2TrXUIIAHvxD72_Yjp7msvtwnfSZ4XzrorDZCVIzPiYW4UoRbFUOxq-RhyOS9fdSttKDGzz1l6nm5py1gUQML85z94DnBtGT6HqtSY-urPzqCOpZfQ7TeYdis9oMy2YDQime7I-vGqE26NkkzoIYCXOsY8s8qRS9v955K045fGLOmjNhFBtFg_oGV7DRvbFZx1-1ULEhCyX3qR2EeGCXvjHyx3m26ath6tBxD28sfbxxugRCb2W4zWpmXmXf4ukCwR9"/>
+<span class="text-xs font-semibold">Taco Master</span>
+</div>
+<span class="material-symbols-outlined text-slate-300">more_horiz</span>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-white/5 rounded-2xl overflow-hidden border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-xl transition-shadow group">
+<div class="relative aspect-video overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Chocolate lava cake oozing" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAp9cPyf_Iqb49OjDj_rYl9fpEu-_EFlEAq27ZUr_qLiIOo4x3QzDBQ97K-6tpl_t-qkvcmpW7nrQzzd1UTbzpor0cqZECjJKJs6XkWTNLlOU74KF2_DRm7ACpgIZBqDRP_EW3zepKYV6wXvodP4SaGJY41z1RqoFOlrmrbnOa4ku-b81Gcq31-uPlt35Qa0Sj116xBVL_qXd3iR4H7oeA3XFDwZsIjx6I7POcm8LJReWy03tv3WfnP-HAzTL66kNxE-IuORS3fMvoD"/>
+<button class="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/90 backdrop-blur shadow-sm flex items-center justify-center text-slate-600 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">bookmark</span>
+</button>
+<div class="absolute bottom-3 left-3 flex gap-2">
+<span class="px-2 py-1 rounded bg-black/60 backdrop-blur text-white text-[10px] font-bold uppercase">Pro</span>
+</div>
+</div>
+<div class="p-5">
+<h3 class="text-lg font-bold mb-3 line-clamp-1 group-hover:text-primary transition-colors">Death by Chocolate Cake</h3>
+<div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-sm mb-4">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">schedule</span>
+<span>1h 15m</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">star</span>
+<span class="font-bold text-slate-900 dark:text-white">5.0</span>
+<span>(2.5k)</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/5">
+<div class="flex items-center gap-2">
+<img class="w-6 h-6 rounded-full" data-alt="Pastry Chef John profile image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNtavGCEBZdWUdvxQi7pQY--EcRDyVkr42gkH7gZpKVN04VQKKe9E2T2KAG6CIyk3DhoAZ5QWWNdfsLYowtamKLsYNPg5GSbV72lgdfd3NLNl7vPxwH0Q8ssvsr6xGVQ_IG_bRGYE2k2WPiVimtETJXohhH4l3mmTdxbHqpDF3G-DtJF3VzCNlz8zc_jYXdcekEcGF56U1ZZ99-Yy_fNjp9Yis9asLbbg-8vIrudeOZbs2DOr1sRu_MbAvdtbEHvIrm-niextL0Cy8"/>
+<span class="text-xs font-semibold">Pastry Chef John</span>
+</div>
+<span class="material-symbols-outlined text-slate-300">more_horiz</span>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-white/5 rounded-2xl overflow-hidden border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-xl transition-shadow group">
+<div class="relative aspect-video overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Fresh caesar salad with croutons" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcRQXAiEg8JqpkWdjJpSIK7rKnuITTSxmmQFrVMODSib3XvTxoqEgdLXGWtCvF8P-1-pHNFxGy_ILlEAAUtOEyaOmMgIHdGN3AicuSiP0JqivvmFKdrjcM-tkbcfr_XuVeioBSi4EjPM9X98JpD2KVPTF6WhHah5qXBjaiJsimNesCUfm2I8NI2Owb7SCkzn53XoV8wu47AuTETmKozuip4jayO1xAsoF0ELpB3Xk3paZWXeFz6ahs21YhbzZ-eossUslS8bUwFOaf"/>
+<button class="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/90 backdrop-blur shadow-sm flex items-center justify-center text-slate-600 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">bookmark</span>
+</button>
+<div class="absolute bottom-3 left-3 flex gap-2">
+<span class="px-2 py-1 rounded bg-black/60 backdrop-blur text-white text-[10px] font-bold uppercase">Beginner</span>
+</div>
+</div>
+<div class="p-5">
+<h3 class="text-lg font-bold mb-3 line-clamp-1 group-hover:text-primary transition-colors">Classic Creamy Caesar</h3>
+<div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-sm mb-4">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">schedule</span>
+<span>10 mins</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">star</span>
+<span class="font-bold text-slate-900 dark:text-white">4.5</span>
+<span>(156)</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/5">
+<div class="flex items-center gap-2">
+<img class="w-6 h-6 rounded-full" data-alt="Green Life profile image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD93iV4cJZtYIe_GF6wQE1HAjBXezsCss5_C5mSzkyL8N-yAAnUmp6tg9XUzbUyp6VCGU8qTbFjsgkVy_rEVk7U1UwzF-nyaQmXVv6PwnEp-arAhJsaejWHwT0F5TheJB87Y32Y4PdvM9zgQ89efMzYOY2-bPisfkVg-g0ZZ6dOTnH3_qishnAIoriDeoTLkbSWjOawN_5R-CLTzsMl0acM59iFpAzYPzndMJoC94JcLECXh_bAw4Hv23DSEXpoNaO-IzYx0nn25bZv"/>
+<span class="text-xs font-semibold">Green Life</span>
+</div>
+<span class="material-symbols-outlined text-slate-300">more_horiz</span>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-white/5 rounded-2xl overflow-hidden border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-xl transition-shadow group">
+<div class="relative aspect-video overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Thai green curry with jasmine rice" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDX8AR3sWeNxKx9YPCP9UBO4OywDQJFwrnzFHKxqquMqZfYWsdPswkSvmxhi3h9r8Cv1kGyUZOAmKQA7bZwPS5A6jxxoEVK8GHZL6r4unFAuJ9wdLQbxAxMZn2TNU1lqzp8aAILoH6JCAl6QsDtv0XzK6VVwPUzkBAVJnLfe01EtjkHSTqoy7Wk3-5MHwlnvBphApHGM9BzsPDG36TaH-kVMETEKRLz0y3iCPCttfD3XFgR5Ra6lvxhyluvuhNQSyn8FNgkQ0RVW1YZ"/>
+<button class="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/90 backdrop-blur shadow-sm flex items-center justify-center text-slate-600 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">bookmark</span>
+</button>
+<div class="absolute bottom-3 left-3 flex gap-2">
+<span class="px-2 py-1 rounded bg-black/60 backdrop-blur text-white text-[10px] font-bold uppercase">Intermediate</span>
+</div>
+</div>
+<div class="p-5">
+<h3 class="text-lg font-bold mb-3 line-clamp-1 group-hover:text-primary transition-colors">Authentic Thai Green Curry</h3>
+<div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-sm mb-4">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">schedule</span>
+<span>45 mins</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">star</span>
+<span class="font-bold text-slate-900 dark:text-white">4.8</span>
+<span>(342)</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/5">
+<div class="flex items-center gap-2">
+<img class="w-6 h-6 rounded-full" data-alt="Chef Somchai profile image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBinJMbQBrLTISTTMOheghWqwWPqiZXaDK_9WJ2Z7Dq6RXdETymulFabNk_NQ-zXpgiJi8TVDjy_MYFFQqXIkzLeEZiuO6JQj60z-0UAOtkR3VIpJ3M6RPi3FfXMG-iEbSccReINX3ORGo8H5ZX9lyzQITmzMdX4GIdugmeLNhisqHjvQz82GbS_lIkl5QRJAh5u4NmovwfWMUhpb5UoqZpn9YUps1bqslu_1MQCM92r6mm1TxAlf44xgcWKYYPf41MW_gEkr_Auftl"/>
+<span class="text-xs font-semibold">Chef Somchai</span>
+</div>
+<span class="material-symbols-outlined text-slate-300">more_horiz</span>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-white/5 rounded-2xl overflow-hidden border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-xl transition-shadow group">
+<div class="relative aspect-video overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Wood fired margherita pizza" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVhkKRb6K03ojwR2wDM8atxWFTTEdU1g5FwDmJHCmwkm0aqNJdetKGYDirJTJD1A7Wiv1We0oQVkn-pLNIfK_h-c0sQdxnieB4vOKLjzIB9tszOXjph48PwL11k7njSvB78rW5AA24Xt-Np2NtAl9vTDIC3chjyFLTsksmolRbQJzMXwiTxnh_hx3qzSJfCTbhuY7KVIVn65HylMgMHZv7WVW3kJNlMmEvGO_W3666nQTnNub3dH_becamRzwVMdivj4YTZITHREFV"/>
+<button class="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/90 backdrop-blur shadow-sm flex items-center justify-center text-slate-600 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">bookmark</span>
+</button>
+<div class="absolute bottom-3 left-3 flex gap-2">
+<span class="px-2 py-1 rounded bg-black/60 backdrop-blur text-white text-[10px] font-bold uppercase">Beginner</span>
+</div>
+</div>
+<div class="p-5">
+<h3 class="text-lg font-bold mb-3 line-clamp-1 group-hover:text-primary transition-colors">Perfect Margherita Pizza</h3>
+<div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-sm mb-4">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">schedule</span>
+<span>25 mins</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">star</span>
+<span class="font-bold text-slate-900 dark:text-white">4.6</span>
+<span>(2.1k)</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/5">
+<div class="flex items-center gap-2">
+<img class="w-6 h-6 rounded-full" data-alt="Pizza Guy profile image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAdddC5MBkikFKWctbMcTTUbJvEqcNvIVta8fH7odPZRJcvfT9iAdBc1rqpPtBzZy59SG_SoucnzujkxzRhzNjF-rGVk094VEIDtKDRK8XGK1JqBQlsXOJEb1o62LpgKOSopyDN5xLC-KcuCApLKXjyjFCUyYDSRtHE438-vAKZyMJS1ORQqDBXEDFJ1HR62-Wl3B36jFcVu8t2O_WyDxNVbtb8Od-tWLEgcA0yRve75UdTEGwFtT7xrXmWaMYNe34NEKpOBnGq6Q2"/>
+<span class="text-xs font-semibold">Pizza Guy</span>
+</div>
+<span class="material-symbols-outlined text-slate-300">more_horiz</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex justify-center py-8">
+<button class="flex items-center gap-2 px-8 py-3 rounded-xl border-2 border-primary text-primary font-bold hover:bg-primary hover:text-white transition-all">
+<span>Load More Recipes</span>
+<span class="material-symbols-outlined">expand_more</span>
+</button>
+</div>
+</div>
+<aside class="flex lg:hidden flex-col gap-6 px-2">
+<div>
+<h3 class="mb-4 text-xl font-black">Top Chefs This Week</h3>
+<div class="flex gap-4 overflow-x-auto hide-scrollbar pb-4">
+<div class="flex flex-col items-center gap-2 min-w-[80px]">
+<div class="w-16 h-16 rounded-full p-1 bg-gradient-to-tr from-primary to-orange-400">
+<img class="w-full h-full rounded-full border-2 border-white object-cover" data-alt="Chef avatar 1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDueq2saYkqTKo2jdZvFzE7IxIFILCiqTvEY23sHuJDb-6mBLcXXh_IytWxHKxLfZ-v57VQb9AOW09CXi_WfvNvV4h_-nKOGgy0Kyr6YPTdm2qTyKIljKf7-3CNRqrd4dpQh3tWTxy8jsvYqT-8Ngw6G2vZF_GOM4XbhPLB3uC3JLZAkYdikYkFO90RU8_kk0prZgrNprrnDybv2kc7Rmpm_gs4d1qLd6-M-q4Hrdq_N4SeYDwnmjWf-fJBKCIHSVJw-w8G8f7iSwSL"/>
+</div>
+<span class="text-xs font-bold">Marcus</span>
+</div>
+<div class="flex flex-col items-center gap-2 min-w-[80px]">
+<div class="w-16 h-16 rounded-full p-1 bg-gradient-to-tr from-primary to-orange-400">
+<img class="w-full h-full rounded-full border-2 border-white object-cover" data-alt="Chef avatar 2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDshpVD87aKCqPy9rBK5q1nTgq13cRtSN7tmr9JWoPNxv81CAKJfa-Zbd3eTKytOilicZwPbhlPbfgVtqH_Z8fFnJXh3neXQEF3wjzyr6H6iJC-Jbd1CSLYoAZ2bG63MtkQMTpKY9nL-pIdsC7X3UzVSi45h9_cjbV3cFlkjiCuKUdCBEbfR2hA05LMqBWufch8283jTWXqtdJiivpOxU5jp1sIGH8Hp3kjsJDJxJVNl6ZV1nkf2fFSPihccc8ZEtWNGrilwxLET5LR"/>
+</div>
+<span class="text-xs font-bold">Elena</span>
+</div>
+<div class="flex flex-col items-center gap-2 min-w-[80px]">
+<div class="w-16 h-16 rounded-full p-1 bg-gradient-to-tr from-primary to-orange-400">
+<img class="w-full h-full rounded-full border-2 border-white object-cover" data-alt="Chef avatar 3" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrM0GfkSUSzoWhocYTPMxNnfNgbal4fL5N1b5hqQESMxZ2CQt78Q_fXrKwB-pgMvfHmjjk_YkFTLhtcdf5aXJOsFROk6PgPyzVF8cn69RVbImuNrJYJqg-XBuz-_YJCqfSVjw2e_yVGGPojXL9-n8lXf0wFZriNYlM5jWUJvrnAKaG_DNohC4UBxLZ-Gl9EM1x0eSuSTl1ASHTz6DuOriksaQABMNKw9BpUtLEaMZKF-VPbD1cMvOXIisK_wCR5YLb6ZTz-dNkVp02"/>
+</div>
+<span class="text-xs font-bold">John</span>
+</div>
+<div class="flex flex-col items-center gap-2 min-w-[80px]">
+<div class="w-16 h-16 rounded-full p-1 bg-slate-200">
+<img class="w-full h-full rounded-full border-2 border-white object-cover" data-alt="Chef avatar 4" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7pvT8NGtsZlHkcqJWcra7vJKYeTtJKs5U-MZpy7sY__Zr7B5k2s7oIuib3I7rwLa53BDxWDtZ8CXmhM4jzt78YMmjTuLluLHWm45Z-tLUTXjTJNAzSNSSzMx0xzaH5f8ydNYLO7I13ADjS--Zk4U7lVYVzSsMjU783VFF2OmAuG_1KGJm91wDoQ1YRLp02sEHWZdbIPVDFtcg1tkX0KokGhNcxK76iBOfXXJqfRZYLBIo_UA5o3N6WhrcOYw2vfvWs3Gr-P30Bdv4"/>
+</div>
+<span class="text-xs font-bold">Sofia</span>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<div class="fixed bottom-6 right-6 md:bottom-10 md:right-10">
+<button class="w-14 h-14 md:w-16 md:h-16 rounded-full bg-primary text-white shadow-xl shadow-primary/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-transform group">
+<span class="material-symbols-outlined text-3xl font-bold group-hover:rotate-90 transition-transform">add</span>
+</button>
+</div>
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-white dark:bg-background-dark border-t border-slate-100 dark:border-white/5 px-6 py-3 flex items-center justify-between z-50">
+<button class="text-primary flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="text-[10px] font-bold">Home</span>
+</button>
+<button class="text-slate-400 flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-2xl">explore</span>
+<span class="text-[10px] font-bold">Explore</span>
+</button>
+<div class="w-10"></div>
+<button class="text-slate-400 flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-2xl">bookmark</span>
+<span class="text-[10px] font-bold">Saved</span>
+</button>
+<button class="text-slate-400 flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-2xl">person</span>
+<span class="text-[10px] font-bold">Profile</span>
+</button>
+</nav>
+</body></html>
