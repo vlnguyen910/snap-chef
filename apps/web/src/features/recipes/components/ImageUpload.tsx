@@ -1,19 +1,19 @@
-import { useRef } from 'react';
-import { Image, Trash2 } from 'lucide-react';
+import { useRef } from "react";
+import { Image, Trash2 } from "lucide-react";
 
-export const ImageUpload = ({ 
-  thumbnailPreview, 
-  onImageSelect, 
-}: { 
+export const ImageUpload = ({
+  thumbnailPreview,
+  onImageSelect,
+}: {
   thumbnailPreview: string;
   onImageSelect: (file: File) => void;
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div 
+    <div
       className="relative w-full rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 overflow-hidden transition-all duration-200 hover:border-gray-400 hover:bg-gray-100 cursor-pointer shadow-sm max-h-[300px]"
-      style={{ aspectRatio: '16/9' }}
+      style={{ aspectRatio: "16/9" }}
       onClick={() => !thumbnailPreview && fileInputRef.current?.click()}
     >
       <input
@@ -25,10 +25,10 @@ export const ImageUpload = ({
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) onImageSelect(file);
-          e.target.value = '';
+          e.target.value = "";
         }}
       />
-      
+
       {!thumbnailPreview ? (
         <label
           htmlFor="main-thumbnail"
@@ -41,26 +41,24 @@ export const ImageUpload = ({
             <p className="text-sm font-semibold text-gray-700">
               Tải ảnh đại diện
             </p>
-            <p className="text-xs text-gray-500 mt-0.5">
-              JPG, PNG, max 5MB
-            </p>
+            <p className="text-xs text-gray-500 mt-0.5">JPG, PNG, max 5MB</p>
           </div>
         </label>
       ) : (
         <div className="relative h-full w-full group">
-          <img 
-            src={thumbnailPreview} 
-            alt="Recipe" 
-            className="h-full w-full object-cover rounded-lg" 
+          <img
+            src={thumbnailPreview}
+            alt="Recipe"
+            className="h-full w-full object-cover rounded-lg"
           />
-          
+
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               if (fileInputRef.current) {
-                fileInputRef.current.value = '';
-                const changeEvent = new Event('change', { bubbles: true });
+                fileInputRef.current.value = "";
+                const changeEvent = new Event("change", { bubbles: true });
                 fileInputRef.current.dispatchEvent(changeEvent);
               }
             }}

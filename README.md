@@ -27,6 +27,7 @@ This project is organized as a monorepo with the following structure:
 ### Installation
 
 1.  Clone the repository:
+
     ```bash
     git clone <repository-url>
     cd snap-chef

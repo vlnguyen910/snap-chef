@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 interface BookmarkButtonProps {
   recipeId: string;
   initialSaved?: boolean;
   onToggle?: (recipeId: string, isSaved: boolean) => void;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
 }
 
 /**
@@ -16,20 +16,20 @@ export const BookmarkButton: React.FC<BookmarkButtonProps> = ({
   recipeId,
   initialSaved = false,
   onToggle,
-  size = 'md',
+  size = "md",
 }) => {
   const [isSaved, setIsSaved] = useState(initialSaved);
   const [isLoading, setIsLoading] = useState(false);
 
   const sizeClasses = {
-    sm: 'w-5 h-5',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8',
+    sm: "w-5 h-5",
+    md: "w-6 h-6",
+    lg: "w-8 h-8",
   };
 
   const handleToggle = async () => {
     setIsLoading(true);
-    
+
     try {
       // TODO: Call actual bookmark API
       // if (isSaved) {
@@ -37,19 +37,19 @@ export const BookmarkButton: React.FC<BookmarkButtonProps> = ({
       // } else {
       //   await bookmarkService.addBookmark(recipeId);
       // }
-      
+
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 300));
-      
+
       const newSavedState = !isSaved;
       setIsSaved(newSavedState);
-      
+
       if (onToggle) {
         onToggle(recipeId, newSavedState);
       }
     } catch (error) {
-      console.error('Failed to toggle bookmark:', error);
-      alert('Failed to bookmark recipe. Please try again.');
+      console.error("Failed to toggle bookmark:", error);
+      alert("Failed to bookmark recipe. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -67,8 +67,8 @@ export const BookmarkButton: React.FC<BookmarkButtonProps> = ({
         disabled:opacity-50 disabled:cursor-not-allowed
         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
       `}
-      aria-label={isSaved ? 'Remove bookmark' : 'Add bookmark'}
-      title={isSaved ? 'Remove from saved' : 'Save recipe'}
+      aria-label={isSaved ? "Remove bookmark" : "Add bookmark"}
+      title={isSaved ? "Remove from saved" : "Save recipe"}
     >
       {isSaved ? (
         // Filled bookmark icon

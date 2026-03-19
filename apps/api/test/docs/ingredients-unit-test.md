@@ -36,8 +36,8 @@ src/modules/ingredients/
 
 **Dependencies:**
 
-| Dependency | Vai trò |
-|---|---|
+| Dependency      | Vai trò                    |
+| --------------- | -------------------------- |
 | `PrismaService` | Truy vấn bảng `ingredient` |
 
 ---
@@ -46,8 +46,8 @@ src/modules/ingredients/
 
 ```typescript
 const mockIngredient = {
-  id:         'ingredient-uuid-1',
-  name:       'tomato',
+  id: 'ingredient-uuid-1',
+  name: 'tomato',
   created_at: new Date(),
 };
 ```
@@ -59,9 +59,9 @@ const mockIngredient = {
 ```typescript
 const mockPrismaService = {
   ingredient: {
-    create:    jest.fn(),
+    create: jest.fn(),
     findFirst: jest.fn(),
-    upsert:    jest.fn(),
+    upsert: jest.fn(),
   },
 };
 ```
@@ -76,9 +76,9 @@ File: `src/modules/ingredients/ingredients.service.spec.ts` — **8 test cases**
 
 ### 4.1 `initialization`
 
-| # | Test case | Mô tả |
-|---|---|---|
-| 1 | `should be defined` | NestJS khởi tạo service thành công |
+| #   | Test case           | Mô tả                              |
+| --- | ------------------- | ---------------------------------- |
+| 1   | `should be defined` | NestJS khởi tạo service thành công |
 
 ---
 
@@ -88,10 +88,10 @@ Tạo ingredient mới. Tên được **normalize** (trim + toLowerCase) trướ
 
 > **Tại sao normalize?** Tránh duplicate do khác biệt spacing hoặc case: `"Tomato"`, `"  tomato  "`, `"TOMATO"` đều phải trở thành `"tomato"`.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 2 | `should create ingredient with trimmed and lowercased name` | Happy path | `'  Tomato  '` → `prisma.ingredient.create({ data: { name: 'tomato' } })` |
-| 3 | `should normalize uppercase names to lowercase` | Happy path | `'BASIL'` → `{ name: 'basil' }` |
+| #   | Test case                                                   | Loại       | Mô tả                                                                     |
+| --- | ----------------------------------------------------------- | ---------- | ------------------------------------------------------------------------- |
+| 2   | `should create ingredient with trimmed and lowercased name` | Happy path | `'  Tomato  '` → `prisma.ingredient.create({ data: { name: 'tomato' } })` |
+| 3   | `should normalize uppercase names to lowercase`             | Happy path | `'BASIL'` → `{ name: 'basil' }`                                           |
 
 ---
 
@@ -99,10 +99,10 @@ Tạo ingredient mới. Tên được **normalize** (trim + toLowerCase) trướ
 
 Tìm ingredient theo tên chính xác trong DB.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 4 | `should return ingredient when found by name` | Happy path | `prisma.ingredient.findFirst({ where: { name: 'tomato' } })` |
-| 5 | `should return null when ingredient is not found` | Edge case | Prisma trả về `null` → service trả về `null` |
+| #   | Test case                                         | Loại       | Mô tả                                                        |
+| --- | ------------------------------------------------- | ---------- | ------------------------------------------------------------ |
+| 4   | `should return ingredient when found by name`     | Happy path | `prisma.ingredient.findFirst({ where: { name: 'tomato' } })` |
+| 5   | `should return null when ingredient is not found` | Edge case  | Prisma trả về `null` → service trả về `null`                 |
 
 ---
 
@@ -111,6 +111,7 @@ Tìm ingredient theo tên chính xác trong DB.
 Tìm hoặc tạo ingredient theo tên. Normalize tên. Nhận tùy chọn `tx` (Prisma Transaction Client) để chạy trong transaction của `RecipesService`.
 
 **Behavior:**
+
 ```
 cleanName = name.trim().toLowerCase()
 
@@ -123,11 +124,11 @@ client.ingredient.upsert({
 
 > **Tại sao dùng `tx`?** `RecipesService.create()` và `RecipesService.update()` chạy toàn bộ trong một Prisma transaction. `upsertByName(name, tx)` cần dùng cùng transaction client, nếu không ingredient được tạo sẽ không được rollback khi transaction fail.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 6 | `should upsert ingredient with normalized name` | Happy path | `'  Tomato  '` → `upsert({ where: { name: 'tomato' }, update: {}, create: { name: 'tomato' } })` |
-| 7 | `should use the provided transaction client when tx is passed` | Integration | `tx.ingredient.upsert` được gọi, `this.prisma.ingredient.upsert` **không** được gọi |
-| 8 | `should use this.prisma when no transaction client is provided` | Happy path | `tx = undefined` → `this.prisma.ingredient.upsert` được gọi 1 lần |
+| #   | Test case                                                       | Loại        | Mô tả                                                                                            |
+| --- | --------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------ |
+| 6   | `should upsert ingredient with normalized name`                 | Happy path  | `'  Tomato  '` → `upsert({ where: { name: 'tomato' }, update: {}, create: { name: 'tomato' } })` |
+| 7   | `should use the provided transaction client when tx is passed`  | Integration | `tx.ingredient.upsert` được gọi, `this.prisma.ingredient.upsert` **không** được gọi              |
+| 8   | `should use this.prisma when no transaction client is provided` | Happy path  | `tx = undefined` → `this.prisma.ingredient.upsert` được gọi 1 lần                                |
 
 ---
 
@@ -152,9 +153,13 @@ pnpm run test --testPathPattern="ingredients.service" --coverage \
 
 ```typescript
 it('should propagate DB error from upsert', async () => {
-  mockPrismaService.ingredient.upsert.mockRejectedValue(new Error('Unique constraint failed'));
+  mockPrismaService.ingredient.upsert.mockRejectedValue(
+    new Error('Unique constraint failed'),
+  );
 
-  await expect(service.upsertByName('tomato')).rejects.toThrow('Unique constraint failed');
+  await expect(service.upsertByName('tomato')).rejects.toThrow(
+    'Unique constraint failed',
+  );
 });
 ```
 
@@ -163,7 +168,10 @@ it('should propagate DB error from upsert', async () => {
 ```typescript
 it('should propagate error if ingredient name already exists', async () => {
   mockPrismaService.ingredient.create.mockRejectedValue(
-    new Prisma.PrismaClientKnownRequestError('Unique constraint', { code: 'P2002', clientVersion: '5.0' }),
+    new Prisma.PrismaClientKnownRequestError('Unique constraint', {
+      code: 'P2002',
+      clientVersion: '5.0',
+    }),
   );
 
   await expect(service.create({ name: 'tomato' })).rejects.toThrow();
@@ -172,4 +180,4 @@ it('should propagate error if ingredient name already exists', async () => {
 
 ---
 
-*Tài liệu cập nhật lần cuối: **2026-03-04**. Cập nhật khi thêm hoặc thay đổi test case.*
+_Tài liệu cập nhật lần cuối: **2026-03-04**. Cập nhật khi thêm hoặc thay đổi test case._

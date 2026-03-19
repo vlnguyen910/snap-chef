@@ -1,6 +1,6 @@
-import { Navigate } from 'react-router-dom';
-import { useStore } from '@/lib/store';
-import HomePage from '@/pages/HomePage';
+import { Navigate } from "react-router-dom";
+import { useStore } from "@/lib/store";
+import HomePage from "@/pages/HomePage";
 
 /**
  * RootRedirect Component

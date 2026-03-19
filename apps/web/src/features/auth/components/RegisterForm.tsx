@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useAuth } from '../hooks/useAuth';
-import { useStore } from '@/lib/store';
-import { 
-  validateSignupData, 
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "../hooks/useAuth";
+import { useStore } from "@/lib/store";
+import {
+  validateSignupData,
   transformSignupData,
-  type SignupFormInputs 
-} from '../utils/auth.helpers';
-import GoogleAuthButton from './GoogleAuthButton';
+  type SignupFormInputs,
+} from "../utils/auth.helpers";
+import GoogleAuthButton from "./GoogleAuthButton";
 
 export default function RegisterForm() {
   const navigate = useNavigate();
@@ -18,28 +18,28 @@ export default function RegisterForm() {
   const user = useStore((state) => state.user);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   const [formData, setFormData] = useState<SignupFormInputs>({
-    fullName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
-  
+
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   // Check if user is already authenticated
   useEffect(() => {
     if (user) {
       // User is already logged in, redirect to home with replace to prevent back navigation
-      navigate('/', { replace: true });
+      navigate("/", { replace: true });
     }
   }, [user, navigate]);
 
   const handleGoogleSignup = async () => {
     const success = await signinWithGoogle();
     if (success) {
-      navigate('/', { replace: true });
+      navigate("/", { replace: true });
     }
   };
 
@@ -69,9 +69,10 @@ export default function RegisterForm() {
     const result = await signup(payload);
     if (result) {
       window.toast?.success?.(
-        result.message || 'Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.'
+        result.message ||
+          "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.",
       );
-      navigate('/auth/signin', {
+      navigate("/auth/signin", {
         state: {
           pendingVerification: result.requiresEmailVerification,
           signupEmail: formData.email,
@@ -83,11 +84,18 @@ export default function RegisterForm() {
   return (
     <div className="w-full max-w-md space-y-6">
       <div className="space-y-2 text-center lg:text-left">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600">SnapChef Account</p>
-        <h2 className="text-3xl font-semibold tracking-tight text-foreground">Create your account</h2>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600">
+          SnapChef Account
+        </p>
+        <h2 className="text-3xl font-semibold tracking-tight text-foreground">
+          Create your account
+        </h2>
         <p className="text-sm text-muted-foreground">
-          Already have an account?{' '}
-          <Link to="/auth/signin" className="font-semibold text-orange-600 hover:text-orange-700">
+          Already have an account?{" "}
+          <Link
+            to="/auth/signin"
+            className="font-semibold text-orange-600 hover:text-orange-700"
+          >
             Sign in
           </Link>
         </p>
@@ -104,7 +112,9 @@ export default function RegisterForm() {
           <span className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-3 font-medium tracking-wide text-muted-foreground">or continue with email</span>
+          <span className="bg-card px-3 font-medium tracking-wide text-muted-foreground">
+            or continue with email
+          </span>
         </div>
       </div>
 
@@ -120,7 +130,10 @@ export default function RegisterForm() {
 
         {/* Full Name */}
         <div className="space-y-2">
-          <label htmlFor="fullName" className="block text-sm font-medium text-foreground">
+          <label
+            htmlFor="fullName"
+            className="block text-sm font-medium text-foreground"
+          >
             Full Name
           </label>
           <div className="relative">
@@ -129,7 +142,9 @@ export default function RegisterForm() {
               id="fullName"
               type="text"
               value={formData.fullName}
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, fullName: e.target.value })
+              }
               className="h-11 rounded-xl border-input/80 bg-background pl-10 pr-4"
               placeholder="Nguyen Van A"
             />
@@ -139,7 +154,10 @@ export default function RegisterForm() {
 
         {/* Email */}
         <div className="space-y-2">
-          <label htmlFor="email" className="block text-sm font-medium text-foreground">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-foreground"
+          >
             Email
           </label>
           <div className="relative">
@@ -148,7 +166,9 @@ export default function RegisterForm() {
               id="email"
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               className="h-11 rounded-xl border-input/80 bg-background pl-10 pr-4"
               placeholder="you@example.com"
             />
@@ -158,16 +178,21 @@ export default function RegisterForm() {
 
         {/* Password */}
         <div className="space-y-2">
-          <label htmlFor="password" className="block text-sm font-medium text-foreground">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-foreground"
+          >
             Password
           </label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               id="password"
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
               className="h-11 rounded-xl border-input/80 bg-background pl-10 pr-11"
               placeholder="At least 8 characters"
             />
@@ -175,7 +200,7 @@ export default function RegisterForm() {
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
@@ -185,16 +210,21 @@ export default function RegisterForm() {
 
         {/* Confirm Password */}
         <div className="space-y-2">
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground">
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm font-medium text-foreground"
+          >
             Confirm Password
           </label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               id="confirmPassword"
-              type={showConfirmPassword ? 'text' : 'password'}
+              type={showConfirmPassword ? "text" : "password"}
               value={formData.confirmPassword}
-              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, confirmPassword: e.target.value })
+              }
               className="h-11 rounded-xl border-input/80 bg-background pl-10 pr-11"
               placeholder="Confirm your password"
             />
@@ -202,7 +232,11 @@ export default function RegisterForm() {
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
-              aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+              aria-label={
+                showConfirmPassword
+                  ? "Hide confirm password"
+                  : "Show confirm password"
+              }
             >
               {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
@@ -210,8 +244,13 @@ export default function RegisterForm() {
           {/* field-level error removed, now shown above */}
         </div>
 
-        <Button type="submit" size="lg" className="h-11 w-full rounded-xl bg-orange-600 text-white hover:bg-orange-700" disabled={isLoading}>
-          {isLoading ? 'Creating account...' : 'Create account'}
+        <Button
+          type="submit"
+          size="lg"
+          className="h-11 w-full rounded-xl bg-orange-600 text-white hover:bg-orange-700"
+          disabled={isLoading}
+        >
+          {isLoading ? "Creating account..." : "Create account"}
         </Button>
 
         <p className="text-center text-xs text-muted-foreground">

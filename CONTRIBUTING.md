@@ -7,10 +7,11 @@ Chào mừng bạn đến với dự án Snap Chef! Tài liệu này mô tả qu
 ## 🛠️ I. Thiết Lập Môi Trường (Setup)
 
 1.  **Yêu cầu tiên quyết:**
-    -   Node.js (>= 18)
-    -   pnpm (>= 9)
+    - Node.js (>= 18)
+    - pnpm (>= 9)
 
 2.  **Cài đặt:**
+
     ```bash
     git clone ...
     cd snap-chef
@@ -18,7 +19,7 @@ Chào mừng bạn đến với dự án Snap Chef! Tài liệu này mô tả qu
     ```
 
 3.  **Biến môi trường:**
-    -   Copy file `.env-example` thành `.env` trong các thư mục ứng dụng tương ứng (`apps/api`, `apps/web`...) và cấu hình các giá trị cần thiết.
+    - Copy file `.env-example` thành `.env` trong các thư mục ứng dụng tương ứng (`apps/api`, `apps/web`...) và cấu hình các giá trị cần thiết.
 
 ---
 
@@ -48,11 +49,13 @@ Tại thư mục gốc (root):
 Chúng ta sử dụng quy trình **Rebase** để giữ lịch sử commit tuyến tính và sạch sẽ trên nhánh `dev`.
 
 ### 1. Nguyên Tắc Vàng ⚠️
+
 **KHÔNG BAO GIỜ** rebase một nhánh đã được chia sẻ công khai (`dev` hoặc bất kỳ nhánh nào đồng đội đã clone). Chỉ rebase **nhánh tính năng cục bộ** của bạn.
 
 ### 2. Các Bước Thực Hiện
 
 #### A. Chuẩn Bị và Phát Triển
+
 1.  **Đồng bộ hóa nhánh `dev`:**
     ```bash
     git checkout dev
@@ -64,13 +67,14 @@ Chúng ta sử dụng quy trình **Rebase** để giữ lịch sử commit tuy�
     git checkout -b feat/ten-tinh-nang
     ```
 3.  **Phát triển và Commit:**
-    *Khuyến khích sử dụng Conventional Commits (ví dụ: `feat: add login`, `fix: header layout`).*
+    _Khuyến khích sử dụng Conventional Commits (ví dụ: `feat: add login`, `fix: header layout`)._
     ```bash
     git add .
     git commit -m "feat: mô tả công việc"
     ```
 
 #### B. Làm Sạch Lịch Sử (Rebase Cục Bộ)
+
 Trước khi push hoặc mở PR, hãy cập nhật nhánh của bạn với code mới nhất từ `dev` để tránh xung đột sau này.
 
 1.  **Lấy code mới nhất:**
@@ -84,7 +88,8 @@ Trước khi push hoặc mở PR, hãy cập nhật nhánh của bạn với cod
     git checkout feat/ten-tinh-nang
     git rebase dev
     ```
-    *   *Nếu có xung đột (`conflict`):* Giải quyết file conflict -> `git add .` -> `git rebase --continue`.
+
+    - _Nếu có xung đột (`conflict`):_ Giải quyết file conflict -> `git add .` -> `git rebase --continue`.
 3.  **Đẩy code (Push):**
     Nếu bạn đã push nhánh này trước đó, sau khi rebase bạn cần force push.
     ```bash
@@ -98,9 +103,9 @@ Trước khi push hoặc mở PR, hãy cập nhật nhánh của bạn với cod
 1.  Tạo Pull Request trên GitHub hướng vào nhánh `dev`.
 2.  **Tiêu đề PR:** Rõ ràng, mô tả ngắn gọn tính năng (VD: `[Feat] Group Management`).
 3.  **Checklist:**
-    -   [ ] Code đã được format và lint.
-    -   [ ] Đã chạy `pnpm check-types` và `pnpm test` thành công.
-    -   [ ] Đã tự review code của mình.
+    - [ ] Code đã được format và lint.
+    - [ ] Đã chạy `pnpm check-types` và `pnpm test` thành công.
+    - [ ] Đã tự review code của mình.
 4.  **Hợp nhất (Merge):**
-    -   Người review (hoặc bạn nếu được phép) sẽ chọn **`Rebase and Merge`** để đưa code vào `dev`.
-    -   *Lý do:* Giữ lịch sử `dev` thẳng hàng, không tạo ra các "merge commit" thừa thãi.
+    - Người review (hoặc bạn nếu được phép) sẽ chọn **`Rebase and Merge`** để đưa code vào `dev`.
+    - _Lý do:_ Giữ lịch sử `dev` thẳng hàng, không tạo ra các "merge commit" thừa thãi.

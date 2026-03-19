@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 /**
  * Custom hook to dynamically update the browser document title
@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 export function useDocumentTitle(title: string) {
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = title ? `${title} | SnapChef` : 'SnapChef';
+    document.title = title ? `${title} | SnapChef` : "SnapChef";
 
     // Cleanup: restore previous title when component unmounts
     return () => {

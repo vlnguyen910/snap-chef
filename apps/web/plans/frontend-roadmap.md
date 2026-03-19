@@ -9,27 +9,27 @@
 
 ### Đã có (kế thừa từ thành viên cũ)
 
-| Hạng mục | Số lượng | Ghi chú |
-|---|---|---|
-| Pages | 14 | 3 page > 24KB cần tách nhỏ |
-| Feature modules | 3 | `auth`, `recipes`, `moderation` |
-| Common components | 14 | Một số file lớn (UserProfile 26KB) |
-| Layout components | 4 | Header, MainLayout, Sidebar, UserMenu |
-| Services (API) | 5 | Thiếu nhiều services cho các module backend |
-| Hooks | 5 | Chủ yếu phục vụ recipes |
-| UI components | 2 | Chỉ có `Button` và `Toaster` |
+| Hạng mục          | Số lượng | Ghi chú                                     |
+| ----------------- | -------- | ------------------------------------------- |
+| Pages             | 14       | 3 page > 24KB cần tách nhỏ                  |
+| Feature modules   | 3        | `auth`, `recipes`, `moderation`             |
+| Common components | 14       | Một số file lớn (UserProfile 26KB)          |
+| Layout components | 4        | Header, MainLayout, Sidebar, UserMenu       |
+| Services (API)    | 5        | Thiếu nhiều services cho các module backend |
+| Hooks             | 5        | Chủ yếu phục vụ recipes                     |
+| UI components     | 2        | Chỉ có `Button` và `Toaster`                |
 
 ### Thiếu (so với Backend API)
 
-| Backend Module | Frontend Service | Frontend UI |
-|---|---|---|
-| `notifications` | ❌ Chưa có | ❌ Chưa có |
-| `collections` | ❌ Chưa có | ❌ Chưa có |
-| `categories` | ❌ Chưa có | ❌ Chưa có (filter chưa dùng API) |
-| `feed` | ❌ Chưa có | ❌ Chưa có (HomePage static) |
-| `reports` | ❌ Chưa có | ❌ Chưa có |
-| `ingredients` | ❌ Chưa có | ❌ Chưa có (autocomplete) |
-| `admin` | ❌ Chưa có | ❌ Chưa có (admin dashboard) |
+| Backend Module  | Frontend Service | Frontend UI                       |
+| --------------- | ---------------- | --------------------------------- |
+| `notifications` | ❌ Chưa có       | ❌ Chưa có                        |
+| `collections`   | ❌ Chưa có       | ❌ Chưa có                        |
+| `categories`    | ❌ Chưa có       | ❌ Chưa có (filter chưa dùng API) |
+| `feed`          | ❌ Chưa có       | ❌ Chưa có (HomePage static)      |
+| `reports`       | ❌ Chưa có       | ❌ Chưa có                        |
+| `ingredients`   | ❌ Chưa có       | ❌ Chưa có (autocomplete)         |
+| `admin`         | ❌ Chưa có       | ❌ Chưa có (admin dashboard)      |
 
 ---
 
@@ -41,12 +41,12 @@
 
 #### 1.1. Refactor các Pages lớn
 
-| File | Size | Hành động |
-|---|---|---|
-| `CreateRecipePage.tsx` | 25KB | Tách → `RecipeForm`, `IngredientInput`, `StepEditor`, `ImageUpload` |
-| `EditRecipePage.tsx` | 24KB | Dùng chung `RecipeForm` với CreateRecipePage |
+| File                   | Size | Hành động                                                            |
+| ---------------------- | ---- | -------------------------------------------------------------------- |
+| `CreateRecipePage.tsx` | 25KB | Tách → `RecipeForm`, `IngredientInput`, `StepEditor`, `ImageUpload`  |
+| `EditRecipePage.tsx`   | 24KB | Dùng chung `RecipeForm` với CreateRecipePage                         |
 | `RecipeDetailPage.tsx` | 25KB | Tách → `RecipeHeader`, `IngredientList`, `StepList`, `RecipeActions` |
-| `UserProfile.tsx` | 26KB | Tách → `ProfileHeader`, `ProfileStats`, `ProfileTabs`, `RecipeGrid` |
+| `UserProfile.tsx`      | 26KB | Tách → `ProfileHeader`, `ProfileStats`, `ProfileTabs`, `RecipeGrid`  |
 
 #### 1.2. Xây dựng UI Component Library (`components/ui/`)
 
@@ -115,14 +115,14 @@ Hiện tại `ModerationPage` chỉ là placeholder. Các route `/moderation/con
 - **Service:** `reportService.ts`, `adminService.ts`
 - **Pages cần xây dựng:**
 
-| Route | Chức năng |
-|---|---|
-| `/moderation` | Dashboard tổng quan (pending recipes, open reports) |
-| `/moderation/queue` | Duyệt recipes (approve/reject) |
-| `/moderation/content` | Quản lý nội dung (recipes, comments) |
-| `/moderation/users` | Quản lý users (block, change role) |
-| `/moderation/analytics` | Thống kê (số recipes, users, reports) |
-| `/moderation/reports` | Xử lý báo cáo vi phạm |
+| Route                   | Chức năng                                           |
+| ----------------------- | --------------------------------------------------- |
+| `/moderation`           | Dashboard tổng quan (pending recipes, open reports) |
+| `/moderation/queue`     | Duyệt recipes (approve/reject)                      |
+| `/moderation/content`   | Quản lý nội dung (recipes, comments)                |
+| `/moderation/users`     | Quản lý users (block, change role)                  |
+| `/moderation/analytics` | Thống kê (số recipes, users, reports)               |
+| `/moderation/reports`   | Xử lý báo cáo vi phạm                               |
 
 #### 3.2. Admin Dashboard
 
@@ -223,6 +223,7 @@ src/
 ## ⚡ Gợi ý bắt đầu
 
 Nếu muốn bắt tay ngay, nên bắt đầu từ **Phase 1.1** — Refactor `CreateRecipePage` và `EditRecipePage` vì:
+
 1. Tạo nền tảng `RecipeForm` dùng chung, giảm duplication
 2. Code dễ maintain hơn cho tất cả công việc sau này
 3. Không ảnh hưởng tính năng hiện có, chỉ cải thiện cấu trúc

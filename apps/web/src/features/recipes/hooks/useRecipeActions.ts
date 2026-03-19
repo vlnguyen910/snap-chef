@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { api } from '@/lib/axios';
-import { useStore } from '@/lib/store';
-import type { Recipe, Rating } from '@/types';
+import { useState } from "react";
+import { api } from "@/lib/axios";
+import { useStore } from "@/lib/store";
+import type { Recipe, Rating } from "@/types";
 
 export function useRecipeActions() {
   const [isLoading, setIsLoading] = useState(false);
@@ -13,7 +13,7 @@ export function useRecipeActions() {
 
   const toggleFavorite = async (recipeId: string): Promise<boolean> => {
     if (!user) {
-      setError('Please login to like recipes');
+      setError("Please login to like recipes");
       return false;
     }
 
@@ -21,65 +21,80 @@ export function useRecipeActions() {
     setError(null);
     try {
       // Backend uses toggle endpoint - single POST request
-      const response = await api.post<{ is_liked: boolean }>(`/recipes/${recipeId}/like`);
-      
+      const response = await api.post<{ is_liked: boolean }>(
+        `/recipes/${recipeId}/like`,
+      );
+
       // Update local state based on server response
       if (response.is_liked) {
-        setFavoritedIds(prev => new Set(prev).add(recipeId));
+        setFavoritedIds((prev) => new Set(prev).add(recipeId));
       } else {
-        setFavoritedIds(prev => {
+        setFavoritedIds((prev) => {
           const next = new Set(prev);
           next.delete(recipeId);
           return next;
         });
       }
-      
+
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to update like');
+      setError(err.response?.data?.message || "Failed to update like");
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const forkRecipe = async (recipeId: string, modifications?: Partial<Recipe>): Promise<Recipe | null> => {
+  const forkRecipe = async (
+    recipeId: string,
+    modifications?: Partial<Recipe>,
+  ): Promise<Recipe | null> => {
     if (!user) {
-      setError('Please login to fork recipes');
+      setError("Please login to fork recipes");
       return null;
     }
 
     setIsLoading(true);
     setError(null);
     try {
-      const response = await api.post<{ recipe: Recipe }>(`/recipes/${recipeId}/fork`, modifications);
+      const response = await api.post<{ recipe: Recipe }>(
+        `/recipes/${recipeId}/fork`,
+        modifications,
+      );
       return response.recipe;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fork recipe');
+      setError(err.response?.data?.message || "Failed to fork recipe");
       return null;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const rateRecipe = async (recipeId: string, rating: number, comment?: string): Promise<boolean> => {
+  const rateRecipe = async (
+    recipeId: string,
+    rating: number,
+    comment?: string,
+  ): Promise<boolean> => {
     if (!user) {
-      setError('Please login to rate recipes');
+      setError("Please login to rate recipes");
       return false;
     }
 
     if (rating < 1 || rating > 5) {
-      setError('Rating must be between 1 and 5');
+      setError("Rating must be between 1 and 5");
       return false;
     }
 
     setIsLoading(true);
     setError(null);
     try {
-      await api.post<{ rating: Rating }>(`/recipes/${recipeId}/rate`, { rating, comment });
+      await api.post<{ rating: Rating }>(`/recipes/${recipeId}/rate`, {
+        rating,
+        comment,
+      });
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to rate recipe');
+      setError(err.response?.data?.message || "Failed to rate recipe");
       return false;
     } finally {
       setIsLoading(false);
@@ -88,7 +103,7 @@ export function useRecipeActions() {
 
   const deleteRecipe = async (recipeId: string): Promise<boolean> => {
     if (!user) {
-      setError('Please login to delete recipes');
+      setError("Please login to delete recipes");
       return false;
     }
 
@@ -98,7 +113,7 @@ export function useRecipeActions() {
       await api.delete(`/recipes/${recipeId}`);
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to delete recipe');
+      setError(err.response?.data?.message || "Failed to delete recipe");
       return false;
     } finally {
       setIsLoading(false);

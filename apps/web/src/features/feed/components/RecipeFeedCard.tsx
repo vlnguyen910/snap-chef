@@ -1,18 +1,21 @@
-import { Bookmark, Clock, Star, MoreHorizontal } from 'lucide-react';
-import type { RecipeFeedItem } from '../data/mockData';
+import { Bookmark, Clock, Star, MoreHorizontal } from "lucide-react";
+import type { RecipeFeedItem } from "../data/mockData";
 
 interface RecipeFeedCardProps {
   recipe: Readonly<RecipeFeedItem>;
   onBookmark?: (id: string) => void;
 }
 
-const DIFFICULTY_COLORS: Record<RecipeFeedItem['difficulty'], string> = {
-  Beginner: 'bg-green-600',
-  Intermediate: 'bg-amber-600',
-  Pro: 'bg-rose-600',
+const DIFFICULTY_COLORS: Record<RecipeFeedItem["difficulty"], string> = {
+  Beginner: "bg-green-600",
+  Intermediate: "bg-amber-600",
+  Pro: "bg-rose-600",
 };
 
-export default function RecipeFeedCard({ recipe, onBookmark }: Readonly<RecipeFeedCardProps>) {
+export default function RecipeFeedCard({
+  recipe,
+  onBookmark,
+}: Readonly<RecipeFeedCardProps>) {
   return (
     <div className="bg-white dark:bg-white/5 rounded-2xl overflow-hidden border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-xl transition-shadow group cursor-pointer">
       {/* Image */}
@@ -56,7 +59,9 @@ export default function RecipeFeedCard({ recipe, onBookmark }: Readonly<RecipeFe
           </div>
           <div className="flex items-center gap-1">
             <Star size={16} className="fill-amber-400 text-amber-400" />
-            <span className="font-bold text-slate-900 dark:text-white">{recipe.rating.toFixed(1)}</span>
+            <span className="font-bold text-slate-900 dark:text-white">
+              {recipe.rating.toFixed(1)}
+            </span>
             <span>({recipe.ratingCount})</span>
           </div>
         </div>

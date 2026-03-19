@@ -1,9 +1,9 @@
-import React from 'react';
-import { User, Mail, Edit, Camera, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { maskEmail } from '@/lib/utils';
-import FollowButton from '@/components/common/FollowButton';
-import type { UserProfileData } from '../../types/profile';
+import React from "react";
+import { User, Mail, Edit, Camera, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { maskEmail } from "@/lib/utils";
+import FollowButton from "@/components/common/FollowButton";
+import type { UserProfileData } from "../../types/profile";
 
 interface ProfileHeaderProps {
   userData: UserProfileData;
@@ -30,7 +30,7 @@ export function ProfileHeader({
   handleEditClick,
   setIsFollowing,
   updateFollowerCount,
-  fileInputRef
+  fileInputRef,
 }: ProfileHeaderProps) {
   const getInitials = () => {
     if (userData.username) {
@@ -39,7 +39,7 @@ export function ProfileHeader({
     if (userData.email) {
       return userData.email.substring(0, 2).toUpperCase();
     }
-    return 'U';
+    return "U";
   };
 
   return (
@@ -55,10 +55,10 @@ export function ProfileHeader({
       <div className="relative px-8 pb-10">
         <div className="flex flex-col items-center pt-4">
           <div className="relative group -mt-24 mb-6">
-            {(avatarPreview || userData.avatar_url) ? (
+            {avatarPreview || userData.avatar_url ? (
               <img
                 src={avatarPreview || userData.avatar_url}
-                alt={userData.username}   
+                alt={userData.username}
                 className="h-40 w-40 rounded-full border-8 border-white dark:border-gray-800 object-cover shadow-2xl ring-4 ring-orange-100 dark:ring-orange-900"
               />
             ) : (
@@ -66,7 +66,7 @@ export function ProfileHeader({
                 {getInitials()}
               </div>
             )}
-            
+
             {isOwnProfile && (
               <>
                 <button
@@ -80,7 +80,7 @@ export function ProfileHeader({
                     <Camera className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                   )}
                 </button>
-                
+
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -90,7 +90,7 @@ export function ProfileHeader({
                 />
               </>
             )}
-            
+
             {isOwnProfile && (
               <button
                 onClick={handleAvatarClick}
@@ -117,7 +117,9 @@ export function ProfileHeader({
                 <div className="p-2 bg-orange-50 dark:bg-orange-900/30 rounded-lg">
                   <Mail className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                 </div>
-                <span className="text-base font-medium">{maskEmail(userData.email)}</span>
+                <span className="text-base font-medium">
+                  {maskEmail(userData.email)}
+                </span>
               </div>
 
               <div className="flex items-center justify-center gap-3 text-gray-600 dark:text-gray-400">

@@ -32,10 +32,10 @@ src/modules/users/
 
 **Dependencies của UsersService:**
 
-| Dependency | Vai trò |
-|---|---|
-| `PrismaService` | Truy vấn DB (user, follow, like) |
-| `RedisService` | Cache user theo `user:{id}` với TTL 60 phút |
+| Dependency            | Vai trò                                      |
+| --------------------- | -------------------------------------------- |
+| `PrismaService`       | Truy vấn DB (user, follow, like)             |
+| `RedisService`        | Cache user theo `user:{id}` với TTL 60 phút  |
 | `NotificationService` | Gửi notification FOLLOW khi user follow nhau |
 
 ---
@@ -56,7 +56,12 @@ const mockUser = {
   updated_at: new Date(),
 };
 
-const mockUser2 = { ...mockUser, id: 'user-uuid-2', email: 'other@example.com', username: 'otheruser' };
+const mockUser2 = {
+  ...mockUser,
+  id: 'user-uuid-2',
+  email: 'other@example.com',
+  username: 'otheruser',
+};
 ```
 
 ---
@@ -93,9 +98,9 @@ File: `src/modules/users/users.service.spec.ts` — **22 test cases**
 
 ### 4.1 `initialization`
 
-| # | Test case | Mô tả |
-|---|---|---|
-| 1 | `should be defined` | NestJS inject đủ dependencies và khởi tạo service thành công |
+| #   | Test case           | Mô tả                                                        |
+| --- | ------------------- | ------------------------------------------------------------ |
+| 1   | `should be defined` | NestJS inject đủ dependencies và khởi tạo service thành công |
 
 ---
 
@@ -103,9 +108,9 @@ File: `src/modules/users/users.service.spec.ts` — **22 test cases**
 
 Tạo user mới trong database.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 2 | `should create and return a new user` | Happy path | `prisma.user.create({ data: { ...payload } })` được gọi đúng → trả về user |
+| #   | Test case                             | Loại       | Mô tả                                                                      |
+| --- | ------------------------------------- | ---------- | -------------------------------------------------------------------------- |
+| 2   | `should create and return a new user` | Happy path | `prisma.user.create({ data: { ...payload } })` được gọi đúng → trả về user |
 
 ---
 
@@ -114,6 +119,7 @@ Tạo user mới trong database.
 Tìm user theo ID. Ưu tiên dùng Redis cache trước khi query DB.
 
 **Cơ chế cache:**
+
 ```
 Redis.getCache('user:{id}')
   ├── HIT  → return user (không query DB)
@@ -122,11 +128,11 @@ Redis.getCache('user:{id}')
               → return user
 ```
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 3 | `should return cached user without hitting the database` | Cache hit | Redis trả về user → `prisma.user.findUnique` **không** được gọi |
-| 4 | `should fetch from DB and cache when cache is empty` | Cache miss | Redis trả về `null` → query DB → `redis.setCache` với TTL 60 phút |
-| 5 | `should return null if user does not exist` | Edge case | Redis `null` + DB `null` → return `null` (không throw) |
+| #   | Test case                                                | Loại       | Mô tả                                                             |
+| --- | -------------------------------------------------------- | ---------- | ----------------------------------------------------------------- |
+| 3   | `should return cached user without hitting the database` | Cache hit  | Redis trả về user → `prisma.user.findUnique` **không** được gọi   |
+| 4   | `should fetch from DB and cache when cache is empty`     | Cache miss | Redis trả về `null` → query DB → `redis.setCache` với TTL 60 phút |
+| 5   | `should return null if user does not exist`              | Edge case  | Redis `null` + DB `null` → return `null` (không throw)            |
 
 ---
 
@@ -134,10 +140,10 @@ Redis.getCache('user:{id}')
 
 Tìm user theo email, dùng trong quá trình xác thực.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 6 | `should return user when found by email` | Happy path | `prisma.user.findFirst({ where: { email } })` trả về user |
-| 7 | `should return null when user is not found by email` | Edge case | Prisma trả về `null` → service trả về `null` |
+| #   | Test case                                            | Loại       | Mô tả                                                     |
+| --- | ---------------------------------------------------- | ---------- | --------------------------------------------------------- |
+| 6   | `should return user when found by email`             | Happy path | `prisma.user.findFirst({ where: { email } })` trả về user |
+| 7   | `should return null when user is not found by email` | Edge case  | Prisma trả về `null` → service trả về `null`              |
 
 ---
 
@@ -146,17 +152,18 @@ Tìm user theo email, dùng trong quá trình xác thực.
 Cập nhật thông tin user. Kiểm tra quyền sở hữu trước khi update.
 
 **Luồng:**
+
 1. `findOne(id)` — lấy user (qua cache)
 2. Nếu không có → `NotFoundException`
 3. Nếu `user.id !== user_id` → `UnauthorizedException`
 4. `redis.delCache('user:{id}')` — xóa cache cũ
 5. `prisma.user.update()` — cập nhật DB
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 8 | `should update user and clear cache` | Happy path | `id === user_id` → update thành công, `redis.delCache` được gọi với đúng key |
-| 9 | `should throw NotFoundException if user does not exist` | Error path | `findOne` trả về `null` → throw `USER_NOT_FOUND` |
-| 10 | `should throw UnauthorizedException if user_id does not match` | Error path | `user.id !== user_id` → throw `NO_PERMISSION` — ngăn user A sửa profile user B |
+| #   | Test case                                                      | Loại       | Mô tả                                                                          |
+| --- | -------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------ |
+| 8   | `should update user and clear cache`                           | Happy path | `id === user_id` → update thành công, `redis.delCache` được gọi với đúng key   |
+| 9   | `should throw NotFoundException if user does not exist`        | Error path | `findOne` trả về `null` → throw `USER_NOT_FOUND`                               |
+| 10  | `should throw UnauthorizedException if user_id does not match` | Error path | `user.id !== user_id` → throw `NO_PERMISSION` — ngăn user A sửa profile user B |
 
 ---
 
@@ -165,6 +172,7 @@ Cập nhật thông tin user. Kiểm tra quyền sở hữu trước khi update.
 Toggle follow / unfollow. Gửi notification FOLLOW sau khi thực hiện.
 
 **Logic toggle:**
+
 ```
 prisma.follow.findUnique()
   ├── null     → prisma.follow.create()  → isFollowed = true
@@ -173,12 +181,12 @@ prisma.follow.findUnique()
 → notificationService.createNotification({ type: FOLLOW })
 ```
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 11 | `should create follow relation and return followed message` | Happy path | `follow.findUnique` trả về `null` → `follow.create` được gọi → message "followed" |
-| 12 | `should delete follow relation and return unfollowed message` | Happy path | `follow.findUnique` trả về record → `follow.delete` được gọi → message "unfollowed" |
-| 13 | `should create a FOLLOW notification` | Happy path | `notificationService.createNotification` được gọi với `type: FOLLOW`, `receiverId: following_id`, `senderId: current_id` |
-| 14 | `should throw NotFoundException if either user is not found` | Error path | Một trong hai user không tồn tại → throw `USER_NOT_FOUND` |
+| #   | Test case                                                     | Loại       | Mô tả                                                                                                                    |
+| --- | ------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------ |
+| 11  | `should create follow relation and return followed message`   | Happy path | `follow.findUnique` trả về `null` → `follow.create` được gọi → message "followed"                                        |
+| 12  | `should delete follow relation and return unfollowed message` | Happy path | `follow.findUnique` trả về record → `follow.delete` được gọi → message "unfollowed"                                      |
+| 13  | `should create a FOLLOW notification`                         | Happy path | `notificationService.createNotification` được gọi với `type: FOLLOW`, `receiverId: following_id`, `senderId: current_id` |
+| 14  | `should throw NotFoundException if either user is not found`  | Error path | Một trong hai user không tồn tại → throw `USER_NOT_FOUND`                                                                |
 
 ---
 
@@ -186,10 +194,10 @@ prisma.follow.findUnique()
 
 Lấy danh sách recipe mà user đã like.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 15 | `should return liked recipes for the user` | Happy path | `prisma.like.findMany({ where: { user_id }, select: { recipe: true } })` trả về danh sách |
-| 16 | `should throw NotFoundException if user is not found` | Error path | `findOne` trả về `null` → throw `USER_NOT_FOUND` |
+| #   | Test case                                             | Loại       | Mô tả                                                                                     |
+| --- | ----------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------- |
+| 15  | `should return liked recipes for the user`            | Happy path | `prisma.like.findMany({ where: { user_id }, select: { recipe: true } })` trả về danh sách |
+| 16  | `should throw NotFoundException if user is not found` | Error path | `findOne` trả về `null` → throw `USER_NOT_FOUND`                                          |
 
 ---
 
@@ -199,10 +207,10 @@ Lấy profile đầy đủ của user đang đăng nhập, bao gồm followers/f
 
 **Lưu ý**: `password` và `_count` được loại khỏi response. Thay vào đó, các count được flatten ra thành field riêng.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 17 | `should return profile with counts and without password` | Happy path | `_count` được map thành `followers_count`, `following_count`, `recipes_count`. `password` không có trong response |
-| 18 | `should throw NotFoundException if user is not found` | Error path | Prisma trả về `null` → throw `USER_NOT_FOUND` |
+| #   | Test case                                                | Loại       | Mô tả                                                                                                             |
+| --- | -------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------- |
+| 17  | `should return profile with counts and without password` | Happy path | `_count` được map thành `followers_count`, `following_count`, `recipes_count`. `password` không có trong response |
+| 18  | `should throw NotFoundException if user is not found`    | Error path | Prisma trả về `null` → throw `USER_NOT_FOUND`                                                                     |
 
 ---
 
@@ -210,11 +218,11 @@ Lấy profile đầy đủ của user đang đăng nhập, bao gồm followers/f
 
 Lấy profile public của một user. Thêm trường `is_followed` dựa trên quan hệ follow của current user.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 19 | `should return is_followed=true if current user follows target` | Happy path | `follow.findUnique` trả về record → `is_followed: true`. `email` và `role` bị loại khỏi response |
-| 20 | `should return is_followed=false if not following` | Happy path | `follow.findUnique` trả về `null` → `is_followed: false` |
-| 21 | `should return is_followed=false when not logged in` | Edge case | `current_id = undefined` → không gọi `prisma.follow.findUnique`, trả về `is_followed: false` |
+| #   | Test case                                                       | Loại       | Mô tả                                                                                            |
+| --- | --------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------ |
+| 19  | `should return is_followed=true if current user follows target` | Happy path | `follow.findUnique` trả về record → `is_followed: true`. `email` và `role` bị loại khỏi response |
+| 20  | `should return is_followed=false if not following`              | Happy path | `follow.findUnique` trả về `null` → `is_followed: false`                                         |
+| 21  | `should return is_followed=false when not logged in`            | Edge case  | `current_id = undefined` → không gọi `prisma.follow.findUnique`, trả về `is_followed: false`     |
 
 ---
 
@@ -222,10 +230,10 @@ Lấy profile public của một user. Thêm trường `is_followed` dựa trên
 
 Lấy danh sách user với pagination. Loại current user khỏi kết quả.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 22 | `should return list of users excluding current user` | Happy path | `where` có `id: { not: current_user_id }` |
-| 23 | `should not exclude any user if not logged in` | Edge case | `current_user_id = undefined` → `where.id` không được set |
+| #   | Test case                                            | Loại       | Mô tả                                                     |
+| --- | ---------------------------------------------------- | ---------- | --------------------------------------------------------- |
+| 22  | `should return list of users excluding current user` | Happy path | `where` có `id: { not: current_user_id }`                 |
+| 23  | `should not exclude any user if not logged in`       | Edge case  | `current_user_id = undefined` → `where.id` không được set |
 
 ---
 
@@ -233,9 +241,9 @@ Lấy danh sách user với pagination. Loại current user khỏi kết quả.
 
 Lấy danh sách ID của các user đã block hoặc bị block bởi user hiện tại.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 24 | `should return a list of unique blocked user ids` | Happy path | `prisma.block.findMany` trả về danh sách, service map và trả về array các ID duy nhất |
+| #   | Test case                                         | Loại       | Mô tả                                                                                 |
+| --- | ------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------- |
+| 24  | `should return a list of unique blocked user ids` | Happy path | `prisma.block.findMany` trả về danh sách, service map và trả về array các ID duy nhất |
 
 ---
 
@@ -243,9 +251,9 @@ Lấy danh sách ID của các user đã block hoặc bị block bởi user hi�
 
 Block một user. Xóa mọi quan hệ follow giữa 2 user.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 25 | `should block a user and remove follows` | Happy path | `prisma.block.create` và `prisma.follow.deleteMany` được gọi thành công |
+| #   | Test case                                | Loại       | Mô tả                                                                   |
+| --- | ---------------------------------------- | ---------- | ----------------------------------------------------------------------- |
+| 25  | `should block a user and remove follows` | Happy path | `prisma.block.create` và `prisma.follow.deleteMany` được gọi thành công |
 
 ---
 
@@ -253,9 +261,9 @@ Block một user. Xóa mọi quan hệ follow giữa 2 user.
 
 Unblock một user.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 26 | `should unblock a user successfully` | Happy path | `prisma.block.delete` được gọi thành công |
+| #   | Test case                            | Loại       | Mô tả                                     |
+| --- | ------------------------------------ | ---------- | ----------------------------------------- |
+| 26  | `should unblock a user successfully` | Happy path | `prisma.block.delete` được gọi thành công |
 
 ---
 
@@ -285,10 +293,20 @@ describe('getFollowers()', () => {
   it('should return list of followers with is_following field', async () => {
     mockRedisService.getCache.mockResolvedValue(mockUser); // profile user
     mockPrismaService.follow.findMany.mockResolvedValue([
-      { follower: { id: 'f1', username: 'follower1', avatar_url: '', followedBy: [] } },
+      {
+        follower: {
+          id: 'f1',
+          username: 'follower1',
+          avatar_url: '',
+          followedBy: [],
+        },
+      },
     ]);
 
-    const result = await service.getFollowers(mockUser.id, undefined, { page: 1, limit: 10 });
+    const result = await service.getFollowers(mockUser.id, undefined, {
+      page: 1,
+      limit: 10,
+    });
 
     expect(result).toHaveLength(1);
     expect(result[0]).toHaveProperty('is_following', false);
@@ -328,4 +346,4 @@ it('should add search filter to whereCondition', async () => {
 
 ---
 
-*Tài liệu cập nhật lần cuối: **2026-03-04**. Cập nhật khi thêm hoặc thay đổi test case.*
+_Tài liệu cập nhật lần cuối: **2026-03-04**. Cập nhật khi thêm hoặc thay đổi test case._

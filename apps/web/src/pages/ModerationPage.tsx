@@ -1,4 +1,4 @@
-import ApprovalQueue from '@/features/moderation/components/ApprovalQueue';
+import ApprovalQueue from "@/features/moderation/components/ApprovalQueue";
 
 export default function ModerationPage() {
   return (

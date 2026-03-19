@@ -1,6 +1,6 @@
-import useToastStore from '@/lib/toast-store';
-import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import useToastStore from "@/lib/toast-store";
+import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const icons = {
   success: <CheckCircle className="w-5 h-5 text-green-500" />,
@@ -10,10 +10,10 @@ const icons = {
 };
 
 const styles = {
-  success: 'border-green-200 bg-green-50 text-green-800',
-  error: 'border-red-200 bg-red-50 text-red-800',
-  info: 'border-blue-200 bg-blue-50 text-blue-800',
-  warning: 'border-yellow-200 bg-yellow-50 text-yellow-800',
+  success: "border-green-200 bg-green-50 text-green-800",
+  error: "border-red-200 bg-red-50 text-red-800",
+  info: "border-blue-200 bg-blue-50 text-blue-800",
+  warning: "border-yellow-200 bg-yellow-50 text-yellow-800",
 };
 
 export function Toaster() {
@@ -40,10 +40,10 @@ export function Toaster() {
         >
           {/* Icon */}
           <div className="flex-shrink-0">{icons[t.type]}</div>
-          
+
           {/* Message */}
           <p className="text-sm font-medium flex-1">{t.message}</p>
-          
+
           {/* Action Button (if exists) */}
           {t.action && (
             <button
@@ -56,7 +56,7 @@ export function Toaster() {
               {t.action.label}
             </button>
           )}
-          
+
           {/* Close Button */}
           <button
             onClick={() => dismissToast(t.id)}

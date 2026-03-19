@@ -1,32 +1,40 @@
-import { useEffect, useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
-import Loading from '@/components/common/Loading';
-import ErrorState from '@/components/common/ErrorState';
-import { RecipeComments } from '@/components/common/RecipeComments';
-import { api } from '@/lib/axios';
-import { useStore } from '@/lib/store';
-import { toast } from '@/lib/toast-store';
+import { useEffect, useState, useMemo } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import Loading from "@/components/common/Loading";
+import ErrorState from "@/components/common/ErrorState";
+import { RecipeComments } from "@/components/common/RecipeComments";
+import { api } from "@/lib/axios";
+import { useStore } from "@/lib/store";
+import { toast } from "@/lib/toast-store";
 
-import type { RecipeData, AuthorData, IngredientFromAPI, IngredientDisplay, StepFromAPI } from '@/features/recipes/types/recipe-detail';
-import { RecipeHeader } from '@/features/recipes/components/detail/RecipeHeader';
-import { RecipeActions } from '@/features/recipes/components/detail/RecipeActions';
-import { IngredientList } from '@/features/recipes/components/detail/IngredientList';
-import { StepList } from '@/features/recipes/components/detail/StepList';
+import type {
+  RecipeData,
+  AuthorData,
+  IngredientFromAPI,
+  IngredientDisplay,
+  StepFromAPI,
+} from "@/features/recipes/types/recipe-detail";
+import { RecipeHeader } from "@/features/recipes/components/detail/RecipeHeader";
+import { RecipeActions } from "@/features/recipes/components/detail/RecipeActions";
+import { IngredientList } from "@/features/recipes/components/detail/IngredientList";
+import { StepList } from "@/features/recipes/components/detail/StepList";
 
 export default function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useStore();
-  
+
   const [recipe, setRecipe] = useState<RecipeData | null>(null);
   const [author, setAuthor] = useState<AuthorData | null>(null);
   const [allIngredients, setAllIngredients] = useState<IngredientFromAPI[]>([]);
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
+
+  const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(
+    new Set(),
+  );
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -41,44 +49,48 @@ export default function RecipeDetailPage() {
 
   const fetchRecipe = async () => {
     if (!id) {
-      setError('Recipe ID is missing');
+      setError("Recipe ID is missing");
       setIsLoading(false);
       return;
     }
 
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const [recipeResponse, ingredientsResponse] = await Promise.all([
         api.get<any>(`/recipes/${id}`),
-        api.get<IngredientFromAPI[]>('/ingredients').catch(() => [])
+        api.get<IngredientFromAPI[]>("/ingredients").catch(() => []),
       ]);
-      
+
       let authorResponse = null;
       if (recipeResponse.author_id) {
         try {
-          const profileResponse = await api.get<{ user: AuthorData; is_followed: boolean }>(
-            `/users/${recipeResponse.author_id}/profile`
-          );
+          const profileResponse = await api.get<{
+            user: AuthorData;
+            is_followed: boolean;
+          }>(`/users/${recipeResponse.author_id}/profile`);
           authorResponse = profileResponse.user;
-          
+
           if (profileResponse.is_followed !== undefined) {
             setIsFollowing(profileResponse.is_followed);
           }
         } catch (authorError) {
-          console.warn('Failed to fetch author details:', authorError);
+          console.warn("Failed to fetch author details:", authorError);
         }
       }
-      
-      if (Array.isArray(ingredientsResponse) && ingredientsResponse.length > 0) {
+
+      if (
+        Array.isArray(ingredientsResponse) &&
+        ingredientsResponse.length > 0
+      ) {
         setAllIngredients(ingredientsResponse);
       }
       setRecipe(recipeResponse);
       if (authorResponse) {
         setAuthor(authorResponse);
       }
-      
+
       if (recipeResponse.is_liked !== undefined) {
         setIsLiked(recipeResponse.is_liked);
       }
@@ -86,21 +98,25 @@ export default function RecipeDetailPage() {
         setLikeCount(recipeResponse.likes_count);
       }
     } catch (err: any) {
-      console.error('❌ Error fetching recipe:', err);
-      const errorMessage = err.response?.data?.message || err.message || 'Failed to load recipe';
+      console.error("❌ Error fetching recipe:", err);
+      const errorMessage =
+        err.response?.data?.message || err.message || "Failed to load recipe";
       setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const isOwner = useMemo(() => user?.id === recipe?.author_id, [user?.id, recipe?.author_id]);
+  const isOwner = useMemo(
+    () => user?.id === recipe?.author_id,
+    [user?.id, recipe?.author_id],
+  );
 
   const handleLike = async () => {
     if (!id) return;
     if (!user) {
-      toast.warning('Please login to like this recipe');
-      navigate('/auth');
+      toast.warning("Please login to like this recipe");
+      navigate("/auth");
       return;
     }
     if (isLikeLoading) return;
@@ -115,20 +131,22 @@ export default function RecipeDetailPage() {
     setIsLikeLoading(true);
 
     try {
-      const response = await api.post<{ is_liked: boolean }>(`/recipes/${id}/like`);
+      const response = await api.post<{ is_liked: boolean }>(
+        `/recipes/${id}/like`,
+      );
       setIsLiked(response.is_liked);
-      toast.success(response.is_liked ? '❤️ Liked!' : 'Unliked');
+      toast.success(response.is_liked ? "❤️ Liked!" : "Unliked");
     } catch (error: any) {
       setIsLiked(previousIsLiked);
       setLikeCount(previousLikeCount);
 
       if (error.response?.status === 401) {
-        toast.error('Please login to like recipes');
-        navigate('/auth');
+        toast.error("Please login to like recipes");
+        navigate("/auth");
       } else if (error.response?.status === 403) {
-        toast.error('You cannot like your own recipe!');
+        toast.error("You cannot like your own recipe!");
       } else {
-        toast.error('Failed to update like status');
+        toast.error("Failed to update like status");
       }
     } finally {
       setIsLikeLoading(false);
@@ -138,8 +156,8 @@ export default function RecipeDetailPage() {
   const handleBookmark = async () => {
     if (!id) return;
     if (!user) {
-      toast.warning('Please login to bookmark this recipe');
-      navigate('/auth');
+      toast.warning("Please login to bookmark this recipe");
+      navigate("/auth");
       return;
     }
     if (isBookmarkLoading) return;
@@ -152,14 +170,16 @@ export default function RecipeDetailPage() {
 
     try {
       await api.post(`/recipes/${id}/bookmark`);
-      toast.success(newIsBookmarked ? '🔖 Bookmarked!' : 'Removed from bookmarks');
+      toast.success(
+        newIsBookmarked ? "🔖 Bookmarked!" : "Removed from bookmarks",
+      );
     } catch (error: any) {
       setIsBookmarked(previousIsBookmarked);
       if (error.response?.status === 401) {
-        toast.error('Please login to bookmark recipes');
-        navigate('/auth');
+        toast.error("Please login to bookmark recipes");
+        navigate("/auth");
       } else {
-        toast.error('Failed to update bookmark status');
+        toast.error("Failed to update bookmark status");
       }
     } finally {
       setIsBookmarkLoading(false);
@@ -169,12 +189,12 @@ export default function RecipeDetailPage() {
   const handleFollowAuthor = async () => {
     if (!recipe?.author_id) return;
     if (!user) {
-      toast.warning('Please login to follow users');
-      navigate('/auth');
+      toast.warning("Please login to follow users");
+      navigate("/auth");
       return;
     }
     if (user.id === recipe.author_id) {
-      toast.error('You cannot follow yourself!');
+      toast.error("You cannot follow yourself!");
       return;
     }
     if (isFollowLoading) return;
@@ -187,16 +207,16 @@ export default function RecipeDetailPage() {
 
     try {
       await api.post<{ message: string }>(`/users/${recipe.author_id}/follow`);
-      toast.success(newIsFollowing ? '✅ Following!' : 'Unfollowed');
+      toast.success(newIsFollowing ? "✅ Following!" : "Unfollowed");
     } catch (error: any) {
       setIsFollowing(previousIsFollowing);
       if (error.response?.status === 401) {
-        toast.error('Please login to follow users');
-        navigate('/auth');
+        toast.error("Please login to follow users");
+        navigate("/auth");
       } else if (error.response?.status === 404) {
-        toast.error('User not found');
+        toast.error("User not found");
       } else {
-        toast.error('Failed to update follow status');
+        toast.error("Failed to update follow status");
       }
     } finally {
       setIsFollowLoading(false);
@@ -204,26 +224,29 @@ export default function RecipeDetailPage() {
   };
 
   const handleDeleteRecipe = async () => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa công thức này?')) {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa công thức này?")) {
       return;
     }
 
     try {
       await api.delete(`/recipes/${id}`);
-      toast.success('Công thức đã được xóa!');
-      navigate('/recipes');
+      toast.success("Công thức đã được xóa!");
+      navigate("/recipes");
     } catch (error: any) {
-      console.error('❌ Error deleting recipe:', error);
-      toast.error('Không thể xóa công thức: ' + (error.response?.data?.message || error.message));
+      console.error("❌ Error deleting recipe:", error);
+      toast.error(
+        "Không thể xóa công thức: " +
+          (error.response?.data?.message || error.message),
+      );
     }
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -231,7 +254,7 @@ export default function RecipeDetailPage() {
     if (minutes < 60) {
       return `${minutes} mins`;
     } else if (minutes === 60) {
-      return '1 hour';
+      return "1 hour";
     } else {
       const hours = Math.floor(minutes / 60);
       const mins = minutes % 60;
@@ -244,9 +267,9 @@ export default function RecipeDetailPage() {
       if (author.firstName && author.lastName) {
         return `${author.firstName} ${author.lastName}`;
       }
-      return author.username || 'Unknown Chef';
+      return author.username || "Unknown Chef";
     }
-    return 'Loading...';
+    return "Loading...";
   };
 
   const getServings = () => {
@@ -265,14 +288,16 @@ export default function RecipeDetailPage() {
     }
     return recipe.ingredients.map((item: any, index: number) => {
       const amount = item.quantity || item.quanity || item.amount || 0;
-      const unit = item.unit || '';
-      let name = 'Unknown ingredient';
+      const unit = item.unit || "";
+      let name = "Unknown ingredient";
       if (item.name) {
         name = item.name;
       } else if (item.ingredient?.name) {
         name = item.ingredient.name;
       } else if (item.ingredient_id && allIngredients.length > 0) {
-        const foundIngredient = allIngredients.find(ing => ing.id === item.ingredient_id);
+        const foundIngredient = allIngredients.find(
+          (ing) => ing.id === item.ingredient_id,
+        );
         if (foundIngredient) {
           name = foundIngredient.name;
         }
@@ -287,9 +312,12 @@ export default function RecipeDetailPage() {
     }
     return recipe.steps
       .map((item: any, index: number) => {
-        const content = item.content || item.instruction || '';
-        const orderIndex = item.order_index !== undefined ? item.order_index : (item.step || index + 1);
-        const imageUrl = item.image_url || item.imageUrl || '';
+        const content = item.content || item.instruction || "";
+        const orderIndex =
+          item.order_index !== undefined
+            ? item.order_index
+            : item.step || index + 1;
+        const imageUrl = item.image_url || item.imageUrl || "";
         return {
           order_index: orderIndex,
           content,
@@ -303,13 +331,21 @@ export default function RecipeDetailPage() {
   const steps = getSteps;
 
   if (isLoading) return <Loading fullScreen />;
-  if (error) return <ErrorState message={error} onRetry={fetchRecipe} fullScreen />;
-  if (!recipe) return <ErrorState title="Recipe not found" message="The recipe you're looking for doesn't exist." fullScreen />;
+  if (error)
+    return <ErrorState message={error} onRetry={fetchRecipe} fullScreen />;
+  if (!recipe)
+    return (
+      <ErrorState
+        title="Recipe not found"
+        message="The recipe you're looking for doesn't exist."
+        fullScreen
+      />
+    );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
       <div className="container mx-auto px-4 py-6 max-w-6xl">
-        <button 
+        <button
           onClick={() => navigate(-1)}
           className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 transition-colors font-medium"
         >
@@ -321,19 +357,19 @@ export default function RecipeDetailPage() {
       <div className="relative">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-            <RecipeHeader 
-              recipe={recipe} 
-              author={author} 
-              formatCookingTime={formatCookingTime} 
-              getServings={getServings} 
-              getCookingTime={getCookingTime} 
-              formatDate={formatDate} 
-              getAuthorName={getAuthorName} 
+            <RecipeHeader
+              recipe={recipe}
+              author={author}
+              formatCookingTime={formatCookingTime}
+              getServings={getServings}
+              getCookingTime={getCookingTime}
+              formatDate={formatDate}
+              getAuthorName={getAuthorName}
             />
 
             <div className="p-6 md:p-10">
               <div className="mb-8 pb-6 border-b border-gray-200">
-                <RecipeActions 
+                <RecipeActions
                   recipe={recipe}
                   isOwner={isOwner}
                   getAuthorName={getAuthorName}
@@ -352,18 +388,21 @@ export default function RecipeDetailPage() {
               </div>
 
               <div className="mb-10">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">About This Recipe</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  About This Recipe
+                </h2>
                 <p className="text-gray-600 text-lg leading-relaxed">
-                  {recipe.description || 'No description available for this recipe.'}
+                  {recipe.description ||
+                    "No description available for this recipe."}
                 </p>
               </div>
 
               <div className="grid md:grid-cols-5 gap-8">
                 <div className="md:col-span-2">
-                  <IngredientList 
-                    ingredients={ingredients} 
-                    checkedIngredients={checkedIngredients} 
-                    setCheckedIngredients={setCheckedIngredients} 
+                  <IngredientList
+                    ingredients={ingredients}
+                    checkedIngredients={checkedIngredients}
+                    setCheckedIngredients={setCheckedIngredients}
                   />
                 </div>
 
@@ -374,7 +413,8 @@ export default function RecipeDetailPage() {
 
               <div className="mt-12 pt-8 border-t border-gray-200">
                 <p className="text-center text-gray-500 text-sm">
-                  Enjoy your delicious meal! Don't forget to share your creation with friends and family. 🍽️
+                  Enjoy your delicious meal! Don't forget to share your creation
+                  with friends and family. 🍽️
                 </p>
               </div>
 

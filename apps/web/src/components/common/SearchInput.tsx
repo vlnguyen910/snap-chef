@@ -1,5 +1,5 @@
-import { Search, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Search, X } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface SearchInputProps {
   value: string;
@@ -16,8 +16,8 @@ interface SearchInputProps {
 export default function SearchInput({
   value,
   onChange,
-  placeholder = 'Search...',
-  className = '',
+  placeholder = "Search...",
+  className = "",
   showClearButton = true,
 }: SearchInputProps) {
   const [inputValue, setInputValue] = useState(value);
@@ -34,8 +34,8 @@ export default function SearchInput({
   };
 
   const handleClear = () => {
-    setInputValue('');
-    onChange('');
+    setInputValue("");
+    onChange("");
   };
 
   return (

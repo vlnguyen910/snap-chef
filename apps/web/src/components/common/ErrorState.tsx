@@ -1,5 +1,5 @@
-import { AlertCircle, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { AlertCircle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ErrorStateProps {
   title?: string;
@@ -8,11 +8,11 @@ interface ErrorStateProps {
   fullScreen?: boolean;
 }
 
-export default function ErrorState({ 
-  title = 'Something went wrong', 
-  message = 'An error occurred while loading data. Please try again.',
+export default function ErrorState({
+  title = "Something went wrong",
+  message = "An error occurred while loading data. Please try again.",
   onRetry,
-  fullScreen = false 
+  fullScreen = false,
 }: ErrorStateProps) {
   const content = (
     <div className="flex flex-col items-center justify-center gap-4 text-center">
@@ -38,5 +38,9 @@ export default function ErrorState({
     );
   }
 
-  return <div className="flex min-h-[400px] items-center justify-center px-4">{content}</div>;
+  return (
+    <div className="flex min-h-[400px] items-center justify-center px-4">
+      {content}
+    </div>
+  );
 }

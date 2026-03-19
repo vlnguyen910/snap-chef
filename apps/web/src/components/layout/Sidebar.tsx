@@ -1,55 +1,75 @@
-import { Link, useLocation } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import { 
-  LayoutDashboard, 
-  ChefHat, 
-  Heart, 
-  User, 
+import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import {
+  LayoutDashboard,
+  ChefHat,
+  Heart,
+  User,
   Settings,
   FileCheck,
   Users,
-  BarChart3
-} from 'lucide-react';
-import { useStore } from '@/lib/store';
+  BarChart3,
+} from "lucide-react";
+import { useStore } from "@/lib/store";
 
 interface SidebarProps {
   className?: string;
 }
 
-export default function Sidebar({ className = '' }: SidebarProps) {
+export default function Sidebar({ className = "" }: SidebarProps) {
   const location = useLocation();
   const { user } = useStore();
   const { t } = useTranslation();
 
-  const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path);
+  const isActive = (path: string) =>
+    location.pathname === path || location.pathname.startsWith(path);
 
   // User menu items
   const userMenuItems = [
-    { path: '/profile', label: t('sidebar.my_profile'), icon: User },
-    { path: '/my-recipes', label: t('sidebar.my_recipes'), icon: ChefHat },
-    { path: '/favorites', label: t('sidebar.favorites'), icon: Heart },
-    { path: '/settings', label: t('sidebar.settings'), icon: Settings },
+    { path: "/profile", label: t("sidebar.my_profile"), icon: User },
+    { path: "/my-recipes", label: t("sidebar.my_recipes"), icon: ChefHat },
+    { path: "/favorites", label: t("sidebar.favorites"), icon: Heart },
+    { path: "/settings", label: t("sidebar.settings"), icon: Settings },
   ];
 
   // Moderator menu items
   const moderatorMenuItems = [
-    { path: '/admin', label: t('sidebar.dashboard'), icon: LayoutDashboard },
-    { path: '/admin/queue', label: t('sidebar.approval_queue'), icon: FileCheck },
-    { path: '/admin/content', label: t('sidebar.content_manager'), icon: ChefHat },
-    { path: '/admin/users', label: t('sidebar.users'), icon: Users },
-    { path: '/admin/analytics', label: t('sidebar.analytics'), icon: BarChart3 },
+    { path: "/admin", label: t("sidebar.dashboard"), icon: LayoutDashboard },
+    {
+      path: "/admin/queue",
+      label: t("sidebar.approval_queue"),
+      icon: FileCheck,
+    },
+    {
+      path: "/admin/content",
+      label: t("sidebar.content_manager"),
+      icon: ChefHat,
+    },
+    { path: "/admin/users", label: t("sidebar.users"), icon: Users },
+    {
+      path: "/admin/analytics",
+      label: t("sidebar.analytics"),
+      icon: BarChart3,
+    },
   ];
 
-  const menuItems = user?.role === 'moderator' ? moderatorMenuItems : userMenuItems;
+  const menuItems =
+    user?.role === "moderator" ? moderatorMenuItems : userMenuItems;
 
   return (
-    <aside className={`hidden w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 md:block h-full ${className}`}>
+    <aside
+      className={`hidden w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 md:block h-full ${className}`}
+    >
       <div className="flex h-full flex-col">
         <div className="flex-1 overflow-y-auto p-6">
           <div className="mb-6 flex items-center gap-2 text-lg font-bold text-orange-600 dark:text-orange-400">
             <ChefHat size={24} />
-            <span>{user?.role === 'moderator' ? t('sidebar.admin_panel') : t('sidebar.my_kitchen')}</span>
+            <span>
+              {user?.role === "moderator"
+                ? t("sidebar.admin_panel")
+                : t("sidebar.my_kitchen")}
+            </span>
           </div>
           <nav className="space-y-1">
             {menuItems.map((item) => {
@@ -58,7 +78,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
               return (
                 <Button
                   key={item.path}
-                  variant={active ? 'secondary' : 'ghost'}
+                  variant={active ? "secondary" : "ghost"}
                   asChild
                   className="w-full justify-start"
                 >
@@ -71,8 +91,6 @@ export default function Sidebar({ className = '' }: SidebarProps) {
             })}
           </nav>
         </div>
-
-        
       </div>
     </aside>
   );

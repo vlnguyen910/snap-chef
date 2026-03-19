@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Heart, Loader2 } from 'lucide-react';
-import { api } from '@/lib/axios';
-import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Heart, Loader2 } from "lucide-react";
+import { api } from "@/lib/axios";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 interface Recipe {
   id: string;
@@ -25,7 +25,7 @@ export default function FavoritesPage() {
   const [hasMore, setHasMore] = useState(true);
   const limit = 9; // 9 recipes per page (3x3 grid)
 
-  useDocumentTitle('Favorites');
+  useDocumentTitle("Favorites");
 
   useEffect(() => {
     fetchFavorites(1);
@@ -41,7 +41,7 @@ export default function FavoritesPage() {
       }
 
       const data = await api.get<any[]>(
-        `/users/me/likes?page=${pageNum}&limit=${limit}`
+        `/users/me/likes?page=${pageNum}&limit=${limit}`,
       );
       const newRecipes = data.map((item: any) => item.recipe).filter(Boolean);
 
@@ -57,8 +57,8 @@ export default function FavoritesPage() {
       setHasMore(newRecipes.length === limit);
       setPage(pageNum);
     } catch (err: any) {
-      console.error('Error fetching favorites:', err);
-      toast.error('Không thể tải công thức yêu thích');
+      console.error("Error fetching favorites:", err);
+      toast.error("Không thể tải công thức yêu thích");
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -83,7 +83,9 @@ export default function FavoritesPage() {
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Công thức yêu thích</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Công thức yêu thích
+        </h1>
         <p className="text-gray-600 mt-1">Các công thức bạn đã lưu và thích</p>
       </div>
 
@@ -99,7 +101,10 @@ export default function FavoritesPage() {
               {/* Image */}
               <div className="relative h-48">
                 <img
-                  src={recipe.thumbnail_url || 'https://via.placeholder.com/400x300'}
+                  src={
+                    recipe.thumbnail_url ||
+                    "https://via.placeholder.com/400x300"
+                  }
                   alt={recipe.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                 />
@@ -107,7 +112,7 @@ export default function FavoritesPage() {
                 <h3 className="absolute bottom-3 left-3 right-3 text-white font-bold text-lg line-clamp-2">
                   {recipe.title}
                 </h3>
-                
+
                 {/* Heart Icon */}
                 <div className="absolute top-3 right-3">
                   <div className="bg-red-500 p-2 rounded-full">
@@ -120,13 +125,14 @@ export default function FavoritesPage() {
               <div className="p-4">
                 <div className="flex items-center gap-4 text-sm text-gray-600">
                   <span className="flex items-center gap-1">
-                    <span className="text-orange-500">⏱️</span> {recipe.cooking_time}m
+                    <span className="text-orange-500">⏱️</span>{" "}
+                    {recipe.cooking_time}m
                   </span>
                   <span className="flex items-center gap-1">
                     <span className="text-blue-500">🍽️</span> {recipe.servings}
                   </span>
                 </div>
-                
+
                 {recipe.description && (
                   <p className="mt-2 text-sm text-gray-500 line-clamp-2">
                     {recipe.description}
@@ -164,7 +170,7 @@ export default function FavoritesPage() {
                 Đang tải...
               </>
             ) : (
-              'Tải thêm'
+              "Tải thêm"
             )}
           </Button>
         </div>

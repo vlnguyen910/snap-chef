@@ -1,24 +1,26 @@
-import { useState, useEffect } from 'react';
-import { Search, Users, UserPlus, UserMinus } from 'lucide-react';
-import { useDebounce } from '@/hooks/useDebounce';
-import { searchUsers, followUser, unfollowUser } from '@/services/userService';
-import type { SearchUserResult } from '@/types';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
-import { useAuth } from '@/context/authContext';
-import Loading from '@/components/common/Loading';
-import ErrorState from '@/components/common/ErrorState';
+import { useState, useEffect } from "react";
+import { Search, Users, UserPlus, UserMinus } from "lucide-react";
+import { useDebounce } from "@/hooks/useDebounce";
+import { searchUsers, followUser, unfollowUser } from "@/services/userService";
+import type { SearchUserResult } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/context/authContext";
+import Loading from "@/components/common/Loading";
+import ErrorState from "@/components/common/ErrorState";
 
 export default function UserSearchPage() {
   const { user } = useAuth();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState<SearchUserResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [followedUsers, setFollowedUsers] = useState<Set<string>>(new Set());
-  const [followingInProgress, setFollowingInProgress] = useState<Set<string>>(new Set());
+  const [followingInProgress, setFollowingInProgress] = useState<Set<string>>(
+    new Set(),
+  );
 
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
@@ -54,8 +56,8 @@ export default function UserSearchPage() {
       // Check if there are more results
       setHasMore(results.length === 20);
     } catch (err: any) {
-      console.error('Error searching users:', err);
-      setError('Failed to search users. Please try again.');
+      console.error("Error searching users:", err);
+      setError("Failed to search users. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -70,7 +72,7 @@ export default function UserSearchPage() {
   const handleFollowToggle = async (targetUserId: string) => {
     if (!user) {
       // Redirect to login if not authenticated
-      window.location.href = '/auth/signin';
+      window.location.href = "/auth/signin";
       return;
     }
 
@@ -95,7 +97,7 @@ export default function UserSearchPage() {
         await followUser(targetUserId);
       }
     } catch (err) {
-      console.error('Error toggling follow:', err);
+      console.error("Error toggling follow:", err);
       // Revert optimistic update on error
       setFollowedUsers((prev) => {
         const newSet = new Set(prev);
@@ -173,9 +175,12 @@ export default function UserSearchPage() {
                   className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start gap-4">
-                    <Link to={`/profile/${targetUser.id}`} className="flex-shrink-0">
+                    <Link
+                      to={`/profile/${targetUser.id}`}
+                      className="flex-shrink-0"
+                    >
                       <img
-                        src={targetUser.avatar_url || '/default-avatar.png'}
+                        src={targetUser.avatar_url || "/default-avatar.png"}
                         alt={targetUser.username}
                         className="h-16 w-16 rounded-full object-cover"
                       />
@@ -205,13 +210,17 @@ export default function UserSearchPage() {
                       {user && user.id !== targetUser.id && (
                         <Button
                           size="sm"
-                          variant={followedUsers.has(targetUser.id) ? 'outline' : 'default'}
+                          variant={
+                            followedUsers.has(targetUser.id)
+                              ? "outline"
+                              : "default"
+                          }
                           onClick={() => handleFollowToggle(targetUser.id)}
                           disabled={followingInProgress.has(targetUser.id)}
                           className="mt-3"
                         >
                           {followingInProgress.has(targetUser.id) ? (
-                            'Loading...'
+                            "Loading..."
                           ) : followedUsers.has(targetUser.id) ? (
                             <>
                               <UserMinus className="h-4 w-4 mr-1" />
@@ -240,7 +249,7 @@ export default function UserSearchPage() {
                   disabled={isLoading}
                   className="min-w-[200px]"
                 >
-                  {isLoading ? 'Loading...' : 'Load More'}
+                  {isLoading ? "Loading..." : "Load More"}
                 </Button>
               </div>
             )}

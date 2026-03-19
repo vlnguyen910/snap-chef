@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import * as authService from '@/services/authService';
-import { useStore } from '@/lib/store';
-import type { User } from '@/types';
-import type { SignupPayload } from '@/features/auth/utils/auth.helpers';
-import type { SignupResponse } from '@/services/authService';
+import { useState } from "react";
+import * as authService from "@/services/authService";
+import { useStore } from "@/lib/store";
+import type { User } from "@/types";
+import type { SignupPayload } from "@/features/auth/utils/auth.helpers";
+import type { SignupResponse } from "@/services/authService";
 
 export function useAuth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -19,20 +19,26 @@ export function useAuth() {
       storeLogin(user, access_token);
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Sign in failed. Please check your credentials.');
+      setError(
+        err.response?.data?.message ||
+          "Sign in failed. Please check your credentials.",
+      );
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const signup = async (payload: SignupPayload): Promise<SignupResponse | null> => {
+  const signup = async (
+    payload: SignupPayload,
+  ): Promise<SignupResponse | null> => {
     setIsLoading(true);
     setError(null);
     try {
       return await authService.signup(payload);
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Sign up failed. Please try again.';
+      const errorMessage =
+        err.response?.data?.message || "Sign up failed. Please try again.";
       setError(errorMessage);
       return null;
     } finally {
@@ -48,7 +54,7 @@ export function useAuth() {
       storeLogin(user, access_token);
       return true;
     } catch (err: any) {
-      setError(err?.message || 'Google sign in failed. Please try again.');
+      setError(err?.message || "Google sign in failed. Please try again.");
       return false;
     } finally {
       setIsLoading(false);
@@ -61,7 +67,7 @@ export function useAuth() {
     try {
       await authService.signout();
     } catch (err) {
-      console.error('Sign out error:', err);
+      console.error("Sign out error:", err);
     } finally {
       storeLogout();
       setIsLoading(false);
@@ -76,7 +82,7 @@ export function useAuth() {
       useStore.getState().updateUser(updatedUser);
       return true;
     } catch (err: any) {
-      setError(err.message || 'Failed to update profile.');
+      setError(err.message || "Failed to update profile.");
       return false;
     } finally {
       setIsLoading(false);
@@ -92,7 +98,7 @@ export function useAuth() {
       }
       return false;
     } catch (err) {
-      console.error('Session check error:', err);
+      console.error("Session check error:", err);
       return false;
     }
   };
@@ -104,7 +110,7 @@ export function useAuth() {
       await authService.forgotPassword(email);
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to send reset email.');
+      setError(err.response?.data?.message || "Failed to send reset email.");
       return false;
     } finally {
       setIsLoading(false);
@@ -118,21 +124,24 @@ export function useAuth() {
       await authService.verifyEmail(token);
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Email verification failed.');
+      setError(err.response?.data?.message || "Email verification failed.");
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const resetPassword = async (token: string, password: string): Promise<boolean> => {
+  const resetPassword = async (
+    token: string,
+    password: string,
+  ): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
     try {
       await authService.resetPassword(token, password);
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Password reset failed.');
+      setError(err.response?.data?.message || "Password reset failed.");
       return false;
     } finally {
       setIsLoading(false);

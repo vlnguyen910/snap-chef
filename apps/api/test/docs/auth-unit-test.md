@@ -38,6 +38,7 @@ src/modules/auth/
 ```
 
 **Luồng xử lý (Local Auth):**
+
 ```
 POST /auth/login → AuthController.login() → AuthService.login()
                  → UsersService.findByEmail() → argon2.verify()
@@ -45,6 +46,7 @@ POST /auth/login → AuthController.login() → AuthService.login()
 ```
 
 **Luồng xử lý (Google OAuth):**
+
 ```
 GET /auth/google-redirect → GoogleOAuthGuard → GoogleStrategy.validate()
                           → AuthService.googleLogin()
@@ -54,14 +56,14 @@ GET /auth/google-redirect → GoogleOAuthGuard → GoogleStrategy.validate()
 
 **Dependencies của AuthService:**
 
-| Dependency | Vai trò |
-|---|---|
-| `UsersService` | Tìm / tạo user |
-| `JwtService` | Ký access/refresh token |
-| `RedisService` | Cache verify token, reset token, blacklist jti |
-| `MailerService` | Gửi email xác thực và reset mật khẩu |
-| `OauthService` | Tạo / tìm OAuth account |
-| `jwtConfiguration` | Config token expiry |
+| Dependency         | Vai trò                                        |
+| ------------------ | ---------------------------------------------- |
+| `UsersService`     | Tìm / tạo user                                 |
+| `JwtService`       | Ký access/refresh token                        |
+| `RedisService`     | Cache verify token, reset token, blacklist jti |
+| `MailerService`    | Gửi email xác thực và reset mật khẩu           |
+| `OauthService`     | Tạo / tìm OAuth account                        |
+| `jwtConfiguration` | Config token expiry                            |
 
 ---
 
@@ -70,12 +72,17 @@ GET /auth/google-redirect → GoogleOAuthGuard → GoogleStrategy.validate()
 Tất cả dependencies được mock bằng plain object với `jest.fn()`:
 
 ```typescript
-const mockUsersService  = { findByEmail, findOne, create, update };
-const mockJwtService    = { signAsync: jest.fn().mockResolvedValue('mock-jwt-token') };
-const mockRedisService  = { setCache, getCache, delCache };
-const mockMailService   = { sendUserConfirmation, sendResetPassword };
-const mockOauthService  = { createOauthAccount, findOauthAccount };
-const mockJwtConfig     = { accessTokenExpiresIn: '15m', refreshTokenExpiresIn: '30d' };
+const mockUsersService = { findByEmail, findOne, create, update };
+const mockJwtService = {
+  signAsync: jest.fn().mockResolvedValue('mock-jwt-token'),
+};
+const mockRedisService = { setCache, getCache, delCache };
+const mockMailService = { sendUserConfirmation, sendResetPassword };
+const mockOauthService = { createOauthAccount, findOauthAccount };
+const mockJwtConfig = {
+  accessTokenExpiresIn: '15m',
+  refreshTokenExpiresIn: '30d',
+};
 ```
 
 `jwtConfiguration.KEY` được cung cấp qua `useValue`:
@@ -111,7 +118,10 @@ jest.mock('argon2', () => {
 });
 
 // Lấy lại mock function để dùng trong test
-const argon2Mocked = require('argon2') as { verify: jest.Mock; hash: jest.Mock };
+const argon2Mocked = require('argon2') as {
+  verify: jest.Mock;
+  hash: jest.Mock;
+};
 ```
 
 `default: impl` bắt buộc phải trỏ cùng object với top-level để cả `import argon2 from 'argon2'` (trong service) lẫn `require('argon2')` (trong test) đều nhận cùng `jest.fn()` instance.
@@ -126,9 +136,9 @@ File: `src/modules/auth/auth.service.spec.ts` — **22 test cases**
 
 ### 4.1 `initialization`
 
-| # | Test case | Mô tả |
-|---|---|---|
-| 1 | `should be defined` | NestJS inject đủ dependencies và khởi tạo service thành công |
+| #   | Test case           | Mô tả                                                        |
+| --- | ------------------- | ------------------------------------------------------------ |
+| 1   | `should be defined` | NestJS inject đủ dependencies và khởi tạo service thành công |
 
 ---
 
@@ -137,20 +147,21 @@ File: `src/modules/auth/auth.service.spec.ts` — **22 test cases**
 Xử lý đăng nhập bằng email/password. Trả về `access_token` + `refresh_token`.
 
 **Luồng kiểm tra:**
+
 1. Tìm user theo email
 2. Kiểm tra `is_active`, `password` tồn tại
 3. Xác thực password bằng `argon2.verify()`
 4. Kiểm tra `is_verified`
 5. Gọi `manageUserToken()` → ký 2 token song song
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 1 | `should return tokens on successful login` | Happy path | Email + password đúng, user active & verified → trả về object có `access_token` và `refresh_token` |
-| 2 | `should throw UnauthorizedException if user is not found` | Error path | `findByEmail` trả về `null` → throw `INVALID_CREDENTIALS` (không tiết lộ "user không tồn tại") |
-| 3 | `should throw UnauthorizedException if user has no password` | Error path | `user.password = null` (tài khoản OAuth) → throw `INVALID_CREDENTIALS` |
-| 4 | `should throw ForbiddenException if user is banned` | Error path | `user.is_active = false` → throw `USER_BANNED` (403 thay vì 401) |
-| 5 | `should throw UnauthorizedException if password does not match` | Error path | `argon2.verify` trả về `false` → throw `INVALID_CREDENTIALS` |
-| 6 | `should throw UnauthorizedException if email is not verified` | Error path | `user.is_verified = false` → throw `EMAIL_NOT_VERIFIED` |
+| #   | Test case                                                       | Loại       | Mô tả                                                                                              |
+| --- | --------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------- |
+| 1   | `should return tokens on successful login`                      | Happy path | Email + password đúng, user active & verified → trả về object có `access_token` và `refresh_token` |
+| 2   | `should throw UnauthorizedException if user is not found`       | Error path | `findByEmail` trả về `null` → throw `INVALID_CREDENTIALS` (không tiết lộ "user không tồn tại")     |
+| 3   | `should throw UnauthorizedException if user has no password`    | Error path | `user.password = null` (tài khoản OAuth) → throw `INVALID_CREDENTIALS`                             |
+| 4   | `should throw ForbiddenException if user is banned`             | Error path | `user.is_active = false` → throw `USER_BANNED` (403 thay vì 401)                                   |
+| 5   | `should throw UnauthorizedException if password does not match` | Error path | `argon2.verify` trả về `false` → throw `INVALID_CREDENTIALS`                                       |
+| 6   | `should throw UnauthorizedException if email is not verified`   | Error path | `user.is_verified = false` → throw `EMAIL_NOT_VERIFIED`                                            |
 
 ---
 
@@ -159,16 +170,17 @@ Xử lý đăng nhập bằng email/password. Trả về `access_token` + `refre
 Đăng ký tài khoản mới. Gửi email xác thực sau khi tạo.
 
 **Luồng:**
+
 1. Kiểm tra email chưa tồn tại
 2. `argon2.hash()` password
 3. `usersService.create()` — tạo user
 4. `redis.setCache('verify_email:{uuid}', userId, 15)` — TTL 15 phút
 5. `mailService.sendUserConfirmation()` — gửi mail
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 7 | `should register user, cache token, send email, and return message` | Happy path | Kiểm tra toàn bộ luồng: user được tạo, Redis được set với key `verify_email:mock-uuid-token`, mail được gửi |
-| 8 | `should throw ForbiddenException if email is already in use` | Error path | `findByEmail` trả về user → throw `EMAIL_ALREADY_IN_USE`, `usersService.create` không được gọi |
+| #   | Test case                                                           | Loại       | Mô tả                                                                                                       |
+| --- | ------------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------- |
+| 7   | `should register user, cache token, send email, and return message` | Happy path | Kiểm tra toàn bộ luồng: user được tạo, Redis được set với key `verify_email:mock-uuid-token`, mail được gửi |
+| 8   | `should throw ForbiddenException if email is already in use`        | Error path | `findByEmail` trả về user → throw `EMAIL_ALREADY_IN_USE`, `usersService.create` không được gọi              |
 
 ---
 
@@ -176,10 +188,10 @@ Xử lý đăng nhập bằng email/password. Trả về `access_token` + `refre
 
 Xác thực email từ link được gửi trong mail.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 9 | `should verify email and return success message` | Happy path | Redis có `userId` → cập nhật `is_verified=true` → xóa cache key → trả về success message |
-| 10 | `should throw BadRequestException if token is not found in cache` | Error path | Redis trả về `null` (token hết hạn) → throw `INVALID_TOKEN` |
+| #   | Test case                                                         | Loại       | Mô tả                                                                                    |
+| --- | ----------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------- |
+| 9   | `should verify email and return success message`                  | Happy path | Redis có `userId` → cập nhật `is_verified=true` → xóa cache key → trả về success message |
+| 10  | `should throw BadRequestException if token is not found in cache` | Error path | Redis trả về `null` (token hết hạn) → throw `INVALID_TOKEN`                              |
 
 ---
 
@@ -187,9 +199,9 @@ Xác thực email từ link được gửi trong mail.
 
 Tạo access token mới từ refresh token payload (đã qua `RefreshTokenGuard`).
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 11 | `should return a new access_token` | Happy path | Payload hợp lệ → `jwtService.signAsync` được gọi 1 lần → trả về `{ access_token }` |
+| #   | Test case                          | Loại       | Mô tả                                                                              |
+| --- | ---------------------------------- | ---------- | ---------------------------------------------------------------------------------- |
+| 11  | `should return a new access_token` | Happy path | Payload hợp lệ → `jwtService.signAsync` được gọi 1 lần → trả về `{ access_token }` |
 
 ---
 
@@ -197,9 +209,9 @@ Tạo access token mới từ refresh token payload (đã qua `RefreshTokenGuard
 
 Đưa jti của refresh token vào blacklist Redis.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 12 | `should blacklist the token jti in Redis` | Happy path | `redis.setCache('blacklist:{jti}', 'true', 43200)` — TTL = 30 ngày (30 × 24 × 60 phút) |
+| #   | Test case                                 | Loại       | Mô tả                                                                                  |
+| --- | ----------------------------------------- | ---------- | -------------------------------------------------------------------------------------- |
+| 12  | `should blacklist the token jti in Redis` | Happy path | `redis.setCache('blacklist:{jti}', 'true', 43200)` — TTL = 30 ngày (30 × 24 × 60 phút) |
 
 ---
 
@@ -207,10 +219,10 @@ Tạo access token mới từ refresh token payload (đã qua `RefreshTokenGuard
 
 Gửi email reset mật khẩu. Luôn trả về cùng message dù user có tồn tại hay không.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 13 | `should cache reset token and send reset email if user exists` | Happy path | User tồn tại → `redis.setCache('reset_password:{uuid}', userId, 15)` → gửi mail |
-| 14 | `should return same message even if user does not exist` | Security | User không tồn tại → trả về cùng message, `sendResetPassword` **không** được gọi — tránh enumerate email |
+| #   | Test case                                                      | Loại       | Mô tả                                                                                                    |
+| --- | -------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------- |
+| 13  | `should cache reset token and send reset email if user exists` | Happy path | User tồn tại → `redis.setCache('reset_password:{uuid}', userId, 15)` → gửi mail                          |
+| 14  | `should return same message even if user does not exist`       | Security   | User không tồn tại → trả về cùng message, `sendResetPassword` **không** được gọi — tránh enumerate email |
 
 ---
 
@@ -218,10 +230,10 @@ Gửi email reset mật khẩu. Luôn trả về cùng message dù user có tồ
 
 Đặt lại mật khẩu từ token reset.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 15 | `should reset password and delete cache token` | Happy path | Token hợp lệ → `argon2.hash()` mật khẩu mới → `usersService.update()` → xóa Redis key |
-| 16 | `should throw BadRequestException if reset token is not found` | Error path | Redis trả về `null` → throw `INVALID_OR_EXPIRED_TOKEN` |
+| #   | Test case                                                      | Loại       | Mô tả                                                                                 |
+| --- | -------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------- |
+| 15  | `should reset password and delete cache token`                 | Happy path | Token hợp lệ → `argon2.hash()` mật khẩu mới → `usersService.update()` → xóa Redis key |
+| 16  | `should throw BadRequestException if reset token is not found` | Error path | Redis trả về `null` → throw `INVALID_OR_EXPIRED_TOKEN`                                |
 
 ---
 
@@ -229,10 +241,10 @@ Gửi email reset mật khẩu. Luôn trả về cùng message dù user có tồ
 
 Kiểm tra xem jti đã bị blacklist chưa (dùng trong `JwtStrategy`).
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 17 | `should return true if token is blacklisted` | Happy path | Redis trả về `'true'` → return `true` |
-| 18 | `should return false if token is not blacklisted` | Happy path | Redis trả về `null` → return `false` |
+| #   | Test case                                         | Loại       | Mô tả                                 |
+| --- | ------------------------------------------------- | ---------- | ------------------------------------- |
+| 17  | `should return true if token is blacklisted`      | Happy path | Redis trả về `'true'` → return `true` |
+| 18  | `should return false if token is not blacklisted` | Happy path | Redis trả về `null` → return `false`  |
 
 ---
 
@@ -241,19 +253,20 @@ Kiểm tra xem jti đã bị blacklist chưa (dùng trong `JwtStrategy`).
 Đăng nhập / đăng ký bằng Google OAuth.
 
 **Luồng:**
+
 1. Kiểm tra `req.user` tồn tại
 2. Tìm user theo email
 3. Nếu chưa có: tạo user → tạo OAuth account
 4. Nếu đã có: kiểm tra OAuth link → tạo nếu chưa có / conflict nếu provider_id khác
 5. Cache user → ký token
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 19 | `should create new user and oauth account if user does not exist` | Happy path | `findByEmail` trả về `null` → `usersService.create()` + `oauthService.createOauthAccount()` được gọi |
-| 20 | `should link google account if user exists but has no oauth account` | Happy path | User có nhưng chưa link → `oauthService.findOauthAccount` trả về `null` → tạo oauth link |
-| 21 | `should not create oauth account if already linked with same provider_id` | Happy path | OAuth account tồn tại với đúng `provider_id` → `createOauthAccount` **không** được gọi |
-| 22 | `should throw ConflictException if google account is linked to different provider_id` | Error path | OAuth account tồn tại nhưng `provider_id` khác → throw `GOOGLE_ACCOUNT_CONFLICT` |
-| 23 | `should throw NotFoundException if google user is missing from request` | Error path | `req.user = null` → throw `NO_GOOGLE_USER` |
+| #   | Test case                                                                             | Loại       | Mô tả                                                                                                |
+| --- | ------------------------------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------- |
+| 19  | `should create new user and oauth account if user does not exist`                     | Happy path | `findByEmail` trả về `null` → `usersService.create()` + `oauthService.createOauthAccount()` được gọi |
+| 20  | `should link google account if user exists but has no oauth account`                  | Happy path | User có nhưng chưa link → `oauthService.findOauthAccount` trả về `null` → tạo oauth link             |
+| 21  | `should not create oauth account if already linked with same provider_id`             | Happy path | OAuth account tồn tại với đúng `provider_id` → `createOauthAccount` **không** được gọi               |
+| 22  | `should throw ConflictException if google account is linked to different provider_id` | Error path | OAuth account tồn tại nhưng `provider_id` khác → throw `GOOGLE_ACCOUNT_CONFLICT`                     |
+| 23  | `should throw NotFoundException if google user is missing from request`               | Error path | `req.user = null` → throw `NO_GOOGLE_USER`                                                           |
 
 ---
 
@@ -294,7 +307,9 @@ it('should still return message even if mail sending fails', async () => {
   mockUsersService.findByEmail.mockResolvedValue(null);
   mockUsersService.create.mockResolvedValue({ ...mockActiveUser });
   argon2Mocked.hash.mockResolvedValue('hashed');
-  mockMailService.sendUserConfirmation.mockRejectedValue(new Error('SMTP error'));
+  mockMailService.sendUserConfirmation.mockRejectedValue(
+    new Error('SMTP error'),
+  );
 
   // Nếu service có try/catch → vẫn return message
   // Nếu không có → test này sẽ fail và nhắc cần thêm error handling
@@ -304,4 +319,4 @@ it('should still return message even if mail sending fails', async () => {
 
 ---
 
-*Tài liệu cập nhật lần cuối: **2026-03-04**. Cập nhật khi thêm hoặc thay đổi test case.*
+_Tài liệu cập nhật lần cuối: **2026-03-04**. Cập nhật khi thêm hoặc thay đổi test case._

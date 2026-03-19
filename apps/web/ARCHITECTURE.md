@@ -65,23 +65,27 @@ src/
 ## 🎯 Key Features
 
 ### 1. Authentication System
+
 - Login/Register forms with validation
 - Zustand state management for auth
 - Protected routes with role-based access
 - Token-based authentication
 
 ### 2. Recipe Management
+
 - Recipe browsing with search & filters
 - Recipe cards with favorite/fork actions
 - Detailed recipe view
 - User-specific recipe lists
 
 ### 3. Moderation System
+
 - Approval queue for pending recipes
 - Approve/reject functionality
 - Moderator-only routes
 
 ### 4. Layout System
+
 - Responsive header with role-based navigation
 - Conditional sidebar for authenticated users
 - Mobile-friendly hamburger menu
@@ -113,6 +117,7 @@ pnpm build
 ## 📝 Route Structure
 
 ### Public Routes
+
 - `/` - Homepage
 - `/login` - Login page
 - `/register` - Register (redirects to /login?mode=register)
@@ -120,6 +125,7 @@ pnpm build
 - `/recipes/:id` - Recipe detail
 
 ### Protected User Routes (requires auth)
+
 - `/dashboard` - User dashboard
 - `/profile` - User profile
 - `/my-recipes` - User's recipes
@@ -127,6 +133,7 @@ pnpm build
 - `/settings` - User settings
 
 ### Protected Moderator Routes (requires moderator role)
+
 - `/moderation` - Moderation dashboard
 - `/moderation/queue` - Approval queue
 - `/moderation/content` - Content management
@@ -144,10 +151,12 @@ pnpm build
 ## 🎨 UI Components
 
 ### Common Components
+
 - `Loading` - Loading spinner with optional fullscreen
 - `ErrorState` - Error display with retry button
 
 ### Feature Components
+
 - `RecipeCard` - Recipe preview with actions
 - `RecipeList` - Searchable/filterable recipe grid
 - `ApprovalQueue` - Moderation queue interface
@@ -169,6 +178,7 @@ pnpm build
 ## 🔄 API Integration
 
 All API calls use centralized Axios instance with:
+
 - Base URL configuration via env variable
 - Request interceptor for auth token
 - Response interceptor for 401 handling

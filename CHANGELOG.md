@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Recipe creation and editing functionality with image upload support
 - User profile page with stats display
 - Moderation queue system for recipe approval/rejection
@@ -19,12 +20,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Toast notifications for user feedback
 
 ### Changed
+
 - Improved axios configuration with automatic token handling
 - Enhanced recipe update API to use PATCH method
 - Updated form validation for recipe creation/editing
 - Refactored authentication context for better state management
 
 ### Fixed
+
 - Recipe update API endpoint now correctly uses recipe ID
 - Form data validation for numeric fields (servings, cooking_time)
 - User authentication state persistence across page reloads
@@ -33,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2024-12-21
 
 ### Added
+
 - Initial project setup with monorepo structure using pnpm workspaces
 - NestJS API backend with Prisma ORM
 - React frontend with Vite and TypeScript

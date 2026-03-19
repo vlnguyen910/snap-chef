@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import * as userService from '@/services/userService';
-import type { SearchUsersParams } from '@/types';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import * as userService from "@/services/userService";
+import type { SearchUsersParams } from "@/types";
 
 /**
  * Custom hooks for user-related features using TanStack Query
@@ -11,11 +11,12 @@ import type { SearchUsersParams } from '@/types';
 // ============================================
 
 export const userKeys = {
-  all: ['users'] as const,
-  profile: (userId: string) => [...userKeys.all, 'profile', userId] as const,
-  search: (params: SearchUsersParams) => [...userKeys.all, 'search', params] as const,
-  following: () => [...userKeys.all, 'following'] as const,
-  followers: () => [...userKeys.all, 'followers'] as const,
+  all: ["users"] as const,
+  profile: (userId: string) => [...userKeys.all, "profile", userId] as const,
+  search: (params: SearchUsersParams) =>
+    [...userKeys.all, "search", params] as const,
+  following: () => [...userKeys.all, "following"] as const,
+  followers: () => [...userKeys.all, "followers"] as const,
 };
 
 // ============================================
@@ -25,7 +26,10 @@ export const userKeys = {
 /**
  * Hook to fetch user profile
  */
-export function useUserProfile(userId: string, options?: { enabled?: boolean }) {
+export function useUserProfile(
+  userId: string,
+  options?: { enabled?: boolean },
+) {
   return useQuery({
     queryKey: userKeys.profile(userId),
     queryFn: () => userService.getUserProfile(userId),
@@ -37,7 +41,10 @@ export function useUserProfile(userId: string, options?: { enabled?: boolean }) 
 /**
  * Hook to search users
  */
-export function useSearchUsers(params: SearchUsersParams, options?: { enabled?: boolean }) {
+export function useSearchUsers(
+  params: SearchUsersParams,
+  options?: { enabled?: boolean },
+) {
   return useQuery({
     queryKey: userKeys.search(params),
     queryFn: () => userService.searchUsers(params),
@@ -87,8 +94,8 @@ export function useFollowUser() {
       queryClient.invalidateQueries({ queryKey: userKeys.profile(userId) });
     },
     onError: (error: any) => {
-      console.error('Follow user error:', error);
-      window.toast?.error?.(error.message || 'Failed to follow user');
+      console.error("Follow user error:", error);
+      window.toast?.error?.(error.message || "Failed to follow user");
     },
   });
 }
@@ -108,8 +115,8 @@ export function useUnfollowUser() {
       queryClient.invalidateQueries({ queryKey: userKeys.profile(userId) });
     },
     onError: (error: any) => {
-      console.error('Unfollow user error:', error);
-      window.toast?.error?.(error.message || 'Failed to unfollow user');
+      console.error("Unfollow user error:", error);
+      window.toast?.error?.(error.message || "Failed to unfollow user");
     },
   });
 }

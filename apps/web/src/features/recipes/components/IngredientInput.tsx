@@ -1,11 +1,18 @@
-import { useFieldArray, useFormContext } from 'react-hook-form';
-import { Menu, MoreHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import type { RecipeFormData } from '../types/recipe-form';
+import { useFieldArray, useFormContext } from "react-hook-form";
+import { Menu, MoreHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { RecipeFormData } from "../types/recipe-form";
 
 export const IngredientInput = () => {
-  const { control, register, formState: { errors } } = useFormContext<RecipeFormData>();
-  const { fields, append, remove } = useFieldArray({ control, name: 'ingredients' });
+  const {
+    control,
+    register,
+    formState: { errors },
+  } = useFormContext<RecipeFormData>();
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "ingredients",
+  });
 
   return (
     <div className="space-y-4">
@@ -16,9 +23,12 @@ export const IngredientInput = () => {
             <label className="text-sm text-gray-600">Khẩu phần:</label>
             <input
               type="number"
-              {...register('serving', { 
-                min: { value: 1, message: 'Số khẩu phần không thể âm hoặc bằng 0' },
-                valueAsNumber: true 
+              {...register("serving", {
+                min: {
+                  value: 1,
+                  message: "Số khẩu phần không thể âm hoặc bằng 0",
+                },
+                valueAsNumber: true,
               })}
               className="w-20 rounded-lg border border-gray-300 bg-gray-50 px-3 py-1 text-center focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
@@ -42,9 +52,9 @@ export const IngredientInput = () => {
               <input
                 type="number"
                 step="0.01"
-                {...register(`ingredients.${index}.amount`, { 
+                {...register(`ingredients.${index}.amount`, {
                   valueAsNumber: true,
-                  min: { value: 0.01, message: 'Số lượng không thể âm' }
+                  min: { value: 0.01, message: "Số lượng không thể âm" },
                 })}
                 placeholder="Số lượng"
                 className="w-24 rounded-lg border-none bg-gray-100 px-3 py-2 text-center text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -73,7 +83,7 @@ export const IngredientInput = () => {
 
       <Button
         type="button"
-        onClick={() => append({ name: '', amount: 0, unit: '' })}
+        onClick={() => append({ name: "", amount: 0, unit: "" })}
         variant="ghost"
         size="sm"
         className="text-orange-600 hover:text-orange-700"

@@ -1,17 +1,18 @@
-import { Link } from 'react-router-dom';
-import { Home, ChefHat } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Link } from "react-router-dom";
+import { Home, ChefHat } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white flex items-center justify-center px-4">
       <div className="text-center space-y-6 max-w-md">
         <div className="text-9xl font-bold text-orange-600">404</div>
-        
+
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-gray-900">Page Not Found</h1>
           <p className="text-gray-600">
-            Oops! The recipe you're looking for doesn't exist or has been removed.
+            Oops! The recipe you're looking for doesn't exist or has been
+            removed.
           </p>
         </div>
 

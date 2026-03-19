@@ -1,17 +1,21 @@
-import { useFieldArray, useFormContext } from 'react-hook-form';
-import { Camera, Menu, MoreHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import type { RecipeFormData } from '../types/recipe-form';
+import { useFieldArray, useFormContext } from "react-hook-form";
+import { Camera, Menu, MoreHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { RecipeFormData } from "../types/recipe-form";
 
-export const StepEditor = ({ 
-  stepImages, 
-  onImageSelect, 
-}: { 
-  stepImages: Record<number, string>, 
-  onImageSelect: (index: number, file: File) => void,
+export const StepEditor = ({
+  stepImages,
+  onImageSelect,
+}: {
+  stepImages: Record<number, string>;
+  onImageSelect: (index: number, file: File) => void;
 }) => {
-  const { control, register, formState: { errors } } = useFormContext<RecipeFormData>();
-  const { fields, append, remove } = useFieldArray({ control, name: 'steps' });
+  const {
+    control,
+    register,
+    formState: { errors },
+  } = useFormContext<RecipeFormData>();
+  const { fields, append, remove } = useFieldArray({ control, name: "steps" });
 
   return (
     <div className="space-y-4">
@@ -22,16 +26,21 @@ export const StepEditor = ({
             <label className="text-sm text-gray-600">Thời gian nấu:</label>
             <input
               type="number"
-              {...register('cooking_time', { 
-                min: { value: 1, message: 'Thời gian nấu không thể âm hoặc bằng 0' },
-                valueAsNumber: true 
+              {...register("cooking_time", {
+                min: {
+                  value: 1,
+                  message: "Thời gian nấu không thể âm hoặc bằng 0",
+                },
+                valueAsNumber: true,
               })}
               className="w-20 rounded-lg border border-gray-300 bg-gray-50 px-3 py-1 text-center focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
             <span className="text-sm text-gray-600">phút</span>
           </div>
           {errors.cooking_time && (
-            <p className="text-xs text-red-500">{errors.cooking_time.message}</p>
+            <p className="text-xs text-red-500">
+              {errors.cooking_time.message}
+            </p>
           )}
         </div>
       </div>
@@ -69,7 +78,7 @@ export const StepEditor = ({
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) onImageSelect(index, file);
-                    e.target.value = '';
+                    e.target.value = "";
                   }}
                 />
                 <label
@@ -90,10 +99,12 @@ export const StepEditor = ({
                 <button
                   type="button"
                   onClick={() => {
-                    const changeEvent = new Event('change', { bubbles: true });
-                    const inputElement = document.getElementById(`step-img-${index}`) as HTMLInputElement;
+                    const changeEvent = new Event("change", { bubbles: true });
+                    const inputElement = document.getElementById(
+                      `step-img-${index}`,
+                    ) as HTMLInputElement;
                     if (inputElement) {
-                      inputElement.value = '';
+                      inputElement.value = "";
                       inputElement.dispatchEvent(changeEvent);
                     }
                   }}
@@ -109,7 +120,7 @@ export const StepEditor = ({
 
       <Button
         type="button"
-        onClick={() => append({ order_index: fields.length + 1, content: '' })}
+        onClick={() => append({ order_index: fields.length + 1, content: "" })}
         variant="ghost"
         size="sm"
         className="text-orange-600 hover:text-orange-700"

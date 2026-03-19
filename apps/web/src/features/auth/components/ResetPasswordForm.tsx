@@ -1,19 +1,19 @@
-import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Lock, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '../hooks/useAuth';
+import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Lock, Eye, EyeOff, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "../hooks/useAuth";
 
 export default function ResetPasswordForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
+  const token = searchParams.get("token");
   const { resetPassword, isLoading, error } = useAuth();
-  
+
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    password: '',
-    confirmPassword: '',
+    password: "",
+    confirmPassword: "",
   });
   const [isSuccess, setIsSuccess] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -35,7 +35,7 @@ export default function ResetPasswordForm() {
     const success = await resetPassword(token, formData.password);
     if (success) {
       setIsSuccess(true);
-      setTimeout(() => navigate('/auth/signin'), 3000);
+      setTimeout(() => navigate("/auth/signin"), 3000);
     }
   };
 
@@ -49,9 +49,13 @@ export default function ResetPasswordForm() {
         </div>
         <h2 className="text-3xl font-bold text-gray-900">Password reset!</h2>
         <p className="text-gray-600">
-          Your password has been successfully reset. Redirecting you to sign in...
+          Your password has been successfully reset. Redirecting you to sign
+          in...
         </p>
-        <Button onClick={() => navigate('/auth/signin')} className="bg-orange-600 hover:bg-orange-700">
+        <Button
+          onClick={() => navigate("/auth/signin")}
+          className="bg-orange-600 hover:bg-orange-700"
+        >
           Sign in now
         </Button>
       </div>
@@ -62,8 +66,13 @@ export default function ResetPasswordForm() {
     return (
       <div className="text-center space-y-4">
         <h2 className="text-2xl font-bold text-red-600">Invalid link</h2>
-        <p className="text-gray-600">The password reset link is invalid or has expired.</p>
-        <Button onClick={() => navigate('/auth/forgot-password')} variant="outline">
+        <p className="text-gray-600">
+          The password reset link is invalid or has expired.
+        </p>
+        <Button
+          onClick={() => navigate("/auth/forgot-password")}
+          variant="outline"
+        >
           Request new link
         </Button>
       </div>
@@ -87,16 +96,21 @@ export default function ResetPasswordForm() {
         )}
 
         <div className="space-y-2">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-gray-700"
+          >
             New Password
           </label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               id="password"
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
               required
               className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
               placeholder="At least 8 characters"
@@ -112,16 +126,21 @@ export default function ResetPasswordForm() {
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm font-medium text-gray-700"
+          >
             Confirm Password
           </label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               id="confirmPassword"
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               value={formData.confirmPassword}
-              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, confirmPassword: e.target.value })
+              }
               required
               className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
               placeholder="Confirm your new password"
@@ -129,12 +148,12 @@ export default function ResetPasswordForm() {
           </div>
         </div>
 
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           className="w-full py-6 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-semibold text-lg transition-all shadow-lg shadow-orange-200"
           disabled={isLoading}
         >
-          {isLoading ? 'Resetting...' : 'Reset password'}
+          {isLoading ? "Resetting..." : "Reset password"}
         </Button>
       </form>
     </div>

@@ -1,4 +1,4 @@
-import type { StepFromAPI } from '../../types/recipe-detail';
+import type { StepFromAPI } from "../../types/recipe-detail";
 
 interface StepListProps {
   steps: StepFromAPI[];
@@ -11,7 +11,7 @@ export function StepList({ steps }: StepListProps) {
         <span className="w-1 h-8 bg-orange-500 rounded-full" />
         Instructions
       </h2>
-      
+
       {steps.length > 0 ? (
         <div className="space-y-6">
           {steps.map((step, index) => (
@@ -26,8 +26,8 @@ export function StepList({ steps }: StepListProps) {
                   {step.content}
                 </p>
                 {step.image_url && (
-                  <img 
-                    src={step.image_url} 
+                  <img
+                    src={step.image_url}
                     alt={`Step ${step.order_index}`}
                     className="rounded-lg shadow-md max-h-96 w-full md:w-auto object-contain mt-3"
                   />
@@ -37,7 +37,9 @@ export function StepList({ steps }: StepListProps) {
           ))}
         </div>
       ) : (
-        <p className="text-gray-500 italic">No instructions available for this recipe.</p>
+        <p className="text-gray-500 italic">
+          No instructions available for this recipe.
+        </p>
       )}
     </>
   );

@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { PrismaClient, UserRoles } from '../src/generated/prisma/client';
 import type { User, Recipe, Category } from '../src/generated/prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg'
+import { PrismaPg } from '@prisma/adapter-pg';
 
 // 1. Setup the Postgres driver
 const adapter = new PrismaPg({
@@ -31,7 +31,8 @@ async function main() {
 
   // 2. TẠO USERS
   const users: User[] = [];
-  const passwordHash = '$argon2id$v=19$m=65536,t=3,p=4$VV6tfD8Z4G5IK0CJXWFOXQ$hDlaheVA2vJ7I8Svl9TKHwvMjrK4dERSjqnY2LHizxU';
+  const passwordHash =
+    '$argon2id$v=19$m=65536,t=3,p=4$VV6tfD8Z4G5IK0CJXWFOXQ$hDlaheVA2vJ7I8Svl9TKHwvMjrK4dERSjqnY2LHizxU';
   const numberOfUsers = 1000;
 
   for (let i = 0; i < numberOfUsers; i++) {
@@ -49,17 +50,17 @@ async function main() {
   }
   console.log(`👤 Created ${users.length} users`);
 
-  //Admin user 
+  //Admin user
   await prisma.user.create({
     data: {
-      email: "admin@gmail.com",
-      username: "admin",
+      email: 'admin@gmail.com',
+      username: 'admin',
       password: passwordHash,
       role: UserRoles.ADMIN,
       is_active: true,
       is_verified: true,
-    }
-  })
+    },
+  });
   console.log('Admin account create');
 
   // 3. TẠO CATEGORIES
@@ -121,15 +122,26 @@ async function main() {
           },
           steps: {
             create: [
-              { order_index: 1, content: faker.lorem.sentence(), image_url: faker.image.url() },
-              { order_index: 2, content: faker.lorem.sentence(), image_url: faker.image.url() },
+              {
+                order_index: 1,
+                content: faker.lorem.sentence(),
+                image_url: faker.image.url(),
+              },
+              {
+                order_index: 2,
+                content: faker.lorem.sentence(),
+                image_url: faker.image.url(),
+              },
             ],
           },
           categories: {
             connect: [
-              { id: categories[Math.floor(Math.random() * categories.length)]!.id }
-            ]
-          }
+              {
+                id: categories[Math.floor(Math.random() * categories.length)]!
+                  .id,
+              },
+            ],
+          },
         },
       });
       recipes.push(recipe);
@@ -138,7 +150,7 @@ async function main() {
       const randomUsers = users.filter(() => Math.random() > 0.5);
       for (const liker of randomUsers) {
         await prisma.like.create({
-          data: { user_id: liker.id, recipe_id: recipe.id }
+          data: { user_id: liker.id, recipe_id: recipe.id },
         });
       }
 
@@ -151,7 +163,7 @@ async function main() {
             user_id: randomUser.id,
             recipe_id: recipe.id,
             rating: faker.number.int({ min: 1, max: 5 }),
-          }
+          },
         });
       }
     }
@@ -165,8 +177,8 @@ async function main() {
     await prisma.follow.create({
       data: {
         follower_id: mainUser.id,
-        following_id: followingUser.id
-      }
+        following_id: followingUser.id,
+      },
     });
   }
   console.log('🤝 Created follow relationships');

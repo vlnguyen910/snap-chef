@@ -1,22 +1,22 @@
 // ============================================
 // EXAMPLE USAGE: Recipe Search & Pagination
 // ============================================
-import { useState, useEffect } from 'react';
-import RecipeList from '@/features/recipes/components/RecipeList';
-import RecipeListLoadMore from '@/features/recipes/components/RecipeListLoadMore';
-import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import { useParams, useSearchParams } from 'react-router-dom';
-import { useRecipeSearch } from '@/hooks/useRecipeSearch';
-import { useRecipeLoadMore } from '@/hooks/useRecipeLoadMore';
-import RecipeCard from '@/features/recipes/components/RecipeCard';
-import { Button } from '@/components/ui/button';
-import SearchInput from '@/components/common/SearchInput';
+import { useState, useEffect } from "react";
+import RecipeList from "@/features/recipes/components/RecipeList";
+import RecipeListLoadMore from "@/features/recipes/components/RecipeListLoadMore";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useParams, useSearchParams } from "react-router-dom";
+import { useRecipeSearch } from "@/hooks/useRecipeSearch";
+import { useRecipeLoadMore } from "@/hooks/useRecipeLoadMore";
+import RecipeCard from "@/features/recipes/components/RecipeCard";
+import { Button } from "@/components/ui/button";
+import SearchInput from "@/components/common/SearchInput";
 
 // =====================================
 // Example 1: Basic Recipe List Page with Pagination
 // =====================================
 export function Example1_RecipesPage() {
-  useDocumentTitle('All Recipes');
+  useDocumentTitle("All Recipes");
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -42,7 +42,7 @@ export function Example2_RecipesPageLoadMore() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Discover Recipes</h1>
-      
+
       {/* This uses "Load More" pattern instead of pagination */}
       <RecipeListLoadMore />
     </div>
@@ -58,7 +58,7 @@ export function Example3_UserRecipesPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">My Recipes</h1>
-      
+
       {/* Pass userId to filter recipes by specific user */}
       <RecipeList userId={userId} />
     </div>
@@ -146,7 +146,7 @@ export function Example5_InfiniteScrollRecipes() {
 
       {hasMore && (
         <Button onClick={loadMore} disabled={isLoadingMore}>
-          {isLoadingMore ? 'Loading...' : 'Load More'}
+          {isLoadingMore ? "Loading..." : "Load More"}
         </Button>
       )}
     </div>
@@ -158,8 +158,8 @@ export function Example5_InfiniteScrollRecipes() {
 // =====================================
 export function Example6_RecipesWithFilters() {
   const { recipes, searchQuery, setSearchQuery } = useRecipeSearch();
-  const [category, setCategory] = useState('');
-  
+  const [category, setCategory] = useState("");
+
   // Client-side filtering by category (Note: requires Recipe type to have category field)
   const filteredRecipes = category
     ? recipes.filter((r) => (r as any).category === category)
@@ -178,26 +178,26 @@ export function Example6_RecipesWithFilters() {
       {/* Category Filter */}
       <div className="flex gap-2">
         <Button
-          variant={category === '' ? 'default' : 'outline'}
-          onClick={() => setCategory('')}
+          variant={category === "" ? "default" : "outline"}
+          onClick={() => setCategory("")}
         >
           All
         </Button>
         <Button
-          variant={category === 'breakfast' ? 'default' : 'outline'}
-          onClick={() => setCategory('breakfast')}
+          variant={category === "breakfast" ? "default" : "outline"}
+          onClick={() => setCategory("breakfast")}
         >
           Breakfast
         </Button>
         <Button
-          variant={category === 'lunch' ? 'default' : 'outline'}
-          onClick={() => setCategory('lunch')}
+          variant={category === "lunch" ? "default" : "outline"}
+          onClick={() => setCategory("lunch")}
         >
           Lunch
         </Button>
         <Button
-          variant={category === 'dinner' ? 'default' : 'outline'}
-          onClick={() => setCategory('dinner')}
+          variant={category === "dinner" ? "default" : "outline"}
+          onClick={() => setCategory("dinner")}
         >
           Dinner
         </Button>
@@ -217,16 +217,12 @@ export function Example6_RecipesWithFilters() {
 // Example 7: Reusable SearchInput Component
 // =====================================
 export function Example7_SearchExample() {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
 
   return (
     <div className="space-y-4">
       {/* Basic usage */}
-      <SearchInput
-        value={query}
-        onChange={setQuery}
-        placeholder="Search..."
-      />
+      <SearchInput value={query} onChange={setQuery} placeholder="Search..." />
 
       {/* With custom className */}
       <SearchInput
@@ -249,9 +245,9 @@ export function Example8_SearchBehaviorDemo() {
   const { searchQuery, setSearchQuery, page, recipes } = useRecipeSearch();
 
   useEffect(() => {
-    console.log('Search changed to:', searchQuery);
-    console.log('Page reset to:', page);
-    console.log('Results:', recipes.length);
+    console.log("Search changed to:", searchQuery);
+    console.log("Page reset to:", page);
+    console.log("Results:", recipes.length);
   }, [searchQuery, page, recipes]);
 
   return (
@@ -265,9 +261,15 @@ export function Example8_SearchBehaviorDemo() {
       />
 
       <div className="mt-4 space-y-2">
-        <p><strong>Current Search:</strong> {searchQuery || 'None'}</p>
-        <p><strong>Current Page:</strong> {page}</p>
-        <p><strong>Results:</strong> {recipes.length}</p>
+        <p>
+          <strong>Current Search:</strong> {searchQuery || "None"}
+        </p>
+        <p>
+          <strong>Current Page:</strong> {page}
+        </p>
+        <p>
+          <strong>Results:</strong> {recipes.length}
+        </p>
         <p className="text-sm text-gray-600">
           💡 Notice how the page automatically resets to 1 when you search!
         </p>
@@ -298,13 +300,20 @@ export function Example9_URLStateDemo() {
         className="border rounded px-4 py-2 w-full"
       />
 
-      <button onClick={nextPage} className="px-4 py-2 bg-blue-500 text-white rounded">
+      <button
+        onClick={nextPage}
+        className="px-4 py-2 bg-blue-500 text-white rounded"
+      >
         Next Page
       </button>
 
       <div className="p-4 bg-gray-100 rounded">
-        <p><strong>Current URL Search Params:</strong></p>
-        <pre className="mt-2">{JSON.stringify(Object.fromEntries(searchParams), null, 2)}</pre>
+        <p>
+          <strong>Current URL Search Params:</strong>
+        </p>
+        <pre className="mt-2">
+          {JSON.stringify(Object.fromEntries(searchParams), null, 2)}
+        </pre>
       </div>
 
       <div className="p-4 bg-blue-50 rounded">

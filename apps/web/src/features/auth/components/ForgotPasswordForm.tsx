@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '../hooks/useAuth';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Mail, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "../hooks/useAuth";
 
 export default function ForgotPasswordForm() {
   const { forgotPassword, isLoading, error } = useAuth();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,12 +27,13 @@ export default function ForgotPasswordForm() {
         </div>
         <h2 className="text-3xl font-bold text-gray-900">Check your email</h2>
         <p className="text-gray-600">
-          We've sent a password reset link to <span className="font-medium text-gray-900">{email}</span>. 
-          Please check your inbox and follow the instructions.
+          We've sent a password reset link to{" "}
+          <span className="font-medium text-gray-900">{email}</span>. Please
+          check your inbox and follow the instructions.
         </p>
         <div className="pt-4">
-          <Link 
-            to="/auth/signin" 
+          <Link
+            to="/auth/signin"
             className="inline-flex items-center text-orange-600 hover:text-orange-700 font-medium transition-colors"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -48,7 +49,8 @@ export default function ForgotPasswordForm() {
       <div className="text-center">
         <h2 className="text-3xl font-bold text-gray-900">Forgot password?</h2>
         <p className="mt-2 text-sm text-gray-600">
-          No worries! Enter your email below and we'll send you a link to reset your password.
+          No worries! Enter your email below and we'll send you a link to reset
+          your password.
         </p>
       </div>
 
@@ -60,7 +62,10 @@ export default function ForgotPasswordForm() {
         )}
 
         <div className="space-y-2">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700"
+          >
             Email address
           </label>
           <div className="relative">
@@ -77,17 +82,17 @@ export default function ForgotPasswordForm() {
           </div>
         </div>
 
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           className="w-full py-6 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-semibold text-lg transition-all shadow-lg shadow-orange-200"
           disabled={isLoading}
         >
-          {isLoading ? 'Sending link...' : 'Send reset link'}
+          {isLoading ? "Sending link..." : "Send reset link"}
         </Button>
 
         <div className="text-center">
-          <Link 
-            to="/auth/signin" 
+          <Link
+            to="/auth/signin"
             className="inline-flex items-center text-sm text-gray-500 hover:text-orange-600 transition-colors"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />

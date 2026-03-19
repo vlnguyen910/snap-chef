@@ -1,5 +1,5 @@
-import { X, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { X, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -16,7 +16,7 @@ export function EditProfileModal({
   editForm,
   setEditForm,
   handleUpdateProfile,
-  isUpdating
+  isUpdating,
 }: EditProfileModalProps) {
   if (!isOpen) return null;
 
@@ -24,7 +24,9 @@ export function EditProfileModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white ">Chỉnh sửa hồ sơ</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white ">
+            Chỉnh sửa hồ sơ
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
@@ -41,7 +43,9 @@ export function EditProfileModal({
             <input
               type="text"
               value={editForm.username}
-              onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
+              onChange={(e) =>
+                setEditForm({ ...editForm, username: e.target.value })
+              }
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Nhập tên người dùng"
             />
@@ -53,7 +57,9 @@ export function EditProfileModal({
             </label>
             <textarea
               value={editForm.bio}
-              onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+              onChange={(e) =>
+                setEditForm({ ...editForm, bio: e.target.value })
+              }
               rows={4}
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Viết vài dòng về bản thân bạn..."
@@ -81,7 +87,7 @@ export function EditProfileModal({
                 Đang lưu...
               </>
             ) : (
-              'Lưu thay đổi'
+              "Lưu thay đổi"
             )}
           </Button>
         </div>

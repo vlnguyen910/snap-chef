@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useDebounce } from './useDebounce';
-import { recipeService } from '@/services/recipeService';
-import type { Recipe } from '@/types';
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useDebounce } from "./useDebounce";
+import { recipeService } from "@/services/recipeService";
+import type { Recipe } from "@/types";
 
 interface UseRecipeLoadMoreResult {
   recipes: Recipe[];
@@ -24,9 +24,9 @@ const LIMIT = 16;
  */
 export function useRecipeLoadMore(): UseRecipeLoadMoreResult {
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   const [searchQuery, setSearchQueryState] = useState(
-    searchParams.get('search') || ''
+    searchParams.get("search") || "",
   );
   const [page, setPage] = useState(1);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -77,8 +77,8 @@ export function useRecipeLoadMore(): UseRecipeLoadMoreResult {
 
       setHasMore(data.length === LIMIT);
     } catch (err: any) {
-      console.error('Error fetching recipes:', err);
-      setError(err?.response?.data?.message || 'Failed to load recipes');
+      console.error("Error fetching recipes:", err);
+      setError(err?.response?.data?.message || "Failed to load recipes");
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);

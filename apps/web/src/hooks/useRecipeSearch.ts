@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useDebounce } from './useDebounce';
-import { recipeService } from '@/services/recipeService';
-import type { Recipe } from '@/types';
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useDebounce } from "./useDebounce";
+import { recipeService } from "@/services/recipeService";
+import type { Recipe } from "@/types";
 
 interface UseRecipeSearchResult {
   recipes: Recipe[];
@@ -21,15 +21,15 @@ const LIMIT = 16;
 
 export function useRecipeSearch(): UseRecipeSearchResult {
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   // Initialize state from URL params
   const [searchQuery, setSearchQueryState] = useState(
-    searchParams.get('search') || ''
+    searchParams.get("search") || "",
   );
   const [page, setPage] = useState(
-    parseInt(searchParams.get('page') || '1', 10)
+    parseInt(searchParams.get("page") || "1", 10),
   );
-  
+
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,15 +41,15 @@ export function useRecipeSearch(): UseRecipeSearchResult {
   // Update URL when search or page changes
   useEffect(() => {
     const params: Record<string, string> = {};
-    
+
     if (debouncedSearch) {
       params.search = debouncedSearch;
     }
-    
+
     if (page > 1) {
       params.page = page.toString();
     }
-    
+
     setSearchParams(params, { replace: true });
   }, [debouncedSearch, page, setSearchParams]);
 
@@ -71,12 +71,12 @@ export function useRecipeSearch(): UseRecipeSearchResult {
       });
 
       setRecipes(data);
-      
+
       // If we received fewer items than the limit, we've reached the last page
       setHasMore(data.length === LIMIT);
     } catch (err: any) {
-      console.error('Error fetching recipes:', err);
-      setError(err?.response?.data?.message || 'Failed to load recipes');
+      console.error("Error fetching recipes:", err);
+      setError(err?.response?.data?.message || "Failed to load recipes");
     } finally {
       setIsLoading(false);
     }

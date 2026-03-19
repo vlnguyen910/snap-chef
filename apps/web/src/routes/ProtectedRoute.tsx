@@ -1,16 +1,16 @@
-import { Navigate, Outlet } from 'react-router-dom';
-import { useStore } from '@/lib/store';
-import Loading from '@/components/common/Loading';
-import type { UserRole } from '@/types';
+import { Navigate, Outlet } from "react-router-dom";
+import { useStore } from "@/lib/store";
+import Loading from "@/components/common/Loading";
+import type { UserRole } from "@/types";
 
 interface ProtectedRouteProps {
   allowedRoles?: UserRole[];
   redirectTo?: string;
 }
 
-export default function ProtectedRoute({ 
-  allowedRoles = ['user', 'moderator'], 
-  redirectTo = '/auth/signin' 
+export default function ProtectedRoute({
+  allowedRoles = ["user", "moderator"],
+  redirectTo = "/auth/signin",
 }: ProtectedRouteProps) {
   const { isAuthenticated, user, isInitialized } = useStore();
 

@@ -1,26 +1,26 @@
-import LoginForm from '@/features/auth/components/LoginForm';
-import RegisterForm from '@/features/auth/components/RegisterForm';
-import ForgotPasswordForm from '@/features/auth/components/ForgotPasswordForm';
-import ResetPasswordForm from '@/features/auth/components/ResetPasswordForm';
-import { useLocation } from 'react-router-dom';
-import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import LoginForm from "@/features/auth/components/LoginForm";
+import RegisterForm from "@/features/auth/components/RegisterForm";
+import ForgotPasswordForm from "@/features/auth/components/ForgotPasswordForm";
+import ResetPasswordForm from "@/features/auth/components/ResetPasswordForm";
+import { useLocation } from "react-router-dom";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export default function AuthPage() {
   const location = useLocation();
-  const isSignin = location.pathname.includes('signin');
-  const isSignup = location.pathname.includes('signup');
-  const isForgotPassword = location.pathname.includes('forgot-password');
-  const isResetPassword = location.pathname.includes('reset-password');
+  const isSignin = location.pathname.includes("signin");
+  const isSignup = location.pathname.includes("signup");
+  const isForgotPassword = location.pathname.includes("forgot-password");
+  const isResetPassword = location.pathname.includes("reset-password");
   const isPrimaryAuthPage = isSignin || isSignup;
 
   // Update browser title when page changes
   const getTitle = () => {
-    if (isSignup) return 'Sign Up';
-    if (isForgotPassword) return 'Forgot Password';
-    if (isResetPassword) return 'Reset Password';
-    return 'Sign In';
+    if (isSignup) return "Sign Up";
+    if (isForgotPassword) return "Forgot Password";
+    if (isResetPassword) return "Reset Password";
+    return "Sign In";
   };
-  
+
   useDocumentTitle(getTitle());
 
   const renderForm = () => {
@@ -44,26 +44,37 @@ export default function AuthPage() {
                   Cook smarter, share faster, grow your foodie network.
                 </h1>
                 <p className="max-w-md text-base leading-relaxed text-orange-100/80">
-                  Join thousands of home chefs collecting ideas, posting recipes, and discovering dishes made by people with the same taste.
+                  Join thousands of home chefs collecting ideas, posting
+                  recipes, and discovering dishes made by people with the same
+                  taste.
                 </p>
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { label: 'Recipes shared', value: '12K+' },
-                  { label: 'Monthly cooks', value: '85K' },
-                  { label: 'Avg. save rate', value: '4.9★' },
+                  { label: "Recipes shared", value: "12K+" },
+                  { label: "Monthly cooks", value: "85K" },
+                  { label: "Avg. save rate", value: "4.9★" },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
-                    <p className="text-2xl font-semibold text-white">{item.value}</p>
-                    <p className="mt-1 text-xs text-orange-100/80">{item.label}</p>
+                  <div
+                    key={item.label}
+                    className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm"
+                  >
+                    <p className="text-2xl font-semibold text-white">
+                      {item.value}
+                    </p>
+                    <p className="mt-1 text-xs text-orange-100/80">
+                      {item.label}
+                    </p>
                   </div>
                 ))}
               </div>
             </section>
 
             <section className="flex items-center justify-center px-5 py-8 sm:px-8 lg:px-12">
-              <div className={`w-full ${isPrimaryAuthPage ? 'max-w-md' : 'max-w-lg'}`}>
+              <div
+                className={`w-full ${isPrimaryAuthPage ? "max-w-md" : "max-w-lg"}`}
+              >
                 <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-sm sm:p-8">
                   {renderForm()}
                 </div>
