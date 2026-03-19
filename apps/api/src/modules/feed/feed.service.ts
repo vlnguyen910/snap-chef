@@ -77,7 +77,9 @@ export class FeedService {
     const feed = await this.prisma.recipe.findMany({
       take: safeLimit + 1,
       skip: parsedCursor.cursorId ? 1 : 0, // nếu có cursor thì là không recipe để lấy tiếp nên bỏ qua cái lấy thừa của limit + 1
-      ...(parsedCursor.cursorId ? { cursor: { id: parsedCursor.cursorId } } : {}),
+      ...(parsedCursor.cursorId
+        ? { cursor: { id: parsedCursor.cursorId } }
+        : {}),
       where: {
         status: RecipeStatus.PUBLISHED,
         deleted_at: null,
@@ -165,7 +167,9 @@ export class FeedService {
     const recipes = await this.prisma.recipe.findMany({
       take: safeLimit + 1,
       skip: parsedCursor.cursorId ? 1 : 0,
-      ...(parsedCursor.cursorId ? { cursor: { id: parsedCursor.cursorId } } : {}),
+      ...(parsedCursor.cursorId
+        ? { cursor: { id: parsedCursor.cursorId } }
+        : {}),
       where: this.getTrendingWhere(excludeFollowedByUserId),
       select: {
         id: true,

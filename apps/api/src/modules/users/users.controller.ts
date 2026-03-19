@@ -9,7 +9,7 @@ import {
   Query,
   Delete,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { UsersService, TopUserItem } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { GetUser } from 'src/common/decorators/user.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
@@ -20,6 +20,7 @@ import { TokenPayload } from 'src/common/interfaces';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -42,6 +43,22 @@ export class UsersController {
   @UseGuards(OptionalJwtAuthGuard)
   findAll(@Query() query: UserPaginationDto, @GetUser() user?: TokenPayload) {
     return this.usersService.findAll(query, user?.sub);
+  }
+
+  @ApiOperation({ summary: 'Get top users by follower count' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return top users with follower_count',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Maximum number of users to return',
+    example: 5,
+  })
+  @Get('top')
+  getTopUsers(@Query('limit') limit?: string): Promise<TopUserItem[]> {
+    return this.usersService.getTopUsers(limit ? Number(limit) : 5);
   }
 
   @ApiOperation({ summary: 'Get current user profile' })

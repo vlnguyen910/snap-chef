@@ -17,16 +17,16 @@ export interface RecipeFeedItem {
 
 export interface TopChef {
   id: string;
-  name: string;
-  recipeCount: number;
-  avatar: string;
+  username: string;
+  follower_count: number;
+  avatar_url: string | null;
 }
 
 export interface TrendingCategory {
-  id: string;
-  emoji: string;
+  id: number;
   name: string;
-  count: string;
+  slug: string;
+  recipe_count: number;
 }
 
 export const MOCK_RECIPES: RecipeFeedItem[] = [
@@ -107,33 +107,33 @@ export const MOCK_RECIPES: RecipeFeedItem[] = [
 export const MOCK_TOP_CHEFS: TopChef[] = [
   {
     id: "1",
-    name: "Chef Marcus",
-    recipeCount: 120,
-    avatar: "https://i.pravatar.cc/150?img=11",
+    username: "Chef Marcus",
+    follower_count: 120,
+    avatar_url: "https://i.pravatar.cc/150?img=11",
   },
   {
     id: "2",
-    name: "Chef Elena",
-    recipeCount: 85,
-    avatar: "https://i.pravatar.cc/150?img=12",
+    username: "Chef Elena",
+    follower_count: 85,
+    avatar_url: "https://i.pravatar.cc/150?img=12",
   },
   {
     id: "3",
-    name: "John Pastry",
-    recipeCount: 63,
-    avatar: "https://i.pravatar.cc/150?img=13",
+    username: "John Pastry",
+    follower_count: 63,
+    avatar_url: "https://i.pravatar.cc/150?img=13",
   },
   {
     id: "4",
-    name: "Sofia Vegan",
-    recipeCount: 47,
-    avatar: "https://i.pravatar.cc/150?img=14",
+    username: "Sofia Vegan",
+    follower_count: 47,
+    avatar_url: "https://i.pravatar.cc/150?img=14",
   },
 ];
 
 export const MOCK_TRENDING_CATEGORIES: TrendingCategory[] = [
-  { id: "1", emoji: "🔥", name: "Quick & Easy", count: "2.4k" },
-  { id: "2", emoji: "🥗", name: "Vegan Life", count: "1.8k" },
-  { id: "3", emoji: "🍝", name: "Italian Classics", count: "3.1k" },
-  { id: "4", emoji: "🧁", name: "Sweet Treats", count: "950" },
+  { id: 1, slug: "quick-easy", name: "Quick & Easy", recipe_count: 2400 },
+  { id: 2, slug: "vegan-life", name: "Vegan Life", recipe_count: 1800 },
+  { id: 3, slug: "italian-classics", name: "Italian Classics", recipe_count: 3100 },
+  { id: 4, slug: "sweet-treats", name: "Sweet Treats", recipe_count: 950 },
 ];

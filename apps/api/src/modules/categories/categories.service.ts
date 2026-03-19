@@ -10,6 +10,13 @@ import { generateSlug } from 'src/common/utils/slugify.util';
 import { Category } from 'src/generated/prisma/client';
 import { ErrorMessages } from 'src/common/constants';
 
+export interface TopCategoryItem {
+  id: number;
+  name: string;
+  slug: string;
+  recipe_count: number;
+}
+
 @Injectable()
 export class CategoriesService {
   constructor(private readonly prisma: PrismaService) {}
@@ -36,6 +43,39 @@ export class CategoriesService {
       where: isActiveOnly ? { is_active: true } : undefined,
       orderBy: { name: 'asc' },
     });
+  }
+
+  async getTopCategories(limit: number = 5): Promise<TopCategoryItem[]> {
+    const safeLimit = Number.isFinite(limit)
+      ? Math.min(Math.max(Math.trunc(limit), 1), 20)
+      : 5;
+
+    const categories = await this.prisma.category.findMany({
+      where: { is_active: true },
+      take: safeLimit,
+      orderBy: {
+        recipe: {
+          _count: 'desc',
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        _count: {
+          select: {
+            recipe: true,
+          },
+        },
+      },
+    });
+
+    return categories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      recipe_count: category._count.recipe,
+    }));
   }
 
   async update(id: number, payload: UpdateCategoryDto): Promise<Category> {
