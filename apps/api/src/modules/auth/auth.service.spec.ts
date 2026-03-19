@@ -249,7 +249,10 @@ describe('AuthService', () => {
     it('should register user, cache token, send email, and return message', async () => {
       const result = await service.signUp(signUpDto);
 
-      expect(result).toEqual({ message: 'Check your mail to get otp code' });
+      expect(result).toEqual({
+        message: 'Account created. Please verify your email before signing in.',
+        requiresEmailVerification: true,
+      });
       expect(mockUsersService.create).toHaveBeenCalledTimes(1);
       expect(mockRedisService.setCache).toHaveBeenCalledWith(
         'verify_email:mock-uuid-token',
@@ -443,7 +446,7 @@ describe('AuthService', () => {
         { password: 'new-hashed-password' },
       );
       expect(mockRedisService.delCache).toHaveBeenCalledWith(
-        'reset_password:valid-reset-token',
+        'reset_password:mock-jti',
       );
     });
 

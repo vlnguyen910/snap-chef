@@ -84,12 +84,14 @@ Trước khi push hoặc mở PR, hãy cập nhật nhánh của bạn với cod
     git pull origin dev
     ```
 2.  **Thực hiện Rebase:**
+
     ```bash
     git checkout feat/ten-tinh-nang
     git rebase dev
     ```
 
     - _Nếu có xung đột (`conflict`):_ Giải quyết file conflict -> `git add .` -> `git rebase --continue`.
+
 3.  **Đẩy code (Push):**
     Nếu bạn đã push nhánh này trước đó, sau khi rebase bạn cần force push.
     ```bash
