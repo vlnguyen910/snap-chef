@@ -32,7 +32,7 @@ export default function ResetPasswordForm() {
       return;
     }
 
-    const success = await resetPassword(formData.password);
+    const success = await resetPassword(token, formData.password);
     if (success) {
       setIsSuccess(true);
       setTimeout(() => navigate('/auth/signin'), 3000);

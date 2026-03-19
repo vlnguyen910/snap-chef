@@ -26,6 +26,7 @@ import {
 } from 'src/common/guards';
 import { ForgetPasswordDto } from './dto/request/forget-password.dto';
 import { ResetPasswordDto } from './dto/request/reset-password.dto';
+import { ResetPasswordTokenDto } from './dto/request/reset-password-token.dto';
 import { RefreshTokenResponseDto } from './dto/respone/refresh-token-respone.dto';
 import { cookieConfiguration } from 'src/config';
 import type { ConfigType } from '@nestjs/config';
@@ -173,13 +174,11 @@ export class AuthController {
   @Throttle({ short: { ttl: 60000, limit: 2 } })
   @ApiOperation({ summary: 'Reset password using token' })
   @ApiResponse({ status: 201, description: 'Password reset successfully' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Post('reset-password')
   async resetPassword(
-    @GetUser() user: TokenPayload,
+    @Query() query: ResetPasswordTokenDto,
     @Body() body: ResetPasswordDto,
   ): Promise<{ message: string }> {
-    return await this.authService.resetPassword(user.jti, body);
+    return await this.authService.resetPassword(query.token, body);
   }
 }

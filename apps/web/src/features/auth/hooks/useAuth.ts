@@ -3,6 +3,7 @@ import * as authService from '@/services/authService';
 import { useStore } from '@/lib/store';
 import type { User } from '@/types';
 import type { SignupPayload } from '@/features/auth/utils/auth.helpers';
+import type { SignupResponse } from '@/services/authService';
 
 export function useAuth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -25,17 +26,15 @@ export function useAuth() {
     }
   };
 
-  const signup = async (payload: SignupPayload): Promise<boolean> => {
+  const signup = async (payload: SignupPayload): Promise<SignupResponse | null> => {
     setIsLoading(true);
     setError(null);
     try {
-      const { user, access_token } = await authService.signup(payload);
-      storeLogin(user, access_token);
-      return true;
+      return await authService.signup(payload);
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Sign up failed. Please try again.';
       setError(errorMessage);
-      return false;
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -126,11 +125,11 @@ export function useAuth() {
     }
   };
 
-  const resetPassword = async (password: string): Promise<boolean> => {
+  const resetPassword = async (token: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
     try {
-      await authService.resetPassword(password);
+      await authService.resetPassword(token, password);
       return true;
     } catch (err: any) {
       setError(err.response?.data?.message || 'Password reset failed.');

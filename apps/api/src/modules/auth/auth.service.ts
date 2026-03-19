@@ -67,7 +67,10 @@ export class AuthService {
     return this.manageUserToken(user);
   }
 
-  async signUp(body: SignUpDto) {
+  async signUp(body: SignUpDto): Promise<{
+    message: string;
+    requiresEmailVerification: boolean;
+  }> {
     const { email, username, password, avatar_url } = body;
     const existingUser = await this.userService.findByEmail(email);
     if (existingUser) {
@@ -89,7 +92,10 @@ export class AuthService {
 
     await this.mailService.sendUserConfirmation(newUser, token);
 
-    return { message: 'Check your mail to get otp code' };
+    return {
+      message: 'Account created. Please verify your email before signing in.',
+      requiresEmailVerification: true,
+    };
   }
 
   async verifyEmail(payload: VerifyEmailDto) {
@@ -193,10 +199,16 @@ export class AuthService {
   }
 
   async resetPassword(
-    jti: string,
+    queryToken: string,
     body: ResetPasswordDto,
   ): Promise<{ message: string }> {
-    const { token, password } = body;
+    const token = queryToken || body.token;
+    const { password } = body;
+
+    if (!token) {
+      throw new BadRequestException(ErrorMessages.INVALID_OR_EXPIRED_TOKEN);
+    }
+
     const cacheKey = `reset_password:${token}`;
     const userId = await this.redis.getCache<string>(cacheKey);
 
@@ -211,7 +223,6 @@ export class AuthService {
     });
 
     await this.redis.delCache(cacheKey);
-    await this.logout(jti);
 
     return { message: 'Password has been reset successfully' };
   }

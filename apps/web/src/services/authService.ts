@@ -10,6 +10,11 @@ export interface AuthResponse {
   refresh_token?: string;
 }
 
+export interface SignupResponse {
+  message: string;
+  requiresEmailVerification: boolean;
+}
+
 const GOOGLE_POPUP_NAME = 'snapchef-google-auth-popup';
 const GOOGLE_POPUP_WIDTH = 520;
 const GOOGLE_POPUP_HEIGHT = 680;
@@ -228,28 +233,14 @@ export async function signinWithGooglePopup(): Promise<AuthResponse> {
  * Sign up
  * ✅ Sử dụng SignupPayload được import từ auth.helpers
  */
-export async function signup(payload: SignupPayload): Promise<AuthResponse> {
+export async function signup(payload: SignupPayload): Promise<SignupResponse> {
   const response = await api.post<any>('/auth/sign-up', payload);
-
-  if (response.access_token) {
-    localStorage.setItem('authToken', response.access_token);
-  }
-
-  const decodedToken = decodeToken(response.access_token);
-
-  // Merge dữ liệu
-  const rawUserData = { 
-    ...decodedToken, 
-    email: payload.email, 
-    username: payload.username,
-    firstName: payload.firstName, 
-    lastName: payload.lastName 
-  };
-
   return {
-    user: transformUser(rawUserData),
-    access_token: response.access_token,
-    refresh_token: response.refresh_token,
+    message:
+      response.message ||
+      'Account created. Please verify your email before signing in.',
+    requiresEmailVerification:
+      response.requiresEmailVerification !== false,
   };
 }
 
@@ -290,8 +281,9 @@ export async function verifyEmail(token: string): Promise<{ message: string }> {
   return await api.get('/auth/verify-email', { params: { token } });
 }
 
-export async function resetPassword(password: string): Promise<{ message: string }> {
-  // reset-password in the controller uses JwtAuthGuard, so it needs the token in headers
-  // The token is usually sent as a Bearer token after clicking the email link
-  return await api.post('/auth/reset-password', { password });
+export async function resetPassword(
+  token: string,
+  password: string
+): Promise<{ message: string }> {
+  return await api.post('/auth/reset-password', { password }, { params: { token } });
 }

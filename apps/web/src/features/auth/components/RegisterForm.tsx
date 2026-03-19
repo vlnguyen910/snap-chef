@@ -66,11 +66,17 @@ export default function RegisterForm() {
     });
 
     // Call signup
-    const success = await signup(payload);
-    if (success) {
-      // Show success toast/alert
-      window.toast?.success?.('Đăng ký thành công! Vui lòng đăng nhập.');
-      navigate('/auth/signin');
+    const result = await signup(payload);
+    if (result) {
+      window.toast?.success?.(
+        result.message || 'Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.'
+      );
+      navigate('/auth/signin', {
+        state: {
+          pendingVerification: result.requiresEmailVerification,
+          signupEmail: formData.email,
+        },
+      });
     }
   };
 
