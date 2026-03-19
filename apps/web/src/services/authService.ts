@@ -1,8 +1,8 @@
-import { api } from '@/lib/axios';
-import type { User } from '@/types';
+import { api } from "@/lib/axios";
+import type { User } from "@/types";
 // 👇 Import cả hàm xử lý tên và Type Payload từ helper
-import { splitFullName } from '@/features/auth/utils/auth.helpers';
-import type { SignupPayload } from '@/features/auth/utils/auth.helpers'; 
+import { splitFullName } from "@/features/auth/utils/auth.helpers";
+import type { SignupPayload } from "@/features/auth/utils/auth.helpers";
 
 export interface AuthResponse {
   user: User;
@@ -15,7 +15,7 @@ export interface SignupResponse {
   requiresEmailVerification: boolean;
 }
 
-const GOOGLE_POPUP_NAME = 'snapchef-google-auth-popup';
+const GOOGLE_POPUP_NAME = "snapchef-google-auth-popup";
 const GOOGLE_POPUP_WIDTH = 520;
 const GOOGLE_POPUP_HEIGHT = 680;
 const GOOGLE_AUTH_TIMEOUT_MS = 120_000;
@@ -23,16 +23,20 @@ const GOOGLE_AUTH_TIMEOUT_MS = 120_000;
 // --- Helpers ---
 function decodeToken(token: string): Record<string, any> {
   try {
-    const parts = token.split('.');
+    const parts = token.split(".");
     if (parts.length !== 3) return {};
     const base64Url = parts[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const jsonPayload = decodeURIComponent(
-      window.atob(base64).split('').map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
+      window
+        .atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(""),
     );
     return JSON.parse(jsonPayload);
   } catch (error) {
-    console.warn('Failed to decode token:', error);
+    console.warn("Failed to decode token:", error);
     return {};
   }
 }
@@ -53,20 +57,24 @@ function transformUser(data: any): User {
 
   // Fallback
   if (!finalFirstName) {
-    finalFirstName = data.username || data.email?.split('@')[0] || 'User';
-    finalLastName = '';
+    finalFirstName = data.username || data.email?.split("@")[0] || "User";
+    finalLastName = "";
   }
 
   return {
-    id: data.id || data.sub || 'temp-id',
-    email: data.email || '',
-    username: data.username || data.email?.split('@')[0] || 'user',
+    id: data.id || data.sub || "temp-id",
+    email: data.email || "",
+    username: data.username || data.email?.split("@")[0] || "user",
     firstName: finalFirstName,
-    lastName: finalLastName || '',
-    role: data.role?.toLowerCase() || 'user',
+    lastName: finalLastName || "",
+    role: data.role?.toLowerCase() || "user",
     avatar: data.avatar || data.avatar_url || undefined,
     bio: data.bio || undefined,
-    createdAt: data.createdAt || data.create_at || data.created_at || new Date().toISOString(),
+    createdAt:
+      data.createdAt ||
+      data.create_at ||
+      data.created_at ||
+      new Date().toISOString(),
   };
 }
 
@@ -81,9 +89,9 @@ function getGoogleAuthUrl(): string {
 
   const apiBaseUrl =
     (import.meta.env.VITE_API_BASE_URL as string | undefined) ||
-    'http://localhost:8080/api';
+    "http://localhost:8080/api";
 
-  return `${apiBaseUrl.replace(/\/$/, '')}/auth/google`;
+  return `${apiBaseUrl.replace(/\/$/, "")}/auth/google`;
 }
 
 function openCenteredPopup(url: string): Window | null {
@@ -94,28 +102,28 @@ function openCenteredPopup(url: string): Window | null {
     url,
     GOOGLE_POPUP_NAME,
     [
-      'popup=yes',
+      "popup=yes",
       `width=${GOOGLE_POPUP_WIDTH}`,
       `height=${GOOGLE_POPUP_HEIGHT}`,
       `left=${Math.round(left)}`,
       `top=${Math.round(top)}`,
-      'resizable=yes',
-      'scrollbars=yes',
-    ].join(',')
+      "resizable=yes",
+      "scrollbars=yes",
+    ].join(","),
   );
 }
 
 function isAuthResponse(value: unknown): value is AuthResponse {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== "object") return false;
 
   const data = value as Record<string, unknown>;
   const user = data.user as Record<string, unknown> | undefined;
 
   return Boolean(
     user &&
-      typeof data.access_token === 'string' &&
-      typeof user.id === 'string' &&
-      typeof user.email === 'string'
+      typeof data.access_token === "string" &&
+      typeof user.id === "string" &&
+      typeof user.email === "string",
   );
 }
 
@@ -138,15 +146,18 @@ function tryParsePopupResponse(popup: Window): AuthResponse | null {
 
 // --- Main Functions ---
 
-export async function signin(email: string, password: string): Promise<AuthResponse> {
-  const response = await api.post<any>('/auth/login', { email, password });
+export async function signin(
+  email: string,
+  password: string,
+): Promise<AuthResponse> {
+  const response = await api.post<any>("/auth/login", { email, password });
 
   if (response.access_token) {
-    localStorage.setItem('authToken', response.access_token);
+    localStorage.setItem("authToken", response.access_token);
   }
 
   const decodedToken = decodeToken(response.access_token);
-  const rawUserData = { ...decodedToken, ...(response.user || {}), email }; 
+  const rawUserData = { ...decodedToken, ...(response.user || {}), email };
 
   return {
     user: transformUser(rawUserData),
@@ -158,9 +169,16 @@ export async function signin(email: string, password: string): Promise<AuthRespo
 export async function signinWithGooglePopup(): Promise<AuthResponse> {
   const authUrl = getGoogleAuthUrl();
   const popup = openCenteredPopup(authUrl);
+  const expectedPopupOrigin = (() => {
+    try {
+      return new URL(authUrl, window.location.href).origin;
+    } catch {
+      return null;
+    }
+  })();
 
   if (!popup) {
-    throw new Error('Popup was blocked. Please allow popups and try again.');
+    throw new Error("Popup was blocked. Please allow popups and try again.");
   }
 
   popup.focus();
@@ -172,45 +190,57 @@ export async function signinWithGooglePopup(): Promise<AuthResponse> {
       if (isCompleted) return;
       isCompleted = true;
 
-      window.removeEventListener('message', onMessage);
+      window.removeEventListener("message", onMessage);
       window.clearInterval(pollId);
       window.clearTimeout(timeoutId);
       handler();
     };
 
     const onMessage = (event: MessageEvent<unknown>) => {
-      if (!event.data || typeof event.data !== 'object') return;
+      if (event.source !== popup) return;
+      if (!expectedPopupOrigin || event.origin !== expectedPopupOrigin) {
+        console.warn(
+          "Ignored Google auth message from unexpected origin:",
+          event.origin,
+        );
+        return;
+      }
+
+      if (!event.data || typeof event.data !== "object") return;
 
       const payload = event.data as Record<string, unknown>;
-      if (payload.type !== 'SNAPCHEF_GOOGLE_AUTH_SUCCESS') return;
+      if (payload.type !== "SNAPCHEF_GOOGLE_AUTH_SUCCESS") return;
 
       const response = payload.payload;
       if (!isAuthResponse(response)) {
-        finish(() => reject(new Error('Google authentication response is invalid.')));
+        finish(() =>
+          reject(new Error("Google authentication response is invalid.")),
+        );
         return;
       }
 
       if (!popup.closed) popup.close();
-      finish(() =>
+      finish(() => {
+        localStorage.setItem("authToken", response.access_token);
         resolve({
           ...response,
           user: transformUser(response.user),
-        })
-      );
+        });
+      });
     };
 
-    window.addEventListener('message', onMessage);
+    window.addEventListener("message", onMessage);
 
     const pollId = window.setInterval(() => {
       if (popup.closed) {
-        finish(() => reject(new Error('Google sign in was cancelled.')));
+        finish(() => reject(new Error("Google sign in was cancelled.")));
         return;
       }
 
       const parsedResponse = tryParsePopupResponse(popup);
       if (!parsedResponse) return;
 
-      localStorage.setItem('authToken', parsedResponse.access_token);
+      localStorage.setItem("authToken", parsedResponse.access_token);
       popup.close();
       finish(() => resolve(parsedResponse));
     }, 400);
@@ -223,7 +253,7 @@ export async function signinWithGooglePopup(): Promise<AuthResponse> {
       }
 
       finish(() =>
-        reject(new Error('Google sign in timed out. Please try again.'))
+        reject(new Error("Google sign in timed out. Please try again.")),
       );
     }, GOOGLE_AUTH_TIMEOUT_MS);
   });
@@ -234,56 +264,61 @@ export async function signinWithGooglePopup(): Promise<AuthResponse> {
  * ✅ Sử dụng SignupPayload được import từ auth.helpers
  */
 export async function signup(payload: SignupPayload): Promise<SignupResponse> {
-  const response = await api.post<any>('/auth/sign-up', payload);
+  const response = await api.post<any>("/auth/sign-up", payload);
   return {
     message:
       response.message ||
-      'Account created. Please verify your email before signing in.',
-    requiresEmailVerification:
-      response.requiresEmailVerification !== false,
+      "Account created. Please verify your email before signing in.",
+    requiresEmailVerification: response.requiresEmailVerification !== false,
   };
 }
 
 export async function signout(): Promise<void> {
   try {
-    await api.post('/auth/logout');
+    await api.post("/auth/logout");
   } catch (error) {}
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('user');
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("user");
 }
 
 export async function checkSession(): Promise<AuthResponse | null> {
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem("authToken");
   if (!token) return null;
 
   try {
-    const userResponse = await api.get<any>('/auth/profile');
+    const userResponse = await api.get<any>("/auth/profile");
     return {
       user: transformUser(userResponse),
       access_token: token,
     };
   } catch (error) {
-    localStorage.removeItem('authToken');
+    localStorage.removeItem("authToken");
     return null;
   }
 }
 
 export async function updateProfile(updates: Partial<User>): Promise<User> {
-  const response = await api.patch<any>('/auth/profile', updates);
+  const response = await api.patch<any>("/auth/profile", updates);
   return transformUser(response);
 }
 
-export async function forgotPassword(email: string): Promise<{ message: string }> {
-  return await api.post('/auth/forget-password', { email });
+export async function forgotPassword(
+  email: string,
+): Promise<{ message: string }> {
+  return await api.post("/auth/forget-password", { email });
 }
 
 export async function verifyEmail(token: string): Promise<{ message: string }> {
-  return await api.get('/auth/verify-email', { params: { token } });
+  return await api.get("/auth/verify-email", { params: { token } });
 }
 
 export async function resetPassword(
   token: string,
-  password: string
+  password: string,
 ): Promise<{ message: string }> {
-  return await api.post('/auth/reset-password', { password }, { params: { token } });
+  return await api.post(
+    "/auth/reset-password",
+    { password },
+    { params: { token } },
+  );
 }

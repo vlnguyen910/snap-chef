@@ -1,6 +1,6 @@
-import { SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal } from "lucide-react";
 
-type FilterOption = 'all' | 'popular' | 'recent';
+type FilterOption = "all" | "popular" | "recent";
 
 interface FeedFilterBarProps {
   active: FilterOption;
@@ -8,12 +8,15 @@ interface FeedFilterBarProps {
 }
 
 const FILTER_OPTIONS: { key: FilterOption; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'popular', label: 'Popular' },
-  { key: 'recent', label: 'Recent' },
+  { key: "all", label: "All" },
+  { key: "popular", label: "Popular" },
+  { key: "recent", label: "Recent" },
 ];
 
-export default function FeedFilterBar({ active, onChange }: Readonly<FeedFilterBarProps>) {
+export default function FeedFilterBar({
+  active,
+  onChange,
+}: Readonly<FeedFilterBarProps>) {
   return (
     <div className="flex items-center justify-between">
       <h2 className="text-2xl font-black tracking-tight">Latest Recipes</h2>
@@ -24,8 +27,8 @@ export default function FeedFilterBar({ active, onChange }: Readonly<FeedFilterB
             onClick={() => onChange(key)}
             className={`px-4 py-2 rounded-full font-medium text-sm whitespace-nowrap transition-colors ${
               active === key
-                ? 'bg-primary/10 text-primary font-bold'
-                : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-400'
+                ? "bg-primary/10 text-primary font-bold"
+                : "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-400"
             }`}
           >
             {label}

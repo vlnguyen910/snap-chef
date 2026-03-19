@@ -1,12 +1,12 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import type { User, AuthState } from '@/types';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { User, AuthState } from "@/types";
 
 interface AppState extends AuthState {
   // Initialization state
   isInitialized: boolean;
   setInitialized: (value: boolean) => void;
-  
+
   // Auth actions
   login: (user: User, token: string) => void;
   logout: () => void;
@@ -28,26 +28,26 @@ export const useStore = create<AppState>()(
 
       // Actions
       login: (user, token) => {
-        localStorage.setItem('authToken', token);
+        localStorage.setItem("authToken", token);
         set({ user, token, isAuthenticated: true });
       },
 
       logout: () => {
-        localStorage.removeItem('authToken');
+        localStorage.removeItem("authToken");
         set({ user: null, token: null, isAuthenticated: false });
       },
 
-      signout: function() {
+      signout: function () {
         this.logout();
       },
 
-      updateUser: (userData) => 
+      updateUser: (userData) =>
         set((state) => ({
           user: state.user ? { ...state.user, ...userData } : null,
         })),
     }),
     {
-      name: 'snap-chef-storage',
+      name: "snap-chef-storage",
       partialize: (state) => ({
         user: state.user,
         token: state.token,
@@ -56,24 +56,24 @@ export const useStore = create<AppState>()(
       onRehydrateStorage: () => (state, error) => {
         // Called when hydration is complete
         if (error) {
-          console.error('Error hydrating store:', error);
+          console.error("Error hydrating store:", error);
           // Set initialized anyway to prevent infinite loading
           state?.setInitialized(true);
         } else {
           state?.setInitialized(true);
         }
       },
-    }
-  )
+    },
+  ),
 );
 
 // Ensure initialization happens even if hydration fails
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   // Set a timeout fallback in case hydration takes too long
   setTimeout(() => {
     const state = useStore.getState();
     if (!state.isInitialized) {
-      console.warn('Store hydration timeout - initializing anyway');
+      console.warn("Store hydration timeout - initializing anyway");
       state.setInitialized(true);
     }
   }, 1000);

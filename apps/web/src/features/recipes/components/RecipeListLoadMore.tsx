@@ -1,10 +1,10 @@
-import { Button } from '@/components/ui/button';
-import RecipeCard from './RecipeCard';
-import Loading from '@/components/common/Loading';
-import ErrorState from '@/components/common/ErrorState';
-import SearchInput from '@/components/common/SearchInput';
-import { useRecipeLoadMore } from '@/hooks/useRecipeLoadMore';
-import { Search, Loader2 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import RecipeCard from "./RecipeCard";
+import Loading from "@/components/common/Loading";
+import ErrorState from "@/components/common/ErrorState";
+import SearchInput from "@/components/common/SearchInput";
+import { useRecipeLoadMore } from "@/hooks/useRecipeLoadMore";
+import { Search, Loader2 } from "lucide-react";
 
 /**
  * Alternative RecipeList component using "Load More" pattern
@@ -47,7 +47,7 @@ export default function RecipeListLoadMore() {
         <div className="text-sm text-gray-600 dark:text-gray-400">
           {searchQuery && (
             <span>
-              Showing {recipes.length} recipe{recipes.length !== 1 ? 's' : ''}
+              Showing {recipes.length} recipe{recipes.length !== 1 ? "s" : ""}
             </span>
           )}
         </div>
@@ -72,7 +72,7 @@ export default function RecipeListLoadMore() {
           <p className="text-gray-600 dark:text-gray-400">
             {searchQuery
               ? `Try adjusting your search term "${searchQuery}"`
-              : 'No recipes available at the moment'}
+              : "No recipes available at the moment"}
           </p>
         </div>
       )}
@@ -93,7 +93,7 @@ export default function RecipeListLoadMore() {
                 Loading...
               </>
             ) : (
-              'Load More Recipes'
+              "Load More Recipes"
             )}
           </Button>
         </div>

@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 interface StarRatingProps {
   value: number;
   onChange?: (rating: number) => void;
   readonly?: boolean;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
 }
 
 /**
@@ -15,14 +15,14 @@ export const StarRating: React.FC<StarRatingProps> = ({
   value,
   onChange,
   readonly = false,
-  size = 'md',
+  size = "md",
 }) => {
   const [hoverValue, setHoverValue] = useState<number | null>(null);
 
   const sizeClasses = {
-    sm: 'w-4 h-4',
-    md: 'w-5 h-5',
-    lg: 'w-6 h-6',
+    sm: "w-4 h-4",
+    md: "w-5 h-5",
+    lg: "w-6 h-6",
   };
 
   const handleClick = (rating: number) => {
@@ -55,7 +55,7 @@ export const StarRating: React.FC<StarRatingProps> = ({
           disabled={readonly}
           className={`
             ${sizeClasses[size]}
-            ${readonly ? 'cursor-default' : 'cursor-pointer hover:scale-110'}
+            ${readonly ? "cursor-default" : "cursor-pointer hover:scale-110"}
             transition-transform
           `}
           aria-label={`Rate ${star} stars`}
@@ -63,9 +63,11 @@ export const StarRating: React.FC<StarRatingProps> = ({
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
-            fill={star <= displayValue ? 'currentColor' : 'none'}
+            fill={star <= displayValue ? "currentColor" : "none"}
             stroke="currentColor"
-            className={star <= displayValue ? 'text-yellow-400' : 'text-gray-300'}
+            className={
+              star <= displayValue ? "text-yellow-400" : "text-gray-300"
+            }
           >
             <path
               strokeLinecap="round"
@@ -78,7 +80,7 @@ export const StarRating: React.FC<StarRatingProps> = ({
       ))}
       {!readonly && (
         <span className="ml-2 text-sm text-gray-600">
-          {displayValue > 0 ? `${displayValue}/5` : 'Select rating'}
+          {displayValue > 0 ? `${displayValue}/5` : "Select rating"}
         </span>
       )}
     </div>

@@ -1,11 +1,14 @@
-import { Loader2 } from 'lucide-react';
+import { Loader2 } from "lucide-react";
 
 interface LoadingProps {
   message?: string;
   fullScreen?: boolean;
 }
 
-export default function Loading({ message = 'Loading...', fullScreen = false }: LoadingProps) {
+export default function Loading({
+  message = "Loading...",
+  fullScreen = false,
+}: LoadingProps) {
   const content = (
     <div className="flex flex-col items-center justify-center gap-4">
       <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
@@ -21,5 +24,9 @@ export default function Loading({ message = 'Loading...', fullScreen = false }: 
     );
   }
 
-  return <div className="flex min-h-[400px] items-center justify-center">{content}</div>;
+  return (
+    <div className="flex min-h-[400px] items-center justify-center">
+      {content}
+    </div>
+  );
 }

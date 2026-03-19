@@ -11,7 +11,7 @@ export interface RecipeIngredient {
 }
 
 export interface IngredientDisplay {
-  name: string; 
+  name: string;
   quantity: number;
   unit: string;
   index: number;

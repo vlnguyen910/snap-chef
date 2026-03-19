@@ -9,13 +9,13 @@ interface FeedHeroProps {
 }
 
 export default function FeedHero({
-  title = 'Master the Art of Hand-Rolled Gnocchi',
-  subtitle = 'are cooking this today',
-  badgeText = 'Daily Challenge',
-  badgeTimer = 'Ending in 4h 22m',
-  ctaText = 'Join Challenge',
+  title = "Master the Art of Hand-Rolled Gnocchi",
+  subtitle = "are cooking this today",
+  badgeText = "Daily Challenge",
+  badgeTimer = "Ending in 4h 22m",
+  ctaText = "Join Challenge",
   onCta,
-  participantCount = '+12k',
+  participantCount = "+12k",
 }: Readonly<FeedHeroProps>) {
   return (
     <div className="relative h-[260px] md:h-[360px] rounded-3xl overflow-hidden group">
@@ -34,7 +34,9 @@ export default function FeedHero({
           <span className="px-3 py-1 bg-primary text-white text-xs font-bold rounded-full uppercase tracking-widest">
             {badgeText}
           </span>
-          <span className="text-white/80 text-xs font-medium">{badgeTimer}</span>
+          <span className="text-white/80 text-xs font-medium">
+            {badgeTimer}
+          </span>
         </div>
 
         <h2 className="text-white text-2xl md:text-4xl font-black mb-4 tracking-tight leading-tight max-w-lg">
@@ -62,7 +64,9 @@ export default function FeedHero({
                 {participantCount}
               </div>
             </div>
-            <span className="text-white/80 text-xs font-medium">{subtitle}</span>
+            <span className="text-white/80 text-xs font-medium">
+              {subtitle}
+            </span>
           </div>
         </div>
       </div>

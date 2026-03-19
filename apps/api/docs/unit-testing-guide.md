@@ -84,9 +84,7 @@ const mockReportsService = {
 
 await Test.createTestingModule({
   controllers: [ReportsController],
-  providers: [
-    { provide: ReportsService, useValue: mockReportsService },
-  ],
+  providers: [{ provide: ReportsService, useValue: mockReportsService }],
 }).compile();
 ```
 
@@ -114,15 +112,15 @@ it('should create and return a report', async () => {
 
 ## Các loại assertion phổ biến
 
-| Assertion | Ý nghĩa |
-|-----------|---------|
-| `expect(x).toEqual(y)` | So sánh deep equality |
-| `expect(x).toBe(y)` | So sánh strict equality (`===`) |
-| `expect(x).toBeNull()` | x phải là `null` |
-| `expect(x).toHaveLength(n)` | Array x có n phần tử |
-| `expect(fn).toHaveBeenCalledTimes(n)` | Hàm fn đã được gọi n lần |
+| Assertion                              | Ý nghĩa                         |
+| -------------------------------------- | ------------------------------- |
+| `expect(x).toEqual(y)`                 | So sánh deep equality           |
+| `expect(x).toBe(y)`                    | So sánh strict equality (`===`) |
+| `expect(x).toBeNull()`                 | x phải là `null`                |
+| `expect(x).toHaveLength(n)`            | Array x có n phần tử            |
+| `expect(fn).toHaveBeenCalledTimes(n)`  | Hàm fn đã được gọi n lần        |
 | `expect(fn).toHaveBeenCalledWith(arg)` | Hàm fn được gọi với args cụ thể |
-| `expect(fn).rejects.toThrow('msg')` | Promise bị reject với message |
+| `expect(fn).rejects.toThrow('msg')`    | Promise bị reject với message   |
 
 ---
 
@@ -143,7 +141,10 @@ it('should create a report for a USER target', async () => {
     handler_id: 'admin-uuid',
   };
 
-  prisma.report.create.mockResolvedValue({ ...mockReport, target_type: TargetReportType.USER });
+  prisma.report.create.mockResolvedValue({
+    ...mockReport,
+    target_type: TargetReportType.USER,
+  });
 
   const result = await service.create(dto);
   expect(result.target_type).toBe(TargetReportType.USER);
@@ -156,7 +157,9 @@ it('should create a report for a USER target', async () => {
 it('should throw when DB fails', async () => {
   prisma.report.create.mockRejectedValue(new Error('DB connection failed'));
 
-  await expect(service.create(createDto)).rejects.toThrow('DB connection failed');
+  await expect(service.create(createDto)).rejects.toThrow(
+    'DB connection failed',
+  );
 });
 ```
 
@@ -197,10 +200,10 @@ afterEach(() => {
 
 ## Coverage hiện tại — Report Module
 
-| File | Statements | Functions | Lines | Branches |
-|------|-----------|-----------|-------|---------|
-| `reports.service.ts` | 100% | 100% | 100% | 75% |
-| `reports.controller.ts` | 100% | 100% | 100% | 75% |
+| File                    | Statements | Functions | Lines | Branches |
+| ----------------------- | ---------- | --------- | ----- | -------- |
+| `reports.service.ts`    | 100%       | 100%      | 100%  | 75%      |
+| `reports.controller.ts` | 100%       | 100%      | 100%  | 75%      |
 
 > **Mục tiêu:** duy trì > 50% coverage cho mỗi module mới.
 

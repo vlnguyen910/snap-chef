@@ -1,10 +1,10 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Menu, X, User as UserIcon, LogOut } from 'lucide-react';
-import { useState } from 'react';
-import { useStore } from '@/lib/store';
-import UserMenu from './UserMenu';
-import GlobalSearch from '@/components/common/GlobalSearch';
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Menu, X, User as UserIcon, LogOut } from "lucide-react";
+import { useState } from "react";
+import { useStore } from "@/lib/store";
+import UserMenu from "./UserMenu";
+import GlobalSearch from "@/components/common/GlobalSearch";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,22 +16,24 @@ export default function Header() {
   const isAuthenticated = !!user;
 
   const isActive = (path: string) => {
-    if (path === '/') return location.pathname === '/';
+    if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
 
   const handleSignout = () => {
     logout();
     setIsOpen(false);
-    navigate('/auth/signin');
+    navigate("/auth/signin");
   };
 
   const navLinks = [
-    { path: '/', label: 'Home' },
-    { path: '/recipes', label: 'Recipes' },
-    { path: '/create-recipe', label: 'Create Recipe' },
-    ...(isAuthenticated ? [{ path: '/my-recipes', label: 'My Recipes' }] : []),
-    ...(user?.role === 'moderator' ? [{ path: '/moderation', label: 'Moderation' }] : []),
+    { path: "/", label: "Home" },
+    { path: "/recipes", label: "Recipes" },
+    { path: "/create-recipe", label: "Create Recipe" },
+    ...(isAuthenticated ? [{ path: "/my-recipes", label: "My Recipes" }] : []),
+    ...(user?.role === "moderator"
+      ? [{ path: "/moderation", label: "Moderation" }]
+      : []),
   ];
 
   return (
@@ -41,13 +43,13 @@ export default function Header() {
         <div className="hidden md:grid md:grid-cols-3 items-center h-16 gap-4">
           {/* Left Section: Logo + Search Bar */}
           <div className="flex items-center gap-4">
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className="text-2xl font-bold text-orange-600 hover:text-orange-700 transition-colors flex-shrink-0"
             >
               SnapChef
             </Link>
-            
+
             {/* Global Search with mode toggle - Available to all users */}
             <GlobalSearch className="w-80" />
           </div>
@@ -60,8 +62,8 @@ export default function Header() {
                 to={link.path}
                 className={`text-sm font-medium transition-colors relative group whitespace-nowrap ${
                   isActive(link.path)
-                    ? 'text-orange-600 font-bold'
-                    : 'text-gray-700 hover:text-orange-600'
+                    ? "text-orange-600 font-bold"
+                    : "text-gray-700 hover:text-orange-600"
                 }`}
               >
                 {link.label}
@@ -78,11 +80,15 @@ export default function Header() {
               <UserMenu />
             ) : (
               <>
-                <Button variant="ghost" asChild className="hover:text-orange-600">
+                <Button
+                  variant="ghost"
+                  asChild
+                  className="hover:text-orange-600"
+                >
                   <Link to="/auth/signin">Sign In</Link>
                 </Button>
-                <Button 
-                  asChild 
+                <Button
+                  asChild
                   className="bg-orange-600 hover:bg-orange-700 text-white"
                 >
                   <Link to="/auth/signup">Sign Up</Link>
@@ -95,8 +101,8 @@ export default function Header() {
         {/* Mobile Layout */}
         <div className="flex md:hidden items-center justify-between h-16">
           {/* Logo */}
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="text-2xl font-bold text-orange-600 hover:text-orange-700 transition-colors"
           >
             SnapChef
@@ -124,8 +130,8 @@ export default function Header() {
                   onClick={() => setIsOpen(false)}
                   className={`block px-4 py-3 rounded-md text-sm font-medium transition-colors ${
                     isActive(link.path)
-                      ? 'text-orange-600 font-bold bg-orange-50'
-                      : 'text-gray-700 hover:text-orange-600 hover:bg-gray-50'
+                      ? "text-orange-600 font-bold bg-orange-50"
+                      : "text-gray-700 hover:text-orange-600 hover:bg-gray-50"
                   }`}
                 >
                   {link.label}

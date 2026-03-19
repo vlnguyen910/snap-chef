@@ -48,6 +48,7 @@ src/
 ## 📦 Dependencies Installed
 
 All required packages have been installed:
+
 - `axios` - HTTP client for API calls
 - `react-router-dom` - Routing library
 - `@radix-ui/react-slot` - Radix UI primitive for shadcn
@@ -58,12 +59,14 @@ All required packages have been installed:
 ## 🎯 Features Implemented
 
 ### 1. Complete Router Setup
+
 - **3 route modules**: guest, user, moderator
 - **Lazy loading** for better code splitting
 - **404 error handling** with NotFound page
 - **Nested routing** with proper layouts
 
 ### 2. Layout System
+
 - **4 layouts**: Main, Guest, User, Moderator
 - **Navbar** with responsive mobile menu
 - **Sidebar** with role-based navigation
@@ -71,11 +74,13 @@ All required packages have been installed:
 - **TailwindCSS** styling
 
 ### 3. Example Pages
+
 - **Home** (guest) - Hero section with features and CTA
 - **User Dashboard** - Stats cards and quick actions
 - **Moderator Dashboard** - Admin stats and management tools
 
 ### 4. API Service Layer
+
 - **Centralized axios instance** with interceptors
 - **Token-based authentication** handling
 - **Service modules** for each role (guest, user, moderator)
@@ -85,6 +90,7 @@ All required packages have been installed:
 ## 🚀 Routes Structure
 
 ### Guest Routes (Public)
+
 - `/` - Home page
 - `/about` - About page (lazy loaded)
 - `/contact` - Contact page (lazy loaded)
@@ -92,6 +98,7 @@ All required packages have been installed:
 - `/recipes/:id` - Recipe details (lazy loaded)
 
 ### User Routes (Authenticated)
+
 - `/dashboard` - User dashboard
 - `/dashboard/recipes` - My recipes (lazy loaded)
 - `/dashboard/recipes/new` - Create recipe (lazy loaded)
@@ -101,6 +108,7 @@ All required packages have been installed:
 - `/dashboard/settings` - User settings (lazy loaded)
 
 ### Moderator Routes (Admin)
+
 - `/moderator` - Moderator dashboard
 - `/moderator/users` - User management (lazy loaded)
 - `/moderator/users/:id` - User details (lazy loaded)
@@ -113,6 +121,7 @@ All required packages have been installed:
 ## 🎨 UI Components
 
 All UI components use:
+
 - **shadcn/ui** Button component
 - **TailwindCSS** utility classes
 - **lucide-react** icons
@@ -121,13 +130,16 @@ All UI components use:
 ## 🔧 Configuration
 
 ### Vite Config
+
 - Already configured with `@` alias for imports
 
 ### TypeScript Config
+
 - Already configured with path aliases
 - Using `verbatimModuleSyntax` - all type imports use `type` keyword
 
 ### Router Config
+
 - BrowserRouter wraps App in main.tsx
 - useRoutes hook in App.tsx
 - All routes defined in separate modules
@@ -142,6 +154,7 @@ To complete the implementation, you can:
    - Moderator: UsersManagement, UserDetails, Reports, ReportDetails, ContentModeration, Analytics, ModeratorSettings
 
 2. **Set up environment variables**:
+
    ```env
    VITE_API_BASE_URL=http://localhost:3000/api
    ```
@@ -152,6 +165,7 @@ To complete the implementation, you can:
    - Add auth context/state management
 
 4. **Add more shadcn components** as needed:
+
    ```bash
    pnpm dlx shadcn@latest add card input form table
    ```
@@ -164,6 +178,7 @@ To complete the implementation, you can:
 ## ✨ Code Quality
 
 All code is:
+
 - ✅ **Fully typed** with TypeScript
 - ✅ **Production-ready** with proper error handling
 - ✅ **Clean and organized** with clear separation of concerns

@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ChefHat, Loader2, Edit, Trash2 } from 'lucide-react';
-import { api } from '@/lib/axios';
-import { useStore } from '@/lib/store';
-import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ChefHat, Loader2, Edit, Trash2 } from "lucide-react";
+import { api } from "@/lib/axios";
+import { useStore } from "@/lib/store";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 interface Recipe {
   id: string;
@@ -27,7 +27,7 @@ export default function MyRecipesPage() {
   const [hasMore, setHasMore] = useState(true);
   const limit = 9; // 9 recipes per page (3x3 grid)
 
-  useDocumentTitle('My Recipes');
+  useDocumentTitle("My Recipes");
 
   useEffect(() => {
     fetchMyRecipes(1);
@@ -45,7 +45,7 @@ export default function MyRecipesPage() {
       }
 
       const data = await api.get<Recipe[]>(
-        `/recipes/user/${currentUser.id}?page=${pageNum}&limit=${limit}`
+        `/recipes/user/${currentUser.id}?page=${pageNum}&limit=${limit}`,
       );
       const newRecipes = Array.isArray(data) ? data : [];
 
@@ -61,8 +61,8 @@ export default function MyRecipesPage() {
       setHasMore(newRecipes.length === limit);
       setPage(pageNum);
     } catch (err: any) {
-      console.error('Error fetching recipes:', err);
-      toast.error('Không thể tải công thức');
+      console.error("Error fetching recipes:", err);
+      toast.error("Không thể tải công thức");
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -76,15 +76,15 @@ export default function MyRecipesPage() {
   };
 
   const handleDelete = async (recipeId: string) => {
-    if (!confirm('Bạn có chắc muốn xóa công thức này?')) return;
+    if (!confirm("Bạn có chắc muốn xóa công thức này?")) return;
 
     try {
       await api.delete(`/recipes/${recipeId}`);
-      toast.success('Đã xóa công thức');
+      toast.success("Đã xóa công thức");
       setRecipes(recipes.filter((r) => r.id !== recipeId));
     } catch (err: any) {
-      console.error('Error deleting recipe:', err);
-      toast.error(err?.response?.data?.message || 'Không thể xóa công thức');
+      console.error("Error deleting recipe:", err);
+      toast.error(err?.response?.data?.message || "Không thể xóa công thức");
     }
   };
 
@@ -101,11 +101,13 @@ export default function MyRecipesPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Công thức của tôi</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Công thức của tôi
+          </h1>
           <p className="text-gray-600 mt-1">Quản lý các công thức bạn đã tạo</p>
         </div>
         <Button
-          onClick={() => navigate('/recipes/create')}
+          onClick={() => navigate("/recipes/create")}
           className="flex items-center gap-2"
         >
           <ChefHat className="h-5 w-5" />
@@ -127,7 +129,10 @@ export default function MyRecipesPage() {
                 onClick={() => navigate(`/recipes/${recipe.id}`)}
               >
                 <img
-                  src={recipe.thumbnail_url || 'https://via.placeholder.com/400x300'}
+                  src={
+                    recipe.thumbnail_url ||
+                    "https://via.placeholder.com/400x300"
+                  }
                   alt={recipe.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                 />
@@ -135,23 +140,23 @@ export default function MyRecipesPage() {
                 <h3 className="absolute bottom-3 left-3 right-3 text-white font-bold text-lg line-clamp-2">
                   {recipe.title}
                 </h3>
-                
+
                 {/* Status Badge */}
                 <div className="absolute top-3 right-3">
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      recipe.status === 'approved'
-                        ? 'bg-green-500 text-white'
-                        : recipe.status === 'pending'
-                        ? 'bg-yellow-500 text-white'
-                        : 'bg-red-500 text-white'
+                      recipe.status === "approved"
+                        ? "bg-green-500 text-white"
+                        : recipe.status === "pending"
+                          ? "bg-yellow-500 text-white"
+                          : "bg-red-500 text-white"
                     }`}
                   >
-                    {recipe.status === 'approved'
-                      ? 'Đã duyệt'
-                      : recipe.status === 'pending'
-                      ? 'Chờ duyệt'
-                      : 'Từ chối'}
+                    {recipe.status === "approved"
+                      ? "Đã duyệt"
+                      : recipe.status === "pending"
+                        ? "Chờ duyệt"
+                        : "Từ chối"}
                   </span>
                 </div>
               </div>
@@ -160,13 +165,14 @@ export default function MyRecipesPage() {
               <div className="p-4">
                 <div className="flex items-center gap-4 text-sm text-gray-600">
                   <span className="flex items-center gap-1">
-                    <span className="text-orange-500">⏱️</span> {recipe.cooking_time}m
+                    <span className="text-orange-500">⏱️</span>{" "}
+                    {recipe.cooking_time}m
                   </span>
                   <span className="flex items-center gap-1">
                     <span className="text-blue-500">🍽️</span> {recipe.servings}
                   </span>
                 </div>
-                
+
                 {recipe.description && (
                   <p className="mt-2 text-sm text-gray-500 line-clamp-2">
                     {recipe.description}
@@ -207,7 +213,7 @@ export default function MyRecipesPage() {
           <p className="text-gray-500 mb-6">
             Hãy tạo công thức đầu tiên của bạn!
           </p>
-          <Button onClick={() => navigate('/recipes/create')}>
+          <Button onClick={() => navigate("/recipes/create")}>
             <ChefHat className="h-5 w-5 mr-2" />
             Tạo công thức mới
           </Button>
@@ -230,7 +236,7 @@ export default function MyRecipesPage() {
                 Đang tải...
               </>
             ) : (
-              'Tải thêm'
+              "Tải thêm"
             )}
           </Button>
         </div>

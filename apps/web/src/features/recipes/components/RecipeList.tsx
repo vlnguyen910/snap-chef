@@ -1,10 +1,10 @@
-import { Button } from '@/components/ui/button';
-import RecipeCard from './RecipeCard';
-import Loading from '@/components/common/Loading';
-import ErrorState from '@/components/common/ErrorState';
-import SearchInput from '@/components/common/SearchInput';
-import { useRecipeSearch } from '@/hooks/useRecipeSearch';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import RecipeCard from "./RecipeCard";
+import Loading from "@/components/common/Loading";
+import ErrorState from "@/components/common/ErrorState";
+import SearchInput from "@/components/common/SearchInput";
+import { useRecipeSearch } from "@/hooks/useRecipeSearch";
+import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface RecipeListProps {
   userId?: string;
@@ -52,7 +52,8 @@ export default function RecipeList({ userId }: RecipeListProps) {
         <div className="text-sm text-gray-600 dark:text-gray-400">
           {searchQuery && (
             <span>
-              Found {displayedRecipes.length} recipe{displayedRecipes.length !== 1 ? 's' : ''}
+              Found {displayedRecipes.length} recipe
+              {displayedRecipes.length !== 1 ? "s" : ""}
             </span>
           )}
         </div>
@@ -83,7 +84,7 @@ export default function RecipeList({ userId }: RecipeListProps) {
               <p className="text-gray-600 dark:text-gray-400">
                 {searchQuery
                   ? `Try adjusting your search term "${searchQuery}"`
-                  : 'No recipes available at the moment'}
+                  : "No recipes available at the moment"}
               </p>
             </div>
           )}

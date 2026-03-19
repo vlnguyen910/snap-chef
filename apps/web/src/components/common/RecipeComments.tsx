@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { commentService } from '@/services/commentService';
-import { CommentForm } from '../common/CommentForm';
-import { StarRating } from '../common/StarRating';
-import { useStore } from '@/lib/store';
-import { toast } from '@/lib/toast-store';
-import Swal from 'sweetalert2';
-import type { Comment, CreateCommentPayload, UpdateCommentPayload } from '@/types';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { commentService } from "@/services/commentService";
+import { CommentForm } from "../common/CommentForm";
+import { StarRating } from "../common/StarRating";
+import { useStore } from "@/lib/store";
+import { toast } from "@/lib/toast-store";
+import Swal from "sweetalert2";
+import type {
+  Comment,
+  CreateCommentPayload,
+  UpdateCommentPayload,
+} from "@/types";
 
 interface RecipeCommentsProps {
   recipeOwnerId?: string; // ID of the recipe owner (for delete permission check)
@@ -21,20 +25,22 @@ interface RecipeCommentsProps {
  * - Edit comment (comment owner only)
  * - Delete comment (comment owner OR recipe owner)
  */
-export const RecipeComments: React.FC<RecipeCommentsProps> = ({ recipeOwnerId }) => {
+export const RecipeComments: React.FC<RecipeCommentsProps> = ({
+  recipeOwnerId,
+}) => {
   const { id: recipeId } = useParams<{ id: string }>();
   const user = useStore((state) => state.user); // ✅ Get user from global store
-  
+
   // 🔍 DEBUG: Log user state
-  console.log('🔍 RecipeComments user:', user);
-  console.log('🔍 RecipeComments recipeOwnerId:', recipeOwnerId);
-  
+  console.log("🔍 RecipeComments user:", user);
+  console.log("🔍 RecipeComments recipeOwnerId:", recipeOwnerId);
+
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
-  const [editContent, setEditContent] = useState('');
+  const [editContent, setEditContent] = useState("");
   const [editRating, setEditRating] = useState(0);
 
   // Fetch comments on mount - FIXED: Only depends on recipeId to prevent infinite loop
@@ -44,19 +50,22 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({ recipeOwnerId })
     const fetchComments = async () => {
       setIsLoading(true);
       setError(null); // Clear previous errors
-      
+
       try {
         const data = await commentService.getCommentsByRecipeId(recipeId);
         setComments(data);
       } catch (error: any) {
-        console.error('Failed to fetch comments:', error);
-        
+        console.error("Failed to fetch comments:", error);
+
         // Set error state to prevent retries
-        const errorMessage = error.response?.data?.message || error.message || 'Failed to load comments';
+        const errorMessage =
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to load comments";
         setError(errorMessage);
-        
+
         // Log detailed error for debugging
-        console.error('Error details:', {
+        console.error("Error details:", {
           status: error.response?.status,
           statusText: error.response?.statusText,
           data: error.response?.data,
@@ -71,16 +80,19 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({ recipeOwnerId })
 
   const fetchComments = async () => {
     if (!recipeId) return;
-    
+
     setIsLoading(true);
     setError(null); // Clear previous errors
-    
+
     try {
       const data = await commentService.getCommentsByRecipeId(recipeId);
       setComments(data);
     } catch (error: any) {
-      console.error('Failed to fetch comments:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to load comments';
+      console.error("Failed to fetch comments:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to load comments";
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -89,7 +101,7 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({ recipeOwnerId })
 
   const handleCreateComment = async (payload: CreateCommentPayload) => {
     if (!recipeId) return;
-    
+
     setIsSubmitting(true);
     try {
       await commentService.createComment(recipeId, payload);
@@ -101,16 +113,16 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({ recipeOwnerId })
 
   const handleDeleteComment = async (commentId: string) => {
     if (!recipeId) return;
-    
+
     const result = await Swal.fire({
-      title: 'Delete Comment?',
+      title: "Delete Comment?",
       text: "You won't be able to revert this!",
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel'
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
     });
 
     if (!result.isConfirmed) return;
@@ -118,14 +130,14 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({ recipeOwnerId })
     try {
       await commentService.deleteComment(recipeId, commentId);
       setComments((prev) => prev.filter((c) => c.id !== commentId));
-      toast.success('Comment deleted successfully');
+      toast.success("Comment deleted successfully");
     } catch (error: any) {
       if (error.response?.status === 404) {
-        toast.error('Comment not found');
+        toast.error("Comment not found");
       } else if (error.response?.status === 401) {
-        toast.error('You are not authorized to delete this comment');
+        toast.error("You are not authorized to delete this comment");
       } else {
-        toast.error('Failed to delete comment');
+        toast.error("Failed to delete comment");
       }
     }
   };
@@ -138,7 +150,7 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({ recipeOwnerId })
 
   const handleCancelEdit = () => {
     setEditingCommentId(null);
-    setEditContent('');
+    setEditContent("");
     setEditRating(0);
   };
 
@@ -155,7 +167,7 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({ recipeOwnerId })
       await fetchComments(); // Refresh comments list
       handleCancelEdit();
     } catch (error) {
-      alert('Failed to update comment');
+      alert("Failed to update comment");
     }
   };
 
@@ -186,18 +198,22 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({ recipeOwnerId })
         <CommentForm onSubmit={handleCreateComment} isLoading={isSubmitting} />
       ) : (
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
-          <p className="text-blue-700 font-medium">Please <a href="/auth/signin">log in</a> to join the discussion</p>
+          <p className="text-blue-700 font-medium">
+            Please <a href="/auth/signin">log in</a> to join the discussion
+          </p>
         </div>
       )}
 
       {/* Comments List - ALWAYS visible, regardless of login status */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-800">
-          {comments.length} {comments.length === 1 ? 'Comment' : 'Comments'}
+          {comments.length} {comments.length === 1 ? "Comment" : "Comments"}
         </h3>
 
         {isLoading ? (
-          <div className="text-center py-8 text-gray-500">Loading comments...</div>
+          <div className="text-center py-8 text-gray-500">
+            Loading comments...
+          </div>
         ) : error ? (
           <div className="text-center py-8">
             <p className="text-red-500 mb-2">{error}</p>
@@ -214,7 +230,10 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({ recipeOwnerId })
           </div>
         ) : (
           comments.map((comment) => (
-            <div key={comment.id} className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+            <div
+              key={comment.id}
+              className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm"
+            >
               {/* Comment Header */}
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -227,13 +246,13 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({ recipeOwnerId })
                       />
                     ) : (
                       <span className="text-sm font-semibold text-gray-600">
-                        {comment.user?.username?.[0]?.toUpperCase() || '?'}
+                        {comment.user?.username?.[0]?.toUpperCase() || "?"}
                       </span>
                     )}
                   </div>
                   <div>
                     <p className="font-semibold text-gray-900">
-                      {comment.user?.username || 'Anonymous'}
+                      {comment.user?.username || "Anonymous"}
                     </p>
                     <p className="text-xs text-gray-500">
                       {new Date(comment.createdAt).toLocaleDateString()}
@@ -270,7 +289,11 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({ recipeOwnerId })
               {/* Comment Content */}
               {editingCommentId === comment.id ? (
                 <div className="space-y-3">
-                  <StarRating value={editRating} onChange={setEditRating} size="md" />
+                  <StarRating
+                    value={editRating}
+                    onChange={setEditRating}
+                    size="md"
+                  />
                   <textarea
                     value={editContent}
                     onChange={(e) => setEditContent(e.target.value)}

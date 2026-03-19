@@ -1,48 +1,55 @@
-import { useEffect, useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
-import { api } from '@/lib/axios';
-import { uploadToCloudinary } from '@/services/cloudinaryService';
-import { toast } from 'sonner';
-import { useStore } from '@/lib/store';
-import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import FollowersFollowingModal from '@/components/common/FollowersFollowingModal';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState, useRef } from "react";
+import { useParams } from "react-router-dom";
+import { api } from "@/lib/axios";
+import { uploadToCloudinary } from "@/services/cloudinaryService";
+import { toast } from "sonner";
+import { useStore } from "@/lib/store";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import FollowersFollowingModal from "@/components/common/FollowersFollowingModal";
+import { Button } from "@/components/ui/button";
 
-import type { UserProfileData, ProfileRecipe } from '@/features/users/types/profile';
-import { ProfileHeader } from '@/features/users/components/profile/ProfileHeader';
-import { ProfileStats } from '@/features/users/components/profile/ProfileStats';
-import { ProfileRecipeList } from '@/features/users/components/profile/ProfileRecipeList';
-import { EditProfileModal } from '@/features/users/components/profile/EditProfileModal';
+import type {
+  UserProfileData,
+  ProfileRecipe,
+} from "@/features/users/types/profile";
+import { ProfileHeader } from "@/features/users/components/profile/ProfileHeader";
+import { ProfileStats } from "@/features/users/components/profile/ProfileStats";
+import { ProfileRecipeList } from "@/features/users/components/profile/ProfileRecipeList";
+import { EditProfileModal } from "@/features/users/components/profile/EditProfileModal";
 
 export default function UserProfile() {
   const { id: userIdFromUrl } = useParams<{ id: string }>();
   const currentUser = useStore((state) => state.user);
-  
+
   const [userData, setUserData] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [editForm, setEditForm] = useState({ username: '', bio: '' });
-  
+  const [editForm, setEditForm] = useState({ username: "", bio: "" });
+
   const [isFollowing, setIsFollowing] = useState(false);
   const [followModalOpen, setFollowModalOpen] = useState(false);
-  const [followModalTab, setFollowModalTab] = useState<'followers' | 'following'>('followers');
-  
-  const [activeTab, setActiveTab] = useState<'created' | 'liked'>('created');
+  const [followModalTab, setFollowModalTab] = useState<
+    "followers" | "following"
+  >("followers");
+
+  const [activeTab, setActiveTab] = useState<"created" | "liked">("created");
   const [userRecipes, setUserRecipes] = useState<ProfileRecipe[]>([]);
   const [likedRecipes, setLikedRecipes] = useState<ProfileRecipe[]>([]);
   const [loadingRecipes, setLoadingRecipes] = useState(false);
-  
+
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const updateUser = useStore((state) => state.updateUser);
 
   const isOwnProfile = !userIdFromUrl || currentUser?.id === userIdFromUrl;
 
-  useDocumentTitle(userData?.username ? `${userData.username}'s Profile` : 'Profile');
+  useDocumentTitle(
+    userData?.username ? `${userData.username}'s Profile` : "Profile",
+  );
 
   useEffect(() => {
     fetchUserProfile();
@@ -53,23 +60,25 @@ export default function UserProfile() {
     try {
       setLoading(true);
       setError(null);
-      
+
       if (userIdFromUrl) {
         const response = await api.get<any>(`/users/${userIdFromUrl}/profile`);
         setUserData(response.user);
         setIsFollowing(response.is_followed || false);
       } else {
-        const response = await api.get<UserProfileData>('/users/me');
+        const response = await api.get<UserProfileData>("/users/me");
         setUserData(response);
         setIsFollowing(false);
-        
+
         if (response.avatar_url) {
           updateUser({ avatar: response.avatar_url });
         }
       }
     } catch (err: any) {
-      console.error('Error fetching user profile:', err);
-      setError(err?.response?.data?.message || 'Không thể tải thông tin người dùng');
+      console.error("Error fetching user profile:", err);
+      setError(
+        err?.response?.data?.message || "Không thể tải thông tin người dùng",
+      );
     } finally {
       setLoading(false);
     }
@@ -81,16 +90,20 @@ export default function UserProfile() {
       const targetUserId = userIdFromUrl || currentUser?.id;
       if (!targetUserId) return;
 
-      const createdRecipes = await api.get<ProfileRecipe[]>(`/recipes/user/${targetUserId}`);
+      const createdRecipes = await api.get<ProfileRecipe[]>(
+        `/recipes/user/${targetUserId}`,
+      );
       setUserRecipes(Array.isArray(createdRecipes) ? createdRecipes : []);
 
       if (!userIdFromUrl && currentUser) {
-        const liked = await api.get<any[]>('/users/me/likes');
-        const likedRecipesList = liked.map((item: any) => item.recipe).filter(Boolean);
+        const liked = await api.get<any[]>("/users/me/likes");
+        const likedRecipesList = liked
+          .map((item: any) => item.recipe)
+          .filter(Boolean);
         setLikedRecipes(likedRecipesList);
       }
     } catch (err: any) {
-      console.error('Error fetching recipes:', err);
+      console.error("Error fetching recipes:", err);
     } finally {
       setLoadingRecipes(false);
     }
@@ -100,17 +113,19 @@ export default function UserProfile() {
     fileInputRef.current?.click();
   };
 
-  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Vui lòng chọn file ảnh');
+    if (!file.type.startsWith("image/")) {
+      toast.error("Vui lòng chọn file ảnh");
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Kích thước ảnh không được vượt quá 5MB');
+      toast.error("Kích thước ảnh không được vượt quá 5MB");
       return;
     }
 
@@ -120,16 +135,16 @@ export default function UserProfile() {
     try {
       setIsUploadingAvatar(true);
       const avatarUrl = await uploadToCloudinary(file);
-      
+
       if (userData) {
         await api.put(`/users/${userData.id}`, { avatar_url: avatarUrl });
         setUserData({ ...userData, avatar_url: avatarUrl });
         updateUser({ avatar: avatarUrl });
-        toast.success('Cập nhật ảnh đại diện thành công!');
+        toast.success("Cập nhật ảnh đại diện thành công!");
       }
     } catch (err: any) {
-      console.error('Error uploading avatar:', err);
-      toast.error(err?.message || 'Không thể tải ảnh lên. Vui lòng thử lại.');
+      console.error("Error uploading avatar:", err);
+      toast.error(err?.message || "Không thể tải ảnh lên. Vui lòng thử lại.");
     } finally {
       setIsUploadingAvatar(false);
       if (avatarPreview) {
@@ -137,14 +152,14 @@ export default function UserProfile() {
         setAvatarPreview(null);
       }
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
     }
   };
 
   const handleEditClick = () => {
     if (userData) {
-      setEditForm({ username: userData.username, bio: userData.bio || '' });
+      setEditForm({ username: userData.username, bio: userData.bio || "" });
       setIsEditModalOpen(true);
     }
   };
@@ -152,7 +167,7 @@ export default function UserProfile() {
   const handleUpdateProfile = async () => {
     if (!userData) return;
     if (!editForm.username.trim()) {
-      toast.error('Tên người dùng không được để trống');
+      toast.error("Tên người dùng không được để trống");
       return;
     }
 
@@ -169,16 +184,19 @@ export default function UserProfile() {
         bio: editForm.bio.trim() || undefined,
       });
 
-      updateUser({ 
+      updateUser({
         username: editForm.username.trim(),
         bio: editForm.bio.trim() || undefined,
       });
 
-      toast.success('Cập nhật hồ sơ thành công!');
+      toast.success("Cập nhật hồ sơ thành công!");
       setIsEditModalOpen(false);
     } catch (err: any) {
-      console.error('Error updating profile:', err);
-      toast.error(err?.response?.data?.message || 'Không thể cập nhật hồ sơ. Vui lòng thử lại.');
+      console.error("Error updating profile:", err);
+      toast.error(
+        err?.response?.data?.message ||
+          "Không thể cập nhật hồ sơ. Vui lòng thử lại.",
+      );
     } finally {
       setIsUpdating(false);
     }
@@ -188,9 +206,9 @@ export default function UserProfile() {
     if (userData) {
       setUserData({
         ...userData,
-        followers_count: followed 
-          ? (userData.followers_count || 0) + 1 
-          : (userData.followers_count || 1) - 1
+        followers_count: followed
+          ? (userData.followers_count || 0) + 1
+          : (userData.followers_count || 1) - 1,
       });
     }
   };
@@ -222,7 +240,9 @@ export default function UserProfile() {
   if (!userData) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-gray-600 dark:text-gray-400">Không tìm thấy thông tin người dùng</div>
+        <div className="text-gray-600 dark:text-gray-400">
+          Không tìm thấy thông tin người dùng
+        </div>
       </div>
     );
   }
@@ -230,7 +250,7 @@ export default function UserProfile() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
       <div className="w-full max-w-3xl border-0">
-        <ProfileHeader 
+        <ProfileHeader
           userData={userData}
           isOwnProfile={isOwnProfile}
           avatarPreview={avatarPreview}
@@ -244,7 +264,7 @@ export default function UserProfile() {
           fileInputRef={fileInputRef}
         />
 
-        <EditProfileModal 
+        <EditProfileModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           editForm={editForm}
@@ -253,19 +273,19 @@ export default function UserProfile() {
           isUpdating={isUpdating}
         />
 
-        <ProfileStats 
+        <ProfileStats
           userData={userData}
           onFollowersClick={() => {
-            setFollowModalTab('followers');
+            setFollowModalTab("followers");
             setFollowModalOpen(true);
           }}
           onFollowingClick={() => {
-            setFollowModalTab('following');
+            setFollowModalTab("following");
             setFollowModalOpen(true);
           }}
         />
 
-        <ProfileRecipeList 
+        <ProfileRecipeList
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           loadingRecipes={loadingRecipes}
@@ -276,7 +296,7 @@ export default function UserProfile() {
 
         {followModalOpen && userData && (
           <FollowersFollowingModal
-            userId={userIdFromUrl || currentUser?.id || ''}
+            userId={userIdFromUrl || currentUser?.id || ""}
             initialTab={followModalTab}
             onClose={() => setFollowModalOpen(false)}
           />

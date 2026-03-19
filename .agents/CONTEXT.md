@@ -22,59 +22,59 @@
 
 ### 3.1. Monorepo & Tooling
 
-| Công nghệ | Phiên bản | Mô tả |
-|---|---|---|
-| Turborepo | ^2.6.1 | Quản lý monorepo, task orchestration |
-| pnpm | 9.0.0 | Package manager |
-| TypeScript | ~5.9.x | Ngôn ngữ lập trình chính |
-| Prettier | ^3.6.2 | Code formatter |
-| ESLint | ^9.39.x | Linter |
+| Công nghệ  | Phiên bản | Mô tả                                |
+| ---------- | --------- | ------------------------------------ |
+| Turborepo  | ^2.6.1    | Quản lý monorepo, task orchestration |
+| pnpm       | 9.0.0     | Package manager                      |
+| TypeScript | ~5.9.x    | Ngôn ngữ lập trình chính             |
+| Prettier   | ^3.6.2    | Code formatter                       |
+| ESLint     | ^9.39.x   | Linter                               |
 
 ### 3.2. Backend (`apps/api`)
 
-| Công nghệ | Phiên bản | Mô tả |
-|---|---|---|
-| NestJS | ^11.1.14 | Framework backend chính |
-| Prisma | ^7.4.2 | ORM, quản lý database schema & migration |
-| PostgreSQL | 15 (Alpine) | Cơ sở dữ liệu chính |
-| Redis | Alpine | Caching, rate limiting, WebSocket adapter |
-| Passport | ^0.7.0 | Xác thực (JWT, Local, Google OAuth) |
-| Swagger | ^11.2.6 | API documentation |
-| Socket.IO | ^4.8.3 | Real-time communication (WebSocket) |
-| Nodemailer + Handlebars | ^7.0.13 / ^4.7.8 | Gửi email (đặt lại mật khẩu, thông báo) |
-| Argon2 | ^0.44.0 | Mã hóa mật khẩu |
-| Jest | ^30.2.0 | Unit testing |
+| Công nghệ               | Phiên bản        | Mô tả                                     |
+| ----------------------- | ---------------- | ----------------------------------------- |
+| NestJS                  | ^11.1.14         | Framework backend chính                   |
+| Prisma                  | ^7.4.2           | ORM, quản lý database schema & migration  |
+| PostgreSQL              | 15 (Alpine)      | Cơ sở dữ liệu chính                       |
+| Redis                   | Alpine           | Caching, rate limiting, WebSocket adapter |
+| Passport                | ^0.7.0           | Xác thực (JWT, Local, Google OAuth)       |
+| Swagger                 | ^11.2.6          | API documentation                         |
+| Socket.IO               | ^4.8.3           | Real-time communication (WebSocket)       |
+| Nodemailer + Handlebars | ^7.0.13 / ^4.7.8 | Gửi email (đặt lại mật khẩu, thông báo)   |
+| Argon2                  | ^0.44.0          | Mã hóa mật khẩu                           |
+| Jest                    | ^30.2.0          | Unit testing                              |
 
 ### 3.3. Frontend (`apps/web`)
 
-| Công nghệ | Phiên bản | Mô tả |
-|---|---|---|
-| React | ^19.2.0 | UI library |
-| Vite | ^7.2.4 | Build tool & dev server |
-| TailwindCSS | 3 | CSS framework |
-| React Router | ^7.10.0 | Client-side routing |
-| TanStack React Query | ^5.90.12 | Server state management & data fetching |
-| Zustand | ^5.0.9 | Client state management |
-| Axios | ^1.13.2 | HTTP client |
-| React Hook Form | ^7.68.0 | Quản lý form |
-| i18next | ^25.7.3 | Quốc tế hóa (i18n) |
-| Lucide React | ^0.555.0 | Icon library |
-| Sonner + SweetAlert2 | ^2.0.7 / ^11.26.17 | Toast & alert notifications |
+| Công nghệ            | Phiên bản          | Mô tả                                   |
+| -------------------- | ------------------ | --------------------------------------- |
+| React                | ^19.2.0            | UI library                              |
+| Vite                 | ^7.2.4             | Build tool & dev server                 |
+| TailwindCSS          | 3                  | CSS framework                           |
+| React Router         | ^7.10.0            | Client-side routing                     |
+| TanStack React Query | ^5.90.12           | Server state management & data fetching |
+| Zustand              | ^5.0.9             | Client state management                 |
+| Axios                | ^1.13.2            | HTTP client                             |
+| React Hook Form      | ^7.68.0            | Quản lý form                            |
+| i18next              | ^25.7.3            | Quốc tế hóa (i18n)                      |
+| Lucide React         | ^0.555.0           | Icon library                            |
+| Sonner + SweetAlert2 | ^2.0.7 / ^11.26.17 | Toast & alert notifications             |
 
 ### 3.4. Shared Packages
 
-| Package | Mô tả |
-|---|---|
-| `packages/ui` | Thư viện UI component dùng chung |
-| `packages/eslint-config` | Cấu hình ESLint dùng chung |
-| `packages/typescript-config` | Cấu hình TypeScript dùng chung |
+| Package                      | Mô tả                            |
+| ---------------------------- | -------------------------------- |
+| `packages/ui`                | Thư viện UI component dùng chung |
+| `packages/eslint-config`     | Cấu hình ESLint dùng chung       |
+| `packages/typescript-config` | Cấu hình TypeScript dùng chung   |
 
 ### 3.5. DevOps & Infrastructure
 
-| Công nghệ | Mô tả |
-|---|---|
+| Công nghệ               | Mô tả                                       |
+| ----------------------- | ------------------------------------------- |
 | Docker & Docker Compose | Containerization cho môi trường development |
-| GitHub Actions | CI/CD pipeline |
+| GitHub Actions          | CI/CD pipeline                              |
 
 ## 4. Kiến trúc hệ thống
 
@@ -111,23 +111,24 @@ snap-chef/
 
 Backend đã được phát triển tương đối đầy đủ với **13 modules**:
 
-| Module | Trạng thái | Unit Test | Mô tả |
-|---|---|---|---|
-| `admin` | ✅ Hoàn thành | ❌ | Quản trị hệ thống |
-| `auth` | ✅ Hoàn thành | ✅ | Xác thực JWT, Local, Google OAuth |
-| `categories` | ✅ Hoàn thành | ✅ (controller + service) | CRUD danh mục |
-| `collections` | ✅ Hoàn thành | ✅ | Bộ sưu tập công thức |
-| `comments` | ✅ Hoàn thành | ✅ | Bình luận kèm đánh giá |
-| `feed` | ✅ Hoàn thành | ✅ (controller + service) | News feed |
-| `ingredients` | ✅ Hoàn thành | ✅ | Quản lý nguyên liệu |
-| `mail` | ✅ Hoàn thành | ❌ | Email (reset password, verify) |
-| `notifications` | ✅ Hoàn thành | ✅ | Thông báo real-time (WebSocket) |
-| `oauth-accounts` | ✅ Hoàn thành | ❌ | Liên kết tài khoản OAuth |
-| `recipes` | ✅ Hoàn thành | ✅ | CRUD công thức nấu ăn |
-| `reports` | ✅ Hoàn thành | ✅ (controller + service) | Báo cáo vi phạm |
-| `users` | ✅ Hoàn thành | ✅ | Quản lý người dùng, block, follow |
+| Module           | Trạng thái    | Unit Test                 | Mô tả                             |
+| ---------------- | ------------- | ------------------------- | --------------------------------- |
+| `admin`          | ✅ Hoàn thành | ❌                        | Quản trị hệ thống                 |
+| `auth`           | ✅ Hoàn thành | ✅                        | Xác thực JWT, Local, Google OAuth |
+| `categories`     | ✅ Hoàn thành | ✅ (controller + service) | CRUD danh mục                     |
+| `collections`    | ✅ Hoàn thành | ✅                        | Bộ sưu tập công thức              |
+| `comments`       | ✅ Hoàn thành | ✅                        | Bình luận kèm đánh giá            |
+| `feed`           | ✅ Hoàn thành | ✅ (controller + service) | News feed                         |
+| `ingredients`    | ✅ Hoàn thành | ✅                        | Quản lý nguyên liệu               |
+| `mail`           | ✅ Hoàn thành | ❌                        | Email (reset password, verify)    |
+| `notifications`  | ✅ Hoàn thành | ✅                        | Thông báo real-time (WebSocket)   |
+| `oauth-accounts` | ✅ Hoàn thành | ❌                        | Liên kết tài khoản OAuth          |
+| `recipes`        | ✅ Hoàn thành | ✅                        | CRUD công thức nấu ăn             |
+| `reports`        | ✅ Hoàn thành | ✅ (controller + service) | Báo cáo vi phạm                   |
+| `users`          | ✅ Hoàn thành | ✅                        | Quản lý người dùng, block, follow |
 
 **Tính năng đã hoàn thiện:**
+
 - Swagger API documentation đã được tích hợp và ghi chú cho các endpoint
 - Email templates (Handlebars): `reset-password.hbs`, `email-verify.hbs`
 - 13 unit test files cho các service/controller
@@ -139,17 +140,17 @@ Frontend được xây dựng bởi thành viên trước, hiện **không còn 
 
 #### Đã có:
 
-| Thành phần | Số lượng | Chi tiết |
-|---|---|---|
-| **Pages** | 14 | HomePage (Redesigned with Stitch), AuthPage, CreateRecipePage, EditRecipePage, RecipeDetailPage, RecipesPage, DashboardPage, FavoritesPage, MyRecipesPage, SettingsPage, FollowListPage, UserSearchPage, ModerationPage, NotFound |
-| **Features** | 4 modules | `feed` (New: FeedHero, RecipeFeedCard, FeedSidebar, FeedFilterBar), `auth` (LoginForm, RegisterForm, useAuth), `recipes` (RecipeCard, RecipeList, RecipeListLoadMore, useRecipeActions), `moderation` (ApprovalQueue, useModeration) |
-| **Common Components** | 14 | BookmarkButton, CommentForm, ErrorState, FollowButton, FollowersFollowingModal, GlobalSearch, Loading, RatingDisplay, RecipeComments, SearchInput, ShareButton, StarRating, UserProfile, UserSearch |
-| **Layout Components** | 4 | Header, MainLayout, Sidebar, UserMenu |
-| **Services** | 5 | authService, recipeService, commentService, userService, cloudinaryService |
-| **Hooks** | 5 | useDebounce, useDocumentTitle, useRecipeLoadMore, useRecipeSearch, useUser |
-| **Core Libs** | 5 | axios (interceptors), api, store (Zustand), toast-store, utils |
-| **Context** | 2 | authContext, themeContext |
-| **Routing** | 3 files | AppRoutes, ProtectedRoute, RootRedirect |
+| Thành phần            | Số lượng  | Chi tiết                                                                                                                                                                                                                             |
+| --------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Pages**             | 14        | HomePage (Redesigned with Stitch), AuthPage, CreateRecipePage, EditRecipePage, RecipeDetailPage, RecipesPage, DashboardPage, FavoritesPage, MyRecipesPage, SettingsPage, FollowListPage, UserSearchPage, ModerationPage, NotFound    |
+| **Features**          | 4 modules | `feed` (New: FeedHero, RecipeFeedCard, FeedSidebar, FeedFilterBar), `auth` (LoginForm, RegisterForm, useAuth), `recipes` (RecipeCard, RecipeList, RecipeListLoadMore, useRecipeActions), `moderation` (ApprovalQueue, useModeration) |
+| **Common Components** | 14        | BookmarkButton, CommentForm, ErrorState, FollowButton, FollowersFollowingModal, GlobalSearch, Loading, RatingDisplay, RecipeComments, SearchInput, ShareButton, StarRating, UserProfile, UserSearch                                  |
+| **Layout Components** | 4         | Header, MainLayout, Sidebar, UserMenu                                                                                                                                                                                                |
+| **Services**          | 5         | authService, recipeService, commentService, userService, cloudinaryService                                                                                                                                                           |
+| **Hooks**             | 5         | useDebounce, useDocumentTitle, useRecipeLoadMore, useRecipeSearch, useUser                                                                                                                                                           |
+| **Core Libs**         | 5         | axios (interceptors), api, store (Zustand), toast-store, utils                                                                                                                                                                       |
+| **Context**           | 2         | authContext, themeContext                                                                                                                                                                                                            |
+| **Routing**           | 3 files   | AppRoutes, ProtectedRoute, RootRedirect                                                                                                                                                                                              |
 
 #### Vấn đề cần lưu ý:
 
@@ -162,6 +163,7 @@ Frontend được xây dựng bởi thành viên trước, hiện **không còn 
 #### Quyết định: Tiếp tục phát triển trên codebase hiện tại ✅
 
 **Lý do:**
+
 1. Tech stack đã rất hiện đại (React 19, Vite 7, TanStack Query, Zustand)
 2. Cấu trúc feature-based architecture hợp lý, dễ mở rộng
 3. Nền tảng cơ bản đã vững (auth flow, API client, routing, state management, i18n)
@@ -169,6 +171,7 @@ Frontend được xây dựng bởi thành viên trước, hiện **không còn 
 5. Viết lại từ đầu sẽ mất thời gian cho những thứ đã có mà không mang lại giá trị thêm
 
 **Chiến lược tiếp tục:**
+
 1. Refactor các pages lớn (25KB+) → tách thành smaller components
 2. Hoàn thiện features còn thiếu (notifications, collections, admin dashboard...)
 3. Cải thiện UI/UX design
@@ -178,27 +181,27 @@ Frontend được xây dựng bởi thành viên trước, hiện **không còn 
 
 **14 models** đã được định nghĩa trong Prisma với 6 enums:
 
-| Model | Mô tả |
-|---|---|
-| `User` | Người dùng (roles: USER, MODERATOR, ADMIN) |
-| `Block` | Chặn người dùng (many-to-many) |
-| `OauthAccount` | Liên kết OAuth (Google, Facebook) |
-| `Recipe` | Công thức (status: DRAFT, PUBLISHED, PENDING, REJECTED) |
-| `Ingredient` | Nguyên liệu |
-| `RecipeIngredient` | Nguyên liệu trong công thức (quantity, unit) |
-| `Step` | Bước thực hiện (ordered) |
-| `Like` | Thích công thức |
-| `Comment` | Bình luận kèm rating |
-| `Follow` | Theo dõi người dùng |
-| `Collection` | Bộ sưu tập (public/private) |
-| `Notification` | Thông báo (LIKE, COMMENT, FOLLOW, SYSTEM, REPORT) |
-| `Report` | Báo cáo vi phạm (SPAM, COPYRIGHT, FAKE_ACCOUNT...) |
-| `Category` | Danh mục công thức |
+| Model              | Mô tả                                                   |
+| ------------------ | ------------------------------------------------------- |
+| `User`             | Người dùng (roles: USER, MODERATOR, ADMIN)              |
+| `Block`            | Chặn người dùng (many-to-many)                          |
+| `OauthAccount`     | Liên kết OAuth (Google, Facebook)                       |
+| `Recipe`           | Công thức (status: DRAFT, PUBLISHED, PENDING, REJECTED) |
+| `Ingredient`       | Nguyên liệu                                             |
+| `RecipeIngredient` | Nguyên liệu trong công thức (quantity, unit)            |
+| `Step`             | Bước thực hiện (ordered)                                |
+| `Like`             | Thích công thức                                         |
+| `Comment`          | Bình luận kèm rating                                    |
+| `Follow`           | Theo dõi người dùng                                     |
+| `Collection`       | Bộ sưu tập (public/private)                             |
+| `Notification`     | Thông báo (LIKE, COMMENT, FOLLOW, SYSTEM, REPORT)       |
+| `Report`           | Báo cáo vi phạm (SPAM, COPYRIGHT, FAKE_ACCOUNT...)      |
+| `Category`         | Danh mục công thức                                      |
 
 ## 6. Lịch sử phiên bản
 
-| Version | Ngày cập nhật | Mô tả thay đổi |
-|---|---|---|
-| 1.0.0 | 2026-03-13 | Khởi tạo tài liệu bối cảnh dự án |
-| 1.1.0 | 2026-03-13 | Thêm tình hình hiện tại của dự án (backend, frontend, database) |
-| 1.2.0 | 2026-03-13 | Hoàn thành redesign Trang chủ (Home Feed) theo thiết kế Stitch |
+| Version | Ngày cập nhật | Mô tả thay đổi                                                  |
+| ------- | ------------- | --------------------------------------------------------------- |
+| 1.0.0   | 2026-03-13    | Khởi tạo tài liệu bối cảnh dự án                                |
+| 1.1.0   | 2026-03-13    | Thêm tình hình hiện tại của dự án (backend, frontend, database) |
+| 1.2.0   | 2026-03-13    | Hoàn thành redesign Trang chủ (Home Feed) theo thiết kế Stitch  |

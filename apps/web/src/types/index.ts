@@ -1,5 +1,5 @@
 // Global type definitions
-export type UserRole = 'guest' | 'user' | 'moderator';
+export type UserRole = "guest" | "user" | "moderator";
 
 export interface User {
   id: string;
@@ -35,11 +35,11 @@ export interface Recipe {
   cookTime: number;
   cookingTime: number; // Alias for cookTime
   servings: number;
-  difficulty?: 'easy' | 'medium' | 'hard';
+  difficulty?: "easy" | "medium" | "hard";
   ingredients: Ingredient[];
   instructions: Instruction[];
   tags?: string[];
-  status: 'draft' | 'pending' | 'published' | 'rejected' | 'approved';
+  status: "draft" | "pending" | "published" | "rejected" | "approved";
   featured?: boolean;
   averageRating?: number;
   rating: number;
@@ -121,7 +121,7 @@ export interface ModerationQueue {
   recipe: Recipe;
   submittedBy: string;
   submittedAt: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   moderatorNote?: string;
   moderatedBy?: string;
   moderatedAt?: string;
@@ -172,7 +172,7 @@ export interface UserProfile {
   id: string;
   email: string;
   username: string;
-  role: 'USER' | 'MODERATOR' | 'ADMIN';
+  role: "USER" | "MODERATOR" | "ADMIN";
   avatar_url: string;
   is_active: boolean;
   bio: string;
@@ -196,7 +196,7 @@ export interface UserSummary {
   username: string;
   avatar_url: string;
   is_following?: boolean; // Whether I am following this user
-  is_followed?: boolean;  // Whether this user is following me (for "Follow Back" logic)
+  is_followed?: boolean; // Whether this user is following me (for "Follow Back" logic)
 }
 
 export interface SearchUsersParams {

@@ -1,16 +1,19 @@
-import { useState, useEffect } from 'react';
-import { Clock, User, Eye, CheckCircle, XCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import Loading from '@/components/common/Loading';
-import ErrorState from '@/components/common/ErrorState';
-import { useModeration } from '../hooks/useModeration';
-import type { ModerationQueue } from '@/types';
+import { useState, useEffect } from "react";
+import { Clock, User, Eye, CheckCircle, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Loading from "@/components/common/Loading";
+import ErrorState from "@/components/common/ErrorState";
+import { useModeration } from "../hooks/useModeration";
+import type { ModerationQueue } from "@/types";
 
 export default function ApprovalQueue() {
-  const { fetchQueue, approveRecipe, rejectRecipe, isLoading, error } = useModeration();
+  const { fetchQueue, approveRecipe, rejectRecipe, isLoading, error } =
+    useModeration();
   const [queue, setQueue] = useState<ModerationQueue[]>([]);
-  const [selectedItem, setSelectedItem] = useState<ModerationQueue | null>(null);
-  const [rejectReason, setRejectReason] = useState('');
+  const [selectedItem, setSelectedItem] = useState<ModerationQueue | null>(
+    null,
+  );
+  const [rejectReason, setRejectReason] = useState("");
 
   useEffect(() => {
     loadQueue();
@@ -24,21 +27,21 @@ export default function ApprovalQueue() {
   const handleApprove = async (itemId: string) => {
     const success = await approveRecipe(itemId);
     if (success) {
-      setQueue(queue.filter(item => item.id !== itemId));
+      setQueue(queue.filter((item) => item.id !== itemId));
       setSelectedItem(null);
     }
   };
 
   const handleReject = async (itemId: string) => {
     if (!rejectReason.trim()) {
-      alert('Please provide a reason for rejection');
+      alert("Please provide a reason for rejection");
       return;
     }
     const success = await rejectRecipe(itemId, rejectReason);
     if (success) {
-      setQueue(queue.filter(item => item.id !== itemId));
+      setQueue(queue.filter((item) => item.id !== itemId));
       setSelectedItem(null);
-      setRejectReason('');
+      setRejectReason("");
     }
   };
 
@@ -74,7 +77,7 @@ export default function ApprovalQueue() {
                 key={item.id}
                 onClick={() => setSelectedItem(item)}
                 className={`bg-white rounded-lg shadow-sm p-4 cursor-pointer transition-all hover:shadow-md ${
-                  selectedItem?.id === item.id ? 'ring-2 ring-orange-500' : ''
+                  selectedItem?.id === item.id ? "ring-2 ring-orange-500" : ""
                 }`}
               >
                 <div className="flex items-start justify-between mb-2">
@@ -93,11 +96,13 @@ export default function ApprovalQueue() {
                 <div className="flex items-center gap-4 text-xs text-gray-500">
                   <div className="flex items-center gap-1">
                     <User size={14} />
-                    <span>{item.recipe.user?.name || 'Unknown'}</span>
+                    <span>{item.recipe.user?.name || "Unknown"}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Clock size={14} />
-                    <span>{new Date(item.submittedAt).toLocaleDateString()}</span>
+                    <span>
+                      {new Date(item.submittedAt).toLocaleDateString()}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -122,7 +127,9 @@ export default function ApprovalQueue() {
                   <div className="flex items-center gap-2">
                     <User size={16} className="text-gray-400" />
                     <span className="text-gray-600">Submitted by:</span>
-                    <span className="font-medium">{selectedItem.recipe.user?.name}</span>
+                    <span className="font-medium">
+                      {selectedItem.recipe.user?.name}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock size={16} className="text-gray-400" />
@@ -134,8 +141,12 @@ export default function ApprovalQueue() {
                 </div>
 
                 <div className="pt-4 border-t border-gray-200">
-                  <h4 className="font-semibold text-gray-900 mb-2">Description</h4>
-                  <p className="text-sm text-gray-600">{selectedItem.recipe.description}</p>
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    Description
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    {selectedItem.recipe.description}
+                  </p>
                 </div>
 
                 <div className="pt-4 border-t border-gray-200">
@@ -143,25 +154,33 @@ export default function ApprovalQueue() {
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
                       <span className="text-gray-600">Cuisine:</span>
-                      <span className="ml-2 font-medium">{selectedItem.recipe.cuisine || 'N/A'}</span>
+                      <span className="ml-2 font-medium">
+                        {selectedItem.recipe.cuisine || "N/A"}
+                      </span>
                     </div>
                     <div>
                       <span className="text-gray-600">Difficulty:</span>
-                      <span className="ml-2 font-medium">{selectedItem.recipe.difficulty || 'N/A'}</span>
+                      <span className="ml-2 font-medium">
+                        {selectedItem.recipe.difficulty || "N/A"}
+                      </span>
                     </div>
                     <div>
                       <span className="text-gray-600">Prep Time:</span>
-                      <span className="ml-2 font-medium">{selectedItem.recipe.prepTime} min</span>
+                      <span className="ml-2 font-medium">
+                        {selectedItem.recipe.prepTime} min
+                      </span>
                     </div>
                     <div>
                       <span className="text-gray-600">Cook Time:</span>
-                      <span className="ml-2 font-medium">{selectedItem.recipe.cookingTime} min</span>
+                      <span className="ml-2 font-medium">
+                        {selectedItem.recipe.cookingTime} min
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 <div className="pt-4 border-t border-gray-200 space-y-3">
-                  <Button 
+                  <Button
                     onClick={() => handleApprove(selectedItem.id)}
                     disabled={isLoading}
                     className="w-full bg-green-600 hover:bg-green-700"
@@ -178,7 +197,7 @@ export default function ApprovalQueue() {
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
                     />
-                    <Button 
+                    <Button
                       onClick={() => handleReject(selectedItem.id)}
                       disabled={isLoading || !rejectReason.trim()}
                       variant="outline"

@@ -1,5 +1,9 @@
-import { api } from '@/lib/axios';
-import type { Comment, CreateCommentPayload, UpdateCommentPayload } from '@/types';
+import { api } from "@/lib/axios";
+import type {
+  Comment,
+  CreateCommentPayload,
+  UpdateCommentPayload,
+} from "@/types";
 
 export const commentService = {
   /**
@@ -11,7 +15,7 @@ export const commentService = {
       const response = await api.get<any[]>(`/recipes/${recipeId}/comments`);
       return (response || []).map(normalizeComment);
     } catch (error) {
-      console.error('Error fetching comments:', error);
+      console.error("Error fetching comments:", error);
       return [];
     }
   },
@@ -24,16 +28,20 @@ export const commentService = {
    */
   createComment: async (
     recipeId: string,
-    payload: CreateCommentPayload
+    payload: CreateCommentPayload,
   ): Promise<{ message: string }> => {
     // Validate rating before sending
-    if (payload.rating < 0 || payload.rating > 5 || !Number.isInteger(payload.rating)) {
-      throw new Error('Rating must be an integer between 0 and 5');
+    if (
+      payload.rating < 0 ||
+      payload.rating > 5 ||
+      !Number.isInteger(payload.rating)
+    ) {
+      throw new Error("Rating must be an integer between 0 and 5");
     }
 
     const response = await api.post<{ message: string }>(
       `/recipes/${recipeId}/comments`,
-      payload
+      payload,
     );
     return response;
   },
@@ -45,18 +53,22 @@ export const commentService = {
   updateComment: async (
     recipeId: string,
     commentId: string,
-    payload: UpdateCommentPayload
+    payload: UpdateCommentPayload,
   ): Promise<Comment> => {
     // Validate rating if provided
     if (payload.rating !== undefined) {
-      if (payload.rating < 0 || payload.rating > 5 || !Number.isInteger(payload.rating)) {
-        throw new Error('Rating must be an integer between 0 and 5');
+      if (
+        payload.rating < 0 ||
+        payload.rating > 5 ||
+        !Number.isInteger(payload.rating)
+      ) {
+        throw new Error("Rating must be an integer between 0 and 5");
       }
     }
 
     const response = await api.patch<any>(
       `/recipes/${recipeId}/comments/${commentId}`,
-      payload
+      payload,
     );
     return normalizeComment(response);
   },
@@ -75,17 +87,17 @@ export const commentService = {
 // Helper function to normalize comment data from API
 function normalizeComment(data: any): Comment {
   return {
-    id: data.id?.toString() || data.comment_id?.toString() || '',
-    recipeId: data.recipe_id?.toString() || data.recipeId?.toString() || '',
-    userId: data.user_id?.toString() || data.userId?.toString() || '',
+    id: data.id?.toString() || data.comment_id?.toString() || "",
+    recipeId: data.recipe_id?.toString() || data.recipeId?.toString() || "",
+    userId: data.user_id?.toString() || data.userId?.toString() || "",
     user: data.user
       ? {
-          id: data.user.id?.toString() || '',
-          username: data.user.username || 'Anonymous',
+          id: data.user.id?.toString() || "",
+          username: data.user.username || "Anonymous",
           avatar: data.user.avatar,
         }
       : undefined,
-    content: data.content || '',
+    content: data.content || "",
     rating: data.rating || 0,
     createdAt: data.created_at || data.createdAt || new Date().toISOString(),
     updatedAt: data.updated_at || data.updatedAt || new Date().toISOString(),

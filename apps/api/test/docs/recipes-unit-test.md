@@ -34,20 +34,20 @@ src/modules/recipes/
 
 **Dependencies của RecipesService:**
 
-| Dependency | Vai trò |
-|---|---|
-| `PrismaService` | DB operations: recipe, step, ingredient, like, `$transaction` |
-| `IngredientsService` | `upsertByName()` — tạo hoặc lấy ingredient theo tên |
-| `UsersService` | `findOne()` — xác nhận user tồn tại |
-| `RedisService` | Cache từng recipe theo `recipe:{id}` với TTL 10 phút |
-| `NotificationService` | Gửi notification LIKE khi user like recipe |
+| Dependency            | Vai trò                                                       |
+| --------------------- | ------------------------------------------------------------- |
+| `PrismaService`       | DB operations: recipe, step, ingredient, like, `$transaction` |
+| `IngredientsService`  | `upsertByName()` — tạo hoặc lấy ingredient theo tên           |
+| `UsersService`        | `findOne()` — xác nhận user tồn tại                           |
+| `RedisService`        | Cache từng recipe theo `recipe:{id}` với TTL 10 phút          |
+| `NotificationService` | Gửi notification LIKE khi user like recipe                    |
 
 **Enums liên quan:**
 
-| Enum | Giá trị |
-|---|---|
-| `RecipeStatus` | `DRAFT`, `PUBLISHED` |
-| `NotificationType` | `LIKE`, `COMMENT`, `FOLLOW` |
+| Enum                       | Giá trị                     |
+| -------------------------- | --------------------------- |
+| `RecipeStatus`             | `DRAFT`, `PUBLISHED`        |
+| `NotificationType`         | `LIKE`, `COMMENT`, `FOLLOW` |
 | `NotificationResourceType` | `RECIPE`, `USER`, `COMMENT` |
 
 ---
@@ -55,27 +55,35 @@ src/modules/recipes/
 ## 2. Dữ liệu mock dùng chung
 
 ```typescript
-const mockAuthor     = { id: 'author-uuid-1', username: 'author', email: 'author@example.com' };
-const mockUser       = { id: 'user-uuid-1', username: 'testuser', email: 'test@example.com' };
+const mockAuthor = {
+  id: 'author-uuid-1',
+  username: 'author',
+  email: 'author@example.com',
+};
+const mockUser = {
+  id: 'user-uuid-1',
+  username: 'testuser',
+  email: 'test@example.com',
+};
 const mockCategories = [
   { name: 'Italian', slug: 'italian' },
-  { name: 'Pasta',   slug: 'pasta' },
+  { name: 'Pasta', slug: 'pasta' },
 ];
 
 const mockRecipe = {
-  id:            'recipe-uuid-1',
-  title:         'Test Recipe',
-  description:   'A delicious test recipe',
-  author_id:     'author-uuid-1',
-  cooking_time:  30,
-  servings:      4,
+  id: 'recipe-uuid-1',
+  title: 'Test Recipe',
+  description: 'A delicious test recipe',
+  author_id: 'author-uuid-1',
+  cooking_time: 30,
+  servings: 4,
   thumbnail_url: 'https://example.com/thumb.jpg',
-  status:        RecipeStatus.DRAFT,
-  deleted_at:    null,
-  steps:         [{ order_index: 1, content: 'Step 1', image_url: null }],
-  user:          { username: 'author', avatar_url: null },
-  ingredients:   [],
-  categories:    mockCategories,
+  status: RecipeStatus.DRAFT,
+  deleted_at: null,
+  steps: [{ order_index: 1, content: 'Step 1', image_url: null }],
+  user: { username: 'author', avatar_url: null },
+  ingredients: [],
+  categories: mockCategories,
 };
 
 // Dùng cho findAll() và getUserRecipes()
@@ -136,9 +144,9 @@ File: `src/modules/recipes/recipes.service.spec.ts` — **34 test cases**
 
 ### 5.1 `initialization`
 
-| # | Test case | Mô tả |
-|---|---|---|
-| 1 | `should be defined` | NestJS inject đủ dependencies và khởi tạo service thành công |
+| #   | Test case           | Mô tả                                                        |
+| --- | ------------------- | ------------------------------------------------------------ |
+| 1   | `should be defined` | NestJS inject đủ dependencies và khởi tạo service thành công |
 
 ---
 
@@ -147,6 +155,7 @@ File: `src/modules/recipes/recipes.service.spec.ts` — **34 test cases**
 Tạo recipe mới bên trong một Prisma transaction. Gồm 3 bước: validate categories → tạo recipe (kèm connect categories) + steps, upsert từng ingredient, tạo RecipeIngredient.
 
 **Luồng:**
+
 ```
 1. usersService.findOne(user_id)          → kiểm tra user tồn tại
 2. checkValidCategories(dto.category_slugs)
@@ -165,18 +174,18 @@ Tạo recipe mới bên trong một Prisma transaction. Gồm 3 bước: validat
 
 **`validateOrderIndices()` và `checkValidCategories()` — private methods, được test gián tiếp qua `create()`:**
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 2 | `should create a recipe with steps and ingredients in a transaction` | Happy path | Tất cả hợp lệ → `$transaction` và `recipe.create` được gọi, trả về `{ recipe: { ...recipe, categories }, ingredients }` |
-| 3 | `should connect categories and include them in the response` | Happy path | `recipe.create` được gọi với `categories: { connect }` và `include: { categories: { select: { name, slug } } }` |
-| 4 | `should handle create without category_slugs` | Edge case | Không truyền `category_slugs` → `categories: { connect: undefined }`, `checkValidCategories` skip |
-| 5 | `should throw BadRequestException if category_slugs are duplicated` | Validation | Gửi `['italian', 'italian']` → throw `DUPLICATE_CATEGORIES`, `recipe.create` **không** được gọi |
-| 6 | `should throw BadRequestException if category_slugs do not exist in DB` | Validation | DB chỉ có `italian`, gửi `['italian', 'non-existent']` → throw `BadRequestException` |
-| 7 | `should throw BadRequestException if user does not exist` | Error path | `usersService.findOne` trả về `null` → throw `USER_NOT_FOUND`, `$transaction` **không** được gọi |
-| 8 | `should throw BadRequestException if steps array is empty` | Validation | Không có step nào → throw `AT_LEAST_ONE_STEP` |
-| 9 | `should throw BadRequestException if order_index does not start from 1` | Validation | Step đầu tiên có `order_index = 2` → throw `ORDER_INDEX_START_FROM_1` |
-| 10 | `should throw BadRequestException if order indices are duplicated` | Validation | Hai step cùng `order_index = 1` → throw `DUPLICATE_ORDER_INDEX` |
-| 11 | `should throw BadRequestException if order indices are not continuous` | Validation | Steps có index `[1, 3]` (bỏ qua 2) → throw `ORDER_INDEX_CONTINUOUS` |
+| #   | Test case                                                               | Loại       | Mô tả                                                                                                                   |
+| --- | ----------------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------- |
+| 2   | `should create a recipe with steps and ingredients in a transaction`    | Happy path | Tất cả hợp lệ → `$transaction` và `recipe.create` được gọi, trả về `{ recipe: { ...recipe, categories }, ingredients }` |
+| 3   | `should connect categories and include them in the response`            | Happy path | `recipe.create` được gọi với `categories: { connect }` và `include: { categories: { select: { name, slug } } }`         |
+| 4   | `should handle create without category_slugs`                           | Edge case  | Không truyền `category_slugs` → `categories: { connect: undefined }`, `checkValidCategories` skip                       |
+| 5   | `should throw BadRequestException if category_slugs are duplicated`     | Validation | Gửi `['italian', 'italian']` → throw `DUPLICATE_CATEGORIES`, `recipe.create` **không** được gọi                         |
+| 6   | `should throw BadRequestException if category_slugs do not exist in DB` | Validation | DB chỉ có `italian`, gửi `['italian', 'non-existent']` → throw `BadRequestException`                                    |
+| 7   | `should throw BadRequestException if user does not exist`               | Error path | `usersService.findOne` trả về `null` → throw `USER_NOT_FOUND`, `$transaction` **không** được gọi                        |
+| 8   | `should throw BadRequestException if steps array is empty`              | Validation | Không có step nào → throw `AT_LEAST_ONE_STEP`                                                                           |
+| 9   | `should throw BadRequestException if order_index does not start from 1` | Validation | Step đầu tiên có `order_index = 2` → throw `ORDER_INDEX_START_FROM_1`                                                   |
+| 10  | `should throw BadRequestException if order indices are duplicated`      | Validation | Hai step cùng `order_index = 1` → throw `DUPLICATE_ORDER_INDEX`                                                         |
+| 11  | `should throw BadRequestException if order indices are not continuous`  | Validation | Steps có index `[1, 3]` (bỏ qua 2) → throw `ORDER_INDEX_CONTINUOUS`                                                     |
 
 ---
 
@@ -184,14 +193,14 @@ Tạo recipe mới bên trong một Prisma transaction. Gồm 3 bước: validat
 
 Lấy danh sách recipe với pagination và search. Map `_count` thành các count field riêng.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 12 | `should return mapped recipes with counts` | Happy path | `_count` bị xóa, thay bằng `comments_count: 5` và `likes_count: 10` |
-| 13 | `should apply correct skip and take for pagination` | Happy path | `page:3, limit:5` → `skip: 10, take: 5` được truyền vào Prisma |
-| 14 | `should include search filter in where condition` | Happy path | `search: 'pasta'` → `where.OR[0]` chứa `title: { contains: 'pasta', mode: 'insensitive' }` |
-| 15 | `should include category filter in where condition` | Happy path | `category_slugs: ['italian', 'pasta']` → `where.categories.some.slug.in` được set |
-| 16 | `should return empty array when no recipes exist` | Edge case | Prisma trả về `[]` → service trả về `[]` |
-| 17 | `should exclude recipes from blocked users if current_user_id is provided` | Happy path | Filter các công thức từ user bị block qua `author_id: { notIn: blockedIds }` |
+| #   | Test case                                                                  | Loại       | Mô tả                                                                                      |
+| --- | -------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------ |
+| 12  | `should return mapped recipes with counts`                                 | Happy path | `_count` bị xóa, thay bằng `comments_count: 5` và `likes_count: 10`                        |
+| 13  | `should apply correct skip and take for pagination`                        | Happy path | `page:3, limit:5` → `skip: 10, take: 5` được truyền vào Prisma                             |
+| 14  | `should include search filter in where condition`                          | Happy path | `search: 'pasta'` → `where.OR[0]` chứa `title: { contains: 'pasta', mode: 'insensitive' }` |
+| 15  | `should include category filter in where condition`                        | Happy path | `category_slugs: ['italian', 'pasta']` → `where.categories.some.slug.in` được set          |
+| 16  | `should return empty array when no recipes exist`                          | Edge case  | Prisma trả về `[]` → service trả về `[]`                                                   |
+| 17  | `should exclude recipes from blocked users if current_user_id is provided` | Happy path | Filter các công thức từ user bị block qua `author_id: { notIn: blockedIds }`               |
 
 ---
 
@@ -200,6 +209,7 @@ Lấy danh sách recipe với pagination và search. Map `_count` thành các co
 Lấy chi tiết một recipe theo ID. Dùng Redis cache. Kèm trường `is_liked` nếu có `user_id`.
 
 **Cơ chế cache:**
+
 ```
 Redis.getCache('recipe:{id}')
   ├── HIT  → dùng cache, bỏ qua DB
@@ -210,13 +220,13 @@ Redis.getCache('recipe:{id}')
 → trả về { ...recipeData, is_liked }
 ```
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 18 | `should return cached recipe without hitting the database` | Cache hit | Redis có data → `prisma.recipe.findUnique` **không** được gọi |
-| 19 | `should fetch from DB and cache when cache is empty` | Cache miss | Redis `null` → query DB → `redis.setCache` với key `recipe:{id}`, TTL 10 |
-| 20 | `should throw NotFoundException if recipe is not found` | Error path | Cache miss + DB `null` → throw `RECIPE_NOT_FOUND` |
-| 21 | `should include is_liked=true if user has liked the recipe` | Happy path | `like.findUnique` trả về record → `is_liked: true` |
-| 22 | `should throw NotFoundException if author is blocked` | Error path | Tác giả công thức bị block bởi user hiện hành → throw `RECIPE_NOT_FOUND` |
+| #   | Test case                                                   | Loại       | Mô tả                                                                    |
+| --- | ----------------------------------------------------------- | ---------- | ------------------------------------------------------------------------ |
+| 18  | `should return cached recipe without hitting the database`  | Cache hit  | Redis có data → `prisma.recipe.findUnique` **không** được gọi            |
+| 19  | `should fetch from DB and cache when cache is empty`        | Cache miss | Redis `null` → query DB → `redis.setCache` với key `recipe:{id}`, TTL 10 |
+| 20  | `should throw NotFoundException if recipe is not found`     | Error path | Cache miss + DB `null` → throw `RECIPE_NOT_FOUND`                        |
+| 21  | `should include is_liked=true if user has liked the recipe` | Happy path | `like.findUnique` trả về record → `is_liked: true`                       |
+| 22  | `should throw NotFoundException if author is blocked`       | Error path | Tác giả công thức bị block bởi user hiện hành → throw `RECIPE_NOT_FOUND` |
 
 ---
 
@@ -225,6 +235,7 @@ Redis.getCache('recipe:{id}')
 Cập nhật recipe bên trong Prisma transaction. Kiểm tra quyền author. Hỗ trợ cập nhật ingredients, steps, và categories.
 
 **Luồng:**
+
 ```
 1. findOne(id)                → lấy recipe (qua cache), kiểm tra tồn tại
 2. kiểm tra author_id === user_id
@@ -238,14 +249,14 @@ Cập nhật recipe bên trong Prisma transaction. Kiểm tra quyền author. H�
    d. recipe.findUnique({ include: { ingredients, steps, categories } })
 ```
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 23 | `should update scalar fields and return updated recipe` | Happy path | Chỉ cập nhật `title` → cache bị xóa, `recipe.update` được gọi, trả về recipe mới |
-| 24 | `should replace all ingredients when provided` | Happy path | `recipeIngredient.deleteMany` xóa hết cũ → `upsertByName` + tạo mới từng ingredient |
-| 25 | `should replace all steps when provided` | Happy path | `step.deleteMany` xóa hết cũ → `step.createMany` tạo mới tất cả |
-| 26 | `should update categories when category_slugs are provided` | Happy path | `category.findMany` validate slugs → `recipe.update` với `categories: { set: [{ slug }] }` |
-| 27 | `should throw NotFoundException if recipe does not exist` | Error path | Cache miss + DB `null` → throw `RECIPE_NOT_FOUND` |
-| 28 | `should throw UnauthorizedException if user is not the author` | Error path | `recipe.author_id !== user_id` → throw `NO_PERMISSION` |
+| #   | Test case                                                      | Loại       | Mô tả                                                                                      |
+| --- | -------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------ |
+| 23  | `should update scalar fields and return updated recipe`        | Happy path | Chỉ cập nhật `title` → cache bị xóa, `recipe.update` được gọi, trả về recipe mới           |
+| 24  | `should replace all ingredients when provided`                 | Happy path | `recipeIngredient.deleteMany` xóa hết cũ → `upsertByName` + tạo mới từng ingredient        |
+| 25  | `should replace all steps when provided`                       | Happy path | `step.deleteMany` xóa hết cũ → `step.createMany` tạo mới tất cả                            |
+| 26  | `should update categories when category_slugs are provided`    | Happy path | `category.findMany` validate slugs → `recipe.update` với `categories: { set: [{ slug }] }` |
+| 27  | `should throw NotFoundException if recipe does not exist`      | Error path | Cache miss + DB `null` → throw `RECIPE_NOT_FOUND`                                          |
+| 28  | `should throw UnauthorizedException if user is not the author` | Error path | `recipe.author_id !== user_id` → throw `NO_PERMISSION`                                     |
 
 ---
 
@@ -254,6 +265,7 @@ Cập nhật recipe bên trong Prisma transaction. Kiểm tra quyền author. H�
 Toggle like / unlike recipe. Gửi notification LIKE đến author khi like. Không gửi khi unlike.
 
 **Logic toggle:**
+
 ```
 checkUserLiked(user_id, recipe_id)
   ├── đã like → like.delete() → return { is_liked: false }  (không gửi notification)
@@ -264,15 +276,15 @@ checkUserLiked(user_id, recipe_id)
 
 **Bảo vệ:** User không thể like recipe của chính mình.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 29 | `should create like and return is_liked=true` | Happy path | Chưa like → `like.create` được gọi 1 lần → `{ is_liked: true }` |
-| 30 | `should send LIKE notification to recipe author` | Happy path | `notificationService.createNotification` được gọi với `type: LIKE`, `receiverId: author_id`, `senderId: user_id`, `resourceType: RECIPE` |
-| 31 | `should throw NotFoundException if users have blocked each other` | Error path | Hai users block nhau → throw `RECIPE_NOT_FOUND` |
-| 32 | `should delete like and return is_liked=false (unlike)` | Happy path | Đã like → `like.delete` được gọi → `{ is_liked: false }`, notification **không** được gửi |
-| 33 | `should throw BadRequestException if user does not exist` | Error path | `usersService.findOne` trả về `null` → throw `USER_NOT_FOUND` |
-| 34 | `should throw NotFoundException if recipe does not exist` | Error path | `recipe.findUnique` trả về `null` → throw `RECIPE_NOT_FOUND` |
-| 35 | `should throw BadRequestException if user tries to like their own recipe` | Error path | `recipe.author_id === user_id` → throw `CANNOT_LIKE_OWN_RECIPE` |
+| #   | Test case                                                                 | Loại       | Mô tả                                                                                                                                    |
+| --- | ------------------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| 29  | `should create like and return is_liked=true`                             | Happy path | Chưa like → `like.create` được gọi 1 lần → `{ is_liked: true }`                                                                          |
+| 30  | `should send LIKE notification to recipe author`                          | Happy path | `notificationService.createNotification` được gọi với `type: LIKE`, `receiverId: author_id`, `senderId: user_id`, `resourceType: RECIPE` |
+| 31  | `should throw NotFoundException if users have blocked each other`         | Error path | Hai users block nhau → throw `RECIPE_NOT_FOUND`                                                                                          |
+| 32  | `should delete like and return is_liked=false (unlike)`                   | Happy path | Đã like → `like.delete` được gọi → `{ is_liked: false }`, notification **không** được gửi                                                |
+| 33  | `should throw BadRequestException if user does not exist`                 | Error path | `usersService.findOne` trả về `null` → throw `USER_NOT_FOUND`                                                                            |
+| 34  | `should throw NotFoundException if recipe does not exist`                 | Error path | `recipe.findUnique` trả về `null` → throw `RECIPE_NOT_FOUND`                                                                             |
+| 35  | `should throw BadRequestException if user tries to like their own recipe` | Error path | `recipe.author_id === user_id` → throw `CANNOT_LIKE_OWN_RECIPE`                                                                          |
 
 ---
 
@@ -280,10 +292,10 @@ checkUserLiked(user_id, recipe_id)
 
 Lấy tất cả recipe của một user, kèm like/comment count.
 
-| # | Test case | Loại | Mô tả |
-|---|---|---|---|
-| 36 | `should return all recipes for a user with mapped counts` | Happy path | `_count` được map thành `comments_count` và `likes_count`. `where: { author_id }` đúng |
-| 37 | `should return empty array if user has no recipes` | Edge case | Prisma trả về `[]` → service trả về `[]` |
+| #   | Test case                                                 | Loại       | Mô tả                                                                                  |
+| --- | --------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------- |
+| 36  | `should return all recipes for a user with mapped counts` | Happy path | `_count` được map thành `comments_count` và `likes_count`. `where: { author_id }` đúng |
+| 37  | `should return empty array if user has no recipes`        | Edge case  | Prisma trả về `[]` → service trả về `[]`                                               |
 
 ---
 
@@ -312,7 +324,10 @@ pnpm run test --testPathPattern="recipes.service" --coverage \
 it('should soft delete recipe by setting deleted_at', async () => {
   mockRedisService.getCache.mockResolvedValue(recipeData); // author_id match
   mockPrismaService.like.findUnique.mockResolvedValue(null);
-  mockPrismaService.recipe.update.mockResolvedValue({ ...mockRecipe, deleted_at: new Date() });
+  mockPrismaService.recipe.update.mockResolvedValue({
+    ...mockRecipe,
+    deleted_at: new Date(),
+  });
 
   const result = await service.delete(mockRecipe.id, mockAuthor.id);
 
@@ -320,7 +335,9 @@ it('should soft delete recipe by setting deleted_at', async () => {
     where: { id: mockRecipe.id },
     data: { deleted_at: expect.any(Date) },
   });
-  expect(mockRedisService.delCache).toHaveBeenCalledWith(`recipe:${mockRecipe.id}`);
+  expect(mockRedisService.delCache).toHaveBeenCalledWith(
+    `recipe:${mockRecipe.id}`,
+  );
 });
 ```
 
@@ -329,9 +346,13 @@ it('should soft delete recipe by setting deleted_at', async () => {
 ```typescript
 it('should rollback transaction if ingredient upsert fails', async () => {
   mockUsersService.findOne.mockResolvedValue(mockAuthor);
-  mockIngredientsService.upsertByName.mockRejectedValue(new Error('DB constraint'));
+  mockIngredientsService.upsertByName.mockRejectedValue(
+    new Error('DB constraint'),
+  );
 
-  await expect(service.create(mockAuthor.id, validDto)).rejects.toThrow('DB constraint');
+  await expect(service.create(mockAuthor.id, validDto)).rejects.toThrow(
+    'DB constraint',
+  );
   // Toàn bộ transaction được rollback bởi Prisma
 });
 ```
@@ -341,7 +362,10 @@ it('should rollback transaction if ingredient upsert fails', async () => {
 ```typescript
 it('should safely sanitize user fields from potentially malformed cache', async () => {
   // Cache có thêm field nhạy cảm (giả sử cache bị write sai)
-  const corruptedCache = { ...recipeData, user: { username: 'x', avatar_url: null, email: 'secret' } };
+  const corruptedCache = {
+    ...recipeData,
+    user: { username: 'x', avatar_url: null, email: 'secret' },
+  };
   mockRedisService.getCache.mockResolvedValue(corruptedCache);
   mockPrismaService.like.findUnique.mockResolvedValue(null);
 
@@ -355,4 +379,4 @@ it('should safely sanitize user fields from potentially malformed cache', async 
 
 ---
 
-*Tài liệu cập nhật lần cuối: **2026-03-05**. Cập nhật khi thêm hoặc thay đổi test case.*
+_Tài liệu cập nhật lần cuối: **2026-03-05**. Cập nhật khi thêm hoặc thay đổi test case._

@@ -1,12 +1,11 @@
-import axios from 'axios';
-
+import axios from "axios";
 
 // Create axios instance for REST API
 export const api = axios.create({
   // Đảm bảo biến môi trường này đã có trong file .env (trỏ về Render)
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api",
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -14,13 +13,13 @@ export const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     // Lưu ý: Kiểm tra xem bạn lưu là 'auth_token' hay 'accessToken' để sửa cho khớp
-    const token = localStorage.getItem('accessToken'); 
+    const token = localStorage.getItem("accessToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response interceptor for error handling
@@ -29,11 +28,11 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Clear auth state and redirect to signin
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('user');
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
       // Dùng window.location là cách an toàn nhất để reset app
-      window.location.href = '/auth/signin';
+      window.location.href = "/auth/signin";
     }
     return Promise.reject(error);
-  }
+  },
 );

@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import { UserPlus, UserMinus } from 'lucide-react';
-import { followUser, unfollowUser } from '@/services/userService';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/context/authContext';
+import { useState } from "react";
+import { UserPlus, UserMinus } from "lucide-react";
+import { followUser, unfollowUser } from "@/services/userService";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/authContext";
 
 interface FollowButtonProps {
   userId: string;
   initialIsFollowed?: boolean;
   onFollowChange?: (isFollowed: boolean) => void;
-  size?: 'sm' | 'default' | 'lg';
+  size?: "sm" | "default" | "lg";
   showIcon?: boolean;
   className?: string;
 }
@@ -17,9 +17,9 @@ export default function FollowButton({
   userId,
   initialIsFollowed = false,
   onFollowChange,
-  size = 'default',
+  size = "default",
   showIcon = true,
-  className = '',
+  className = "",
 }: FollowButtonProps) {
   const { user } = useAuth();
   const [isFollowed, setIsFollowed] = useState(initialIsFollowed);
@@ -28,7 +28,7 @@ export default function FollowButton({
   const handleToggleFollow = async () => {
     if (!user) {
       // Redirect to login if not authenticated
-      window.location.href = '/auth/signin';
+      window.location.href = "/auth/signin";
       return;
     }
 
@@ -49,7 +49,7 @@ export default function FollowButton({
         onFollowChange(!previousState);
       }
     } catch (err) {
-      console.error('Error toggling follow:', err);
+      console.error("Error toggling follow:", err);
       // Revert optimistic update on error
       setIsFollowed(previousState);
     } finally {
@@ -65,13 +65,13 @@ export default function FollowButton({
   return (
     <Button
       size={size}
-      variant={isFollowed ? 'outline' : 'default'}
+      variant={isFollowed ? "outline" : "default"}
       onClick={handleToggleFollow}
       disabled={isLoading}
       className={className}
     >
       {isLoading ? (
-        'Loading...'
+        "Loading..."
       ) : isFollowed ? (
         <>
           {showIcon && <UserMinus className="h-4 w-4 mr-1" />}

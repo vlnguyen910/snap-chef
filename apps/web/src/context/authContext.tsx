@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { api } from '../lib/axios';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { api } from "../lib/axios";
 
 // QUẢN LÝ TRẠNG THÁI ĐĂNG NHẬP CHO WEB
 
@@ -24,11 +24,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // 1. Khi App vừa chạy, kiểm tra xem có Token cũ không
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem("authToken");
     if (token) {
       // Ở dự án thật: Gọi API /me để lấy info user từ token
       // Ở đây (Mock): Mình giả bộ set user luôn để UI hiển thị
-      setUser({ id: '1', name: 'User Test', email: 'test@example.com' });
+      setUser({ id: "1", name: "User Test", email: "test@example.com" });
     }
     setIsLoading(false);
   }, []);
@@ -37,13 +37,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (email: string, pass: string) => {
     try {
       // Gọi API Login (Mock)
-      const res: any = await api.post('/auth/login', { email, pass });
-      
+      const res: any = await api.post("/auth/login", { email, pass });
+
       // Lưu token và User Info
       if (res.accessToken) {
-        localStorage.setItem('authToken', res.accessToken);
+        localStorage.setItem("authToken", res.accessToken);
         // Cập nhật State -> Header sẽ tự đổi ngay lập tức
-        setUser(res.user || { id: '99', name: 'Raven', email: email }); 
+        setUser(res.user || { id: "99", name: "Raven", email: email });
         return true;
       }
       return false;
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // 3. Hàm Logout
   const logout = () => {
-    localStorage.removeItem('authToken');
+    localStorage.removeItem("authToken");
     setUser(null); // Xóa state -> Header tự đổi lại thành nút Login
   };
 

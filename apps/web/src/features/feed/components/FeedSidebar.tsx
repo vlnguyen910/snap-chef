@@ -1,6 +1,13 @@
-import { Link } from 'react-router-dom';
-import { Home, Compass, Bookmark, History, TrendingUp, UserPlus } from 'lucide-react';
-import type { TrendingCategory, TopChef } from '../data/mockData';
+import { Link } from "react-router-dom";
+import {
+  Home,
+  Compass,
+  Bookmark,
+  History,
+  TrendingUp,
+  UserPlus,
+} from "lucide-react";
+import type { TrendingCategory, TopChef } from "../data/mockData";
 
 interface FeedSidebarProps {
   categories: Readonly<TrendingCategory[]>;
@@ -8,13 +15,16 @@ interface FeedSidebarProps {
 }
 
 const NAV_ITEMS = [
-  { icon: Home, label: 'Feed', to: '/', active: true },
-  { icon: Compass, label: 'Explore', to: '/recipes', active: false },
-  { icon: Bookmark, label: 'Saved Recipes', to: '/favorites', active: false },
-  { icon: History, label: 'Cooked', to: '/dashboard', active: false },
+  { icon: Home, label: "Feed", to: "/", active: true },
+  { icon: Compass, label: "Explore", to: "/recipes", active: false },
+  { icon: Bookmark, label: "Saved Recipes", to: "/favorites", active: false },
+  { icon: History, label: "Cooked", to: "/dashboard", active: false },
 ];
 
-export default function FeedSidebar({ categories, topChefs }: Readonly<FeedSidebarProps>) {
+export default function FeedSidebar({
+  categories,
+  topChefs,
+}: Readonly<FeedSidebarProps>) {
   return (
     <aside className="hidden lg:flex flex-col gap-8 w-64 shrink-0">
       {/* Navigation */}
@@ -25,8 +35,8 @@ export default function FeedSidebar({ categories, topChefs }: Readonly<FeedSideb
             to={to}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-colors ${
               active
-                ? 'bg-primary text-white'
-                : 'hover:bg-primary/10 text-slate-600 dark:text-slate-400'
+                ? "bg-primary text-white"
+                : "hover:bg-primary/10 text-slate-600 dark:text-slate-400"
             }`}
           >
             <Icon size={20} />
@@ -70,7 +80,9 @@ export default function FeedSidebar({ categories, topChefs }: Readonly<FeedSideb
               />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold truncate">{chef.name}</p>
-                <p className="text-xs text-slate-500">{chef.recipeCount} recipes</p>
+                <p className="text-xs text-slate-500">
+                  {chef.recipeCount} recipes
+                </p>
               </div>
               <button className="text-primary text-xs font-bold flex items-center gap-1 hover:opacity-75 transition-opacity">
                 <UserPlus size={14} />

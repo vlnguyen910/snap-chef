@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 
 type GoogleAuthButtonProps = {
   onClick: () => void | Promise<void>;
@@ -34,7 +34,7 @@ export default function GoogleAuthButton({
   onClick,
   disabled,
   loading,
-  label = 'Continue with Google',
+  label = "Continue with Google",
 }: GoogleAuthButtonProps) {
   return (
     <Button
@@ -46,7 +46,7 @@ export default function GoogleAuthButton({
       disabled={disabled || loading}
     >
       <GoogleIcon />
-      {loading ? 'Connecting...' : label}
+      {loading ? "Connecting..." : label}
     </Button>
   );
 }

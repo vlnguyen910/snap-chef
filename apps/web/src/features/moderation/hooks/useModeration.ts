@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { api } from '@/lib/axios';
-import type { ModerationQueue } from '@/types';
+import { useState } from "react";
+import { api } from "@/lib/axios";
+import type { ModerationQueue } from "@/types";
 
 export function useModeration() {
   const [isLoading, setIsLoading] = useState(false);
@@ -10,10 +10,14 @@ export function useModeration() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await api.get<{ data: ModerationQueue[] }>('/moderation/queue');
+      const response = await api.get<{ data: ModerationQueue[] }>(
+        "/moderation/queue",
+      );
       return response.data;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch moderation queue');
+      setError(
+        err.response?.data?.message || "Failed to fetch moderation queue",
+      );
       return null;
     } finally {
       setIsLoading(false);
@@ -27,21 +31,24 @@ export function useModeration() {
       await api.post(`/moderation/queue/${queueItemId}/approve`);
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to approve recipe');
+      setError(err.response?.data?.message || "Failed to approve recipe");
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const rejectRecipe = async (queueItemId: string, reason: string): Promise<boolean> => {
+  const rejectRecipe = async (
+    queueItemId: string,
+    reason: string,
+  ): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
     try {
       await api.post(`/moderation/queue/${queueItemId}/reject`, { reason });
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to reject recipe');
+      setError(err.response?.data?.message || "Failed to reject recipe");
       return false;
     } finally {
       setIsLoading(false);
@@ -52,10 +59,10 @@ export function useModeration() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await api.get('/moderation/stats');
+      const response = await api.get("/moderation/stats");
       return response.data;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch stats');
+      setError(err.response?.data?.message || "Failed to fetch stats");
       return null;
     } finally {
       setIsLoading(false);
