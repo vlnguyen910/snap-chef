@@ -3,9 +3,12 @@ export interface RecipeFeedItem {
   id: string;
   title: string;
   image: string;
+  createdAt?: string;
   cookTime: string;
   rating: number;
   ratingCount: string;
+  likesCount?: number;
+  commentsCount?: number;
   difficulty: "Beginner" | "Intermediate" | "Pro";
   author: string;
   authorAvatar: string;

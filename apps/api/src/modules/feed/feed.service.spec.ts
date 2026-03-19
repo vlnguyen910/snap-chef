@@ -7,6 +7,23 @@ describe('FeedService', () => {
   let service: FeedService;
   let prismaService: PrismaService;
 
+  const makeRecipe = (id: string) => ({
+    id,
+    title: `Recipe ${id}`,
+    cooking_time: 20,
+    thumbnail_url: 'https://example.com/recipe.jpg',
+    created_at: new Date('2026-03-19T00:00:00.000Z'),
+    user: {
+      id: 'user-1',
+      username: 'chef',
+      avatar_url: null,
+    },
+    _count: {
+      likes: 5,
+      comments: 2,
+    },
+  });
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -16,6 +33,10 @@ describe('FeedService', () => {
           useValue: {
             recipe: {
               findMany: jest.fn(),
+              findFirst: jest.fn(),
+            },
+            comment: {
+              groupBy: jest.fn(),
             },
           },
         },
@@ -42,17 +63,20 @@ describe('FeedService', () => {
         .mockResolvedValue({ data: [], nextCursor: null } as any);
 
       await service.getUserFeed(undefined, undefined, 10);
-      expect(getTrendingRecipesSpy).toHaveBeenCalledWith(10);
+      expect(getTrendingRecipesSpy).toHaveBeenCalledWith(10, undefined);
     });
 
     it('should return user feed and nextCursor if enough recipes exist', async () => {
       // Create 11 mock recipes to test cursor logic taking limit + 1
       const mockRecipes = Array(11)
         .fill(null)
-        .map((_, i) => ({ id: `recipe-${i}` }));
+        .map((_, i) => makeRecipe(`recipe-${i}`));
       jest
         .spyOn(prismaService.recipe, 'findMany')
         .mockResolvedValue(mockRecipes as any);
+      jest
+        .spyOn(prismaService.comment, 'groupBy')
+        .mockResolvedValue([] as any);
 
       const result = await service.getUserFeed('user-1', undefined, 10);
 
@@ -62,10 +86,16 @@ describe('FeedService', () => {
     });
 
     it('should handle skip correctly when cursor is provided', async () => {
-      const mockRecipes = [{ id: 'recipe-2' }];
+      const mockRecipes = [makeRecipe('recipe-2')];
       jest
         .spyOn(prismaService.recipe, 'findMany')
         .mockResolvedValue(mockRecipes as any);
+      jest
+        .spyOn(prismaService.recipe, 'findFirst')
+        .mockResolvedValue({ id: 'trending-1' } as any);
+      jest
+        .spyOn(prismaService.comment, 'groupBy')
+        .mockResolvedValue([] as any);
 
       const getTrendingSpy = jest.spyOn(service, 'getTrendingRecipes');
 
@@ -81,8 +111,8 @@ describe('FeedService', () => {
 
       // Should not call getTrendingRecipes because cursor is provided
       expect(getTrendingSpy).not.toHaveBeenCalled();
-      expect(result.data).toEqual(mockRecipes);
-      expect(result.nextCursor).toBeNull();
+      expect(result.data.length).toBe(1);
+      expect(result.nextCursor).toBe('trending:');
     });
 
     it('should fallback to trending if user feed is empty and no cursor exists', async () => {
@@ -93,31 +123,96 @@ describe('FeedService', () => {
 
       await service.getUserFeed('user-1', undefined, 10);
 
-      expect(getTrendingRecipesSpy).toHaveBeenCalledWith(10);
+      expect(getTrendingRecipesSpy).toHaveBeenCalledWith(10, undefined, 'user-1');
+    });
+
+    it('should continue with trending feed when cursor is trending-prefixed', async () => {
+      const getTrendingRecipesSpy = jest
+        .spyOn(service, 'getTrendingRecipes')
+        .mockResolvedValue({ data: [], nextCursor: null } as any);
+
+      await service.getUserFeed('user-1', 'trending:recipe-99', 10);
+
+      expect(getTrendingRecipesSpy).toHaveBeenCalledWith(
+        10,
+        'trending:recipe-99',
+        'user-1',
+      );
     });
   });
 
   describe('getTrendingRecipes', () => {
-    it('should return trending recipes correctly', async () => {
-      const mockRecipes = [{ id: 'trending-1' }];
+    it('should return trending recipes and nextCursor correctly', async () => {
+      const mockRecipes = Array(11)
+        .fill(null)
+        .map((_, i) => makeRecipe(`trending-${i}`));
       jest
         .spyOn(prismaService.recipe, 'findMany')
         .mockResolvedValue(mockRecipes as any);
+      jest
+        .spyOn(prismaService.comment, 'groupBy')
+        .mockResolvedValue([] as any);
 
       const result = await service.getTrendingRecipes(10);
-      console.log('Trending Recipes Result:', result);
 
-      expect(prismaService.recipe.findMany).toHaveBeenCalledWith({
-        take: 10,
-        where: {
-          status: RecipeStatus.PUBLISHED,
-          deleted_at: null,
-        },
-        include: expect.any(Object),
-        orderBy: expect.any(Object),
-      });
-      expect(result.data).toEqual(mockRecipes);
-      expect(result.nextCursor).toBeNull();
+      expect(prismaService.recipe.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          take: 11,
+          skip: 0,
+          where: {
+            status: RecipeStatus.PUBLISHED,
+            deleted_at: null,
+          },
+          orderBy: expect.any(Array),
+        }),
+      );
+      expect(result.data.length).toBe(10);
+      expect(result.nextCursor).toBe('trending:trending-10');
+    });
+
+    it('should apply cursor correctly for trending-prefixed cursor', async () => {
+      const mockRecipes = [makeRecipe('trending-2')];
+      jest
+        .spyOn(prismaService.recipe, 'findMany')
+        .mockResolvedValue(mockRecipes as any);
+      jest
+        .spyOn(prismaService.comment, 'groupBy')
+        .mockResolvedValue([] as any);
+
+      await service.getTrendingRecipes(10, 'trending:trending-1');
+
+      expect(prismaService.recipe.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          skip: 1,
+          cursor: { id: 'trending-1' },
+          take: 11,
+        }),
+      );
+    });
+
+    it('should exclude followed authors in trending fallback for logged-in users', async () => {
+      jest.spyOn(prismaService.recipe, 'findMany').mockResolvedValue([] as any);
+      jest
+        .spyOn(prismaService.comment, 'groupBy')
+        .mockResolvedValue([] as any);
+
+      await service.getTrendingRecipes(10, undefined, 'user-1');
+
+      expect(prismaService.recipe.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            status: RecipeStatus.PUBLISHED,
+            deleted_at: null,
+            user: {
+              followedBy: {
+                none: {
+                  follower_id: 'user-1',
+                },
+              },
+            },
+          },
+        }),
+      );
     });
   });
 });

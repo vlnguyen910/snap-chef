@@ -1,14 +1,22 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Home, Compass, Bookmark, Plus, User, ChefHat } from "lucide-react";
+import {
+  Home,
+  Compass,
+  Bookmark,
+  Plus,
+  User,
+  Loader2,
+} from "lucide-react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useStore } from "@/lib/store";
+import { feedService } from "@/services/feedService";
 import {
   FeedHero,
   FeedSidebar,
   FeedFilterBar,
   RecipeFeedCard,
-  MOCK_RECIPES,
   MOCK_TOP_CHEFS,
   MOCK_TRENDING_CATEGORIES,
 } from "@/features/feed";
@@ -27,8 +35,55 @@ export default function HomePage() {
   useDocumentTitle("Snap Chef — Home Feed");
   const { isAuthenticated } = useStore();
   const [activeFilter, setActiveFilter] = useState<FilterOption>("all");
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["home-feed", isAuthenticated],
+    queryFn: ({ pageParam }) =>
+      feedService.getFeed({
+        limit: 18,
+        cursor: pageParam || undefined,
+      }),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+  });
 
-  const filteredRecipes = MOCK_RECIPES; // API filtering will be added in Phase 2.3
+  const feedRecipes = useMemo(() => {
+    const allRecipes = data?.pages.flatMap((page) => page.recipes) ?? [];
+    const seenRecipeIds = new Set<string>();
+
+    return allRecipes.filter((recipe) => {
+      if (seenRecipeIds.has(recipe.id)) {
+        return false;
+      }
+
+      seenRecipeIds.add(recipe.id);
+      return true;
+    });
+  }, [data?.pages]);
+
+  const filteredRecipes = useMemo(() => {
+    if (activeFilter === "popular") {
+      return [...feedRecipes].sort((a, b) => b.rating - a.rating);
+    }
+
+    if (activeFilter === "recent") {
+      return [...feedRecipes].sort((a, b) => {
+        const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return bTime - aTime;
+      });
+    }
+
+    return feedRecipes;
+  }, [activeFilter, feedRecipes]);
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark">
@@ -49,26 +104,67 @@ export default function HomePage() {
             <FeedFilterBar active={activeFilter} onChange={setActiveFilter} />
 
             {/* Recipe Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-              {filteredRecipes.map((recipe) => (
-                <Link
-                  to={`/recipes/${recipe.id}`}
-                  key={recipe.id}
-                  className="block"
-                >
-                  <RecipeFeedCard recipe={recipe} />
-                </Link>
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-16 text-slate-500 dark:text-slate-300">
+                <Loader2 className="animate-spin mr-3" size={20} />
+                <span className="font-semibold">Loading feed...</span>
+              </div>
+            ) : isError ? (
+              <div className="rounded-2xl border border-rose-200 bg-rose-50 text-rose-700 p-5 flex flex-col gap-3 dark:bg-rose-950/30 dark:border-rose-800 dark:text-rose-300">
+                <p className="font-semibold">Cannot load home feed right now.</p>
+                <p className="text-sm opacity-90">
+                  {(error as Error)?.message || "Please try again in a moment."}
+                </p>
+                <div>
+                  <button
+                    onClick={() => refetch()}
+                    className="px-4 py-2 rounded-lg bg-rose-600 text-white text-sm font-semibold hover:bg-rose-700 transition-colors"
+                  >
+                    Retry
+                  </button>
+                </div>
+              </div>
+            ) : filteredRecipes.length === 0 ? (
+              <div className="rounded-2xl border border-slate-200 dark:border-white/10 p-8 text-center text-slate-500 dark:text-slate-300">
+                <p className="font-semibold">No recipes available yet.</p>
+                <p className="text-sm mt-1">
+                  Follow more chefs or check back later for fresh recipes.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                {filteredRecipes.map((recipe) => (
+                  <Link
+                    to={`/recipes/${recipe.id}`}
+                    key={recipe.id}
+                    className="block"
+                  >
+                    <RecipeFeedCard recipe={recipe} />
+                  </Link>
+                ))}
+              </div>
+            )}
 
             {/* Load More */}
             <div className="flex justify-center py-6">
               <button
-                disabled
+                onClick={() => fetchNextPage()}
+                disabled={!hasNextPage || isFetchingNextPage || isLoading}
                 className="flex items-center gap-2 px-8 py-3 rounded-xl border-2 border-primary text-primary font-bold hover:bg-primary hover:text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-primary"
               >
-                <span>Load More Recipes</span>
-                <span className="text-lg">↓</span>
+                {isFetchingNextPage ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    <span>Loading more...</span>
+                  </>
+                ) : hasNextPage ? (
+                  <>
+                    <span>Load More Recipes</span>
+                    <span className="text-lg">↓</span>
+                  </>
+                ) : (
+                  <span>Không còn recipe nào nữa</span>
+                )}
               </button>
             </div>
 

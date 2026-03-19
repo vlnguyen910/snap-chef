@@ -1,4 +1,11 @@
-import { Bookmark, Clock, Star, MoreHorizontal } from "lucide-react";
+import {
+  Bookmark,
+  Clock,
+  Star,
+  MoreHorizontal,
+  Heart,
+  MessageCircle,
+} from "lucide-react";
 import type { RecipeFeedItem } from "../data/mockData";
 
 interface RecipeFeedCardProps {
@@ -16,6 +23,8 @@ export default function RecipeFeedCard({
   recipe,
   onBookmark,
 }: Readonly<RecipeFeedCardProps>) {
+  const postedAgo = recipe.createdAt ? formatTimeAgo(recipe.createdAt) : null;
+
   return (
     <div className="bg-white dark:bg-white/5 rounded-2xl overflow-hidden border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-xl transition-shadow group cursor-pointer">
       {/* Image */}
@@ -66,6 +75,17 @@ export default function RecipeFeedCard({
           </div>
         </div>
 
+        <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400 mb-4">
+          <span className="inline-flex items-center gap-1">
+            <Heart size={14} />
+            {recipe.likesCount ?? 0}
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <MessageCircle size={14} />
+            {recipe.commentsCount ?? 0}
+          </span>
+        </div>
+
         <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/5">
           <div className="flex items-center gap-2">
             <img
@@ -75,9 +95,59 @@ export default function RecipeFeedCard({
             />
             <span className="text-xs font-semibold">{recipe.author}</span>
           </div>
-          <MoreHorizontal size={18} className="text-slate-300" />
+          <div className="flex items-center gap-2 text-[11px] text-slate-400">
+            {postedAgo ? <span>{postedAgo}</span> : null}
+            <MoreHorizontal size={18} className="text-slate-300" />
+          </div>
         </div>
       </div>
     </div>
   );
+}
+
+function formatTimeAgo(isoDate: string): string {
+  const date = new Date(isoDate);
+  const time = date.getTime();
+
+  if (Number.isNaN(time)) return "";
+
+  const diffMs = Date.now() - time;
+  if (diffMs < 0) return "Vừa xong";
+
+  const minuteMs = 60 * 1000;
+  const hourMs = 60 * minuteMs;
+  const dayMs = 24 * hourMs;
+  const weekMs = 7 * dayMs;
+  const monthMs = 30 * dayMs;
+  const yearMs = 365 * dayMs;
+
+  if (diffMs < minuteMs) return "Vừa xong";
+
+  if (diffMs < hourMs) {
+    const minutes = Math.floor(diffMs / minuteMs);
+    return `${minutes} phút trước`;
+  }
+
+  if (diffMs < dayMs) {
+    const hours = Math.floor(diffMs / hourMs);
+    return `${hours} giờ trước`;
+  }
+
+  if (diffMs < weekMs) {
+    const days = Math.floor(diffMs / dayMs);
+    return `${days} ngày trước`;
+  }
+
+  if (diffMs < monthMs) {
+    const weeks = Math.floor(diffMs / weekMs);
+    return `${weeks} tuần trước`;
+  }
+
+  if (diffMs < yearMs) {
+    const months = Math.floor(diffMs / monthMs);
+    return `${months} tháng trước`;
+  }
+
+  const years = Math.floor(diffMs / yearMs);
+  return `${years} năm trước`;
 }
