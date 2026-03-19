@@ -16,6 +16,7 @@ import MyRecipesPage from '@/pages/MyRecipesPage';
 import FavoritesPage from '@/pages/FavoritesPage';
 import SettingsPage from '@/pages/SettingsPage';
 import UserSearchPage from '@/pages/UserSearchPage';
+import EmailVerifiedPage from '@/pages/EmailVerifiedPage';
 
 // Components
 import UserProfile from '@/components/common/UserProfile';
@@ -31,7 +32,10 @@ export default function AppRoutes() {
         <Route path='/auth'>
           <Route path="signin" element={<AuthPage />} />
           <Route path="signup" element={<AuthPage />} />
+          <Route path="forgot-password" element={<AuthPage />} />
+          <Route path="reset-password" element={<AuthPage />} />
         </Route>
+        <Route path="/verify-email" element={<EmailVerifiedPage />} />
         <Route path="/recipes" element={<RecipesPage />} />
         <Route path="/recipes/:id" element={<RecipeDetailPage />} />
         {/* Public User Profile */}
