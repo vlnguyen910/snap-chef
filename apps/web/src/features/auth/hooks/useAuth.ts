@@ -41,6 +41,21 @@ export function useAuth() {
     }
   };
 
+  const signinWithGoogle = async (): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { user, access_token } = await authService.signinWithGooglePopup();
+      storeLogin(user, access_token);
+      return true;
+    } catch (err: any) {
+      setError(err?.message || 'Google sign in failed. Please try again.');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const signout = async (): Promise<void> => {
     setIsLoading(true);
     setError(null);
@@ -83,12 +98,58 @@ export function useAuth() {
     }
   };
 
+  const forgotPassword = async (email: string): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await authService.forgotPassword(email);
+      return true;
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to send reset email.');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const verifyEmail = async (token: string): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await authService.verifyEmail(token);
+      return true;
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Email verification failed.');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetPassword = async (password: string): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await authService.resetPassword(password);
+      return true;
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Password reset failed.');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     signin,
+    signinWithGoogle,
     signup,
     signout,
     updateProfile,
     checkSession,
+    forgotPassword,
+    verifyEmail,
+    resetPassword,
     isLoading,
     error,
   };
