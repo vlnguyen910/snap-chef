@@ -3,12 +3,12 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class ResetPasswordDto {
   @ApiProperty({
-    description: 'Reset password token received from email',
+    description: 'Reset password token (deprecated in body, use query param token)',
     example: 'abc-123-token',
+    required: false,
   })
-  @IsNotEmpty()
   @IsString()
-  token!: string;
+  token?: string;
 
   @ApiProperty({
     description: 'New password for the user (min 8 characters)',

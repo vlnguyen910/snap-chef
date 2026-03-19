@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import GoogleAuthButton from './GoogleAuthButton';
 
 export default function LoginForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signin, signinWithGoogle, isLoading, error } = useAuth();
   const user = useStore((state) => state.user);
   const [showPassword, setShowPassword] = useState(false);
@@ -17,6 +18,20 @@ export default function LoginForm() {
     email: '',
     password: '',
   });
+
+  const pendingVerification =
+    location.state &&
+    typeof location.state === 'object' &&
+    'pendingVerification' in location.state
+      ? Boolean((location.state as { pendingVerification?: boolean }).pendingVerification)
+      : false;
+
+  const signupEmail =
+    location.state &&
+    typeof location.state === 'object' &&
+    'signupEmail' in location.state
+      ? String((location.state as { signupEmail?: string }).signupEmail || '')
+      : '';
 
   // Check if user is already authenticated
   useEffect(() => {
@@ -73,6 +88,14 @@ export default function LoginForm() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {pendingVerification && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+            Tài khoản đã được tạo. Vui lòng kiểm tra email
+            {signupEmail ? ` (${signupEmail}) ` : ' '}
+            để xác thực trước khi đăng nhập.
+          </div>
+        )}
+
         {error && (
           <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600">
             {error}

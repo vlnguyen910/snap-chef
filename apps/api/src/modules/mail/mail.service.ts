@@ -10,10 +10,27 @@ export class MailerService {
     private configService: ConfigService,
   ) {}
 
+  private getFrontendBaseUrl(): string {
+    const frontendUrl =
+      this.configService.get<string>('FRONTEND_URL') ||
+      this.configService.get<string>('WEB_URL') ||
+      this.configService.get<string>('CLIENT_URL');
+
+    if (frontendUrl) {
+      return frontendUrl;
+    }
+
+    const corsOrigins = this.configService.get<string>('CORS_ORIGINS');
+    if (corsOrigins) {
+      const firstOrigin = corsOrigins.split(',')[0]?.trim();
+      if (firstOrigin) return firstOrigin;
+    }
+
+    return 'http://localhost:5173';
+  }
+
   async sendUserConfirmation(user: User, token: string) {
-    const baseUrl =
-      this.configService.get<string>('BASE_URL') || 'http://localhost:8080';
-    const url = new URL('/api/auth/verify-email', baseUrl);
+    const url = new URL('/verify-email', this.getFrontendBaseUrl());
     url.searchParams.set('token', token);
 
     await this.mailerService.sendMail({
@@ -30,9 +47,7 @@ export class MailerService {
   }
 
   async sendResetPassword(user: User, token: string) {
-    const baseUrl =
-      this.configService.get<string>('BASE_URL') || 'http://localhost:8080';
-    const url = new URL('/api/auth/reset-password', baseUrl);
+    const url = new URL('/auth/reset-password', this.getFrontendBaseUrl());
     url.searchParams.set('token', token);
     await this.mailerService.sendMail({
       to: user.email,
