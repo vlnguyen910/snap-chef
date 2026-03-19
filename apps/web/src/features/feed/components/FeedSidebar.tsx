@@ -57,9 +57,9 @@ export default function FeedSidebar({
               className="flex items-center justify-between px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-sm font-medium transition-colors w-full text-left"
             >
               <span>
-                {cat.emoji} {cat.name}
+                {cat.name}
               </span>
-              <span className="text-xs text-slate-400">{cat.count}</span>
+              <span className="text-xs text-slate-400">{cat.recipe_count}</span>
             </button>
           ))}
         </div>
@@ -74,14 +74,14 @@ export default function FeedSidebar({
           {topChefs.map((chef) => (
             <div key={chef.id} className="flex items-center gap-3">
               <img
-                src={chef.avatar}
-                alt={chef.name}
+                src={chef.avatar_url || "https://i.pravatar.cc/150?img=0"}
+                alt={chef.username}
                 className="w-10 h-10 rounded-full object-cover"
               />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold truncate">{chef.name}</p>
+                <p className="text-sm font-bold truncate">{chef.username}</p>
                 <p className="text-xs text-slate-500">
-                  {chef.recipeCount} recipes
+                  {chef.follower_count} followers
                 </p>
               </div>
               <button className="text-primary text-xs font-bold flex items-center gap-1 hover:opacity-75 transition-opacity">

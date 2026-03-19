@@ -18,6 +18,13 @@ import { RedisService } from 'src/common/redis/redis.service';
 import { NotificationService } from '../notifications/notification.service';
 import { NotificationMessages, ErrorMessages } from 'src/common/constants';
 
+export interface TopUserItem {
+  id: string;
+  username: string;
+  avatar_url: string | null;
+  follower_count: number;
+}
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -74,6 +81,39 @@ export class UsersService {
     });
 
     return users;
+  }
+
+  async getTopUsers(limit: number = 5): Promise<TopUserItem[]> {
+    const safeLimit = Number.isFinite(limit)
+      ? Math.min(Math.max(Math.trunc(limit), 1), 20)
+      : 5;
+
+    const users = await this.prisma.user.findMany({
+      where: { is_active: true },
+      take: safeLimit,
+      orderBy: {
+        followedBy: {
+          _count: 'desc',
+        },
+      },
+      select: {
+        id: true,
+        username: true,
+        avatar_url: true,
+        _count: {
+          select: {
+            followedBy: true,
+          },
+        },
+      },
+    });
+
+    return users.map((user) => ({
+      id: user.id,
+      username: user.username,
+      avatar_url: user.avatar_url,
+      follower_count: user._count.followedBy,
+    }));
   }
 
   async findOne(id: string): Promise<User | null> {

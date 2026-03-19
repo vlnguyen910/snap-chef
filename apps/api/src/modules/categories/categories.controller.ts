@@ -5,10 +5,11 @@ import {
   Body,
   Patch,
   Param,
+  Query,
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
-import { CategoriesService } from './categories.service';
+import { CategoriesService, TopCategoryItem } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { JwtAuthGuard, RolesGuard } from 'src/common/guards';
@@ -18,6 +19,7 @@ import { Category } from 'src/generated/prisma/client';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -42,6 +44,22 @@ export class CategoriesController {
   @Get()
   findAll(): Promise<Category[]> {
     return this.categoriesService.findAll(true);
+  }
+
+  @ApiOperation({ summary: 'Get top categories by recipe count' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return top categories with recipe_count',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Maximum number of categories to return',
+    example: 5,
+  })
+  @Get('top')
+  getTopCategories(@Query('limit') limit?: string): Promise<TopCategoryItem[]> {
+    return this.categoriesService.getTopCategories(limit ? Number(limit) : 5);
   }
 
   @ApiOperation({ summary: 'Update a category (Admin only)' })

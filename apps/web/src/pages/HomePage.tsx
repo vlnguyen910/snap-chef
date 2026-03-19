@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Home,
@@ -12,6 +12,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useStore } from "@/lib/store";
 import { feedService } from "@/services/feedService";
+import { topDataService } from "@/services/topDataService";
 import {
   FeedHero,
   FeedSidebar,
@@ -20,6 +21,7 @@ import {
   MOCK_TOP_CHEFS,
   MOCK_TRENDING_CATEGORIES,
 } from "@/features/feed";
+import type { TopChef, TrendingCategory } from "@/features/feed";
 
 type FilterOption = "all" | "popular" | "recent";
 
@@ -35,6 +37,42 @@ export default function HomePage() {
   useDocumentTitle("Snap Chef — Home Feed");
   const { isAuthenticated } = useStore();
   const [activeFilter, setActiveFilter] = useState<FilterOption>("all");
+  const [topCategories, setTopCategories] = useState<TrendingCategory[]>(MOCK_TRENDING_CATEGORIES);
+  const [topUsers, setTopUsers] = useState<TopChef[]>(MOCK_TOP_CHEFS);
+
+  // Load top data from API
+  useEffect(() => {
+    const loadTopData = async () => {
+      try {
+        const [categories, users] = await Promise.all([
+          topDataService.getTopCategories(4),
+          topDataService.getTopUsers(4),
+        ]);
+
+        // Transform API response to component format
+        if (categories && categories.length > 0) {
+          setTopCategories(categories);
+        }
+
+        if (users && users.length > 0) {
+          // Convert TopUser API response to TopChef format for display
+          const transformedUsers: TopChef[] = users.map((user) => ({
+            id: user.id,
+            username: user.username,
+            follower_count: user.follower_count,
+            avatar_url: user.avatar_url,
+          }));
+          setTopUsers(transformedUsers);
+        }
+      } catch (error) {
+        console.error("Failed to load top data:", error);
+        // Keep using mock data on error
+      }
+    };
+
+    loadTopData();
+  }, []);
+
   const {
     data,
     isLoading,
@@ -91,8 +129,8 @@ export default function HomePage() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Sidebar */}
           <FeedSidebar
-            categories={MOCK_TRENDING_CATEGORIES}
-            topChefs={MOCK_TOP_CHEFS}
+            categories={topCategories}
+            topChefs={topUsers}
           />
 
           {/* Main Feed */}
@@ -172,20 +210,20 @@ export default function HomePage() {
             <div className="flex lg:hidden flex-col gap-4">
               <h3 className="text-xl font-black">Top Chefs This Week</h3>
               <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-4">
-                {MOCK_TOP_CHEFS.map((chef) => (
+                {topUsers.map((chef) => (
                   <div
                     key={chef.id}
                     className="flex flex-col items-center gap-2 min-w-[72px]"
                   >
                     <div className="w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-primary to-orange-400">
                       <img
-                        src={chef.avatar}
-                        alt={chef.name}
+                        src={chef.avatar_url || "https://i.pravatar.cc/150?img=0"}
+                        alt={chef.username}
                         className="w-full h-full rounded-full border-2 border-white object-cover"
                       />
                     </div>
                     <span className="text-xs font-bold text-center leading-none">
-                      {chef.name.split(" ")[0]}
+                      {chef.username.split(" ")[0]}
                     </span>
                   </div>
                 ))}
