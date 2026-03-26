@@ -1,5 +1,12 @@
 import { Link } from "react-router-dom";
-import { Edit, Trash2, UserPlus, PlusSquare, Heart, Share2 } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  UserPlus,
+  PlusSquare,
+  Heart,
+  Share2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { RecipeData } from "../../types/recipe-detail";
 

@@ -1,13 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import {
-  Home,
-  Compass,
-  Bookmark,
-  Plus,
-  User,
-  Loader2,
-} from "lucide-react";
+import { Home, Compass, Bookmark, Plus, User, Loader2 } from "lucide-react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useStore } from "@/lib/store";
@@ -37,7 +30,9 @@ export default function HomePage() {
   useDocumentTitle("Snap Chef — Home Feed");
   const { isAuthenticated } = useStore();
   const [activeFilter, setActiveFilter] = useState<FilterOption>("all");
-  const [topCategories, setTopCategories] = useState<TrendingCategory[]>(MOCK_TRENDING_CATEGORIES);
+  const [topCategories, setTopCategories] = useState<TrendingCategory[]>(
+    MOCK_TRENDING_CATEGORIES,
+  );
   const [topUsers, setTopUsers] = useState<TopChef[]>(MOCK_TOP_CHEFS);
 
   // Load top data from API
@@ -128,10 +123,7 @@ export default function HomePage() {
       <main className="max-w-7xl mx-auto px-4 py-6">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Sidebar */}
-          <FeedSidebar
-            categories={topCategories}
-            topChefs={topUsers}
-          />
+          <FeedSidebar categories={topCategories} topChefs={topUsers} />
 
           {/* Main Feed */}
           <div className="flex-1 flex flex-col gap-6 min-w-0">
@@ -149,7 +141,9 @@ export default function HomePage() {
               </div>
             ) : isError ? (
               <div className="rounded-2xl border border-rose-200 bg-rose-50 text-rose-700 p-5 flex flex-col gap-3 dark:bg-rose-950/30 dark:border-rose-800 dark:text-rose-300">
-                <p className="font-semibold">Cannot load home feed right now.</p>
+                <p className="font-semibold">
+                  Cannot load home feed right now.
+                </p>
                 <p className="text-sm opacity-90">
                   {(error as Error)?.message || "Please try again in a moment."}
                 </p>
@@ -217,7 +211,9 @@ export default function HomePage() {
                   >
                     <div className="w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-primary to-orange-400">
                       <img
-                        src={chef.avatar_url || "https://i.pravatar.cc/150?img=0"}
+                        src={
+                          chef.avatar_url || "https://i.pravatar.cc/150?img=0"
+                        }
                         alt={chef.username}
                         className="w-full h-full rounded-full border-2 border-white object-cover"
                       />

@@ -42,7 +42,9 @@ export default function RecipeDetailPage() {
   const [isLikeLoading, setIsLikeLoading] = useState(false);
 
   const getAuthRedirectPath = () => {
-    const redirect = encodeURIComponent(`${location.pathname}${location.search}`);
+    const redirect = encodeURIComponent(
+      `${location.pathname}${location.search}`,
+    );
     return `/auth/signin?redirect=${redirect}`;
   };
 
@@ -447,7 +449,8 @@ export default function RecipeDetailPage() {
           <section className="rounded-xl border border-slate-200 bg-card p-6 dark:border-slate-800">
             <h2 className="mb-3 text-xl font-bold">About this recipe</h2>
             <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-              {recipe.description || "No description available for this recipe."}
+              {recipe.description ||
+                "No description available for this recipe."}
             </p>
             <p className="mt-3 text-xs font-medium text-slate-500">
               Created on {formatDate(recipe.created_at)}
