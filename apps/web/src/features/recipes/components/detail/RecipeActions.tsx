@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Edit, Trash2, UserPlus, Bookmark, Heart } from "lucide-react";
+import { Edit, Trash2, UserPlus, PlusSquare, Heart, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { RecipeData } from "../../types/recipe-detail";
 
@@ -14,9 +14,8 @@ interface RecipeActionsProps {
   likeCount: number;
   isLikeLoading: boolean;
   handleLike: () => void;
-  isBookmarked: boolean;
-  isBookmarkLoading: boolean;
-  handleBookmark: () => void;
+  handleAddToCollection: () => void;
+  handleShare: () => void;
   handleDeleteRecipe: () => void;
 }
 
@@ -31,9 +30,8 @@ export function RecipeActions({
   likeCount,
   isLikeLoading,
   handleLike,
-  isBookmarked,
-  isBookmarkLoading,
-  handleBookmark,
+  handleAddToCollection,
+  handleShare,
   handleDeleteRecipe,
 }: RecipeActionsProps) {
   if (isOwner) {
@@ -123,21 +121,21 @@ export function RecipeActions({
         </Button>
 
         <Button
-          onClick={handleBookmark}
+          onClick={handleAddToCollection}
           variant="outline"
-          disabled={isBookmarkLoading}
-          className={
-            isBookmarked
-              ? "h-10 border-primary/50 text-primary hover:bg-primary/10"
-              : "h-10 border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-          }
+          className="h-10 border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
         >
-          <Bookmark
-            size={18}
-            className="mr-2"
-            fill={isBookmarked ? "currentColor" : "none"}
-          />
-          {isBookmarked ? "Saved" : "Save"}
+          <PlusSquare size={18} className="mr-2" />
+          Add to collection
+        </Button>
+
+        <Button
+          onClick={handleShare}
+          variant="outline"
+          className="h-10 border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+        >
+          <Share2 size={18} className="mr-2" />
+          Share
         </Button>
       </div>
     </div>

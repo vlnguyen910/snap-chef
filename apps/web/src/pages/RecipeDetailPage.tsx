@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Mail, Timer } from "lucide-react";
 import Loading from "@/components/common/Loading";
 import ErrorState from "@/components/common/ErrorState";
@@ -13,7 +13,6 @@ import type {
   AuthorData,
   IngredientFromAPI,
   IngredientDisplay,
-  StepFromAPI,
 } from "@/features/recipes/types/recipe-detail";
 import { RecipeHeader } from "@/features/recipes/components/detail/RecipeHeader";
 import { RecipeActions } from "@/features/recipes/components/detail/RecipeActions";
@@ -23,6 +22,7 @@ import { StepList } from "@/features/recipes/components/detail/StepList";
 export default function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useStore();
 
   const [recipe, setRecipe] = useState<RecipeData | null>(null);
@@ -37,11 +37,18 @@ export default function RecipeDetailPage() {
   );
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
-  const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
+
+  const getAuthRedirectPath = () => {
+    const redirect = encodeURIComponent(`${location.pathname}${location.search}`);
+    return `/auth/signin?redirect=${redirect}`;
+  };
+
+  const goToSignin = () => {
+    navigate(getAuthRedirectPath());
+  };
 
   useEffect(() => {
     fetchRecipe();
@@ -86,9 +93,23 @@ export default function RecipeDetailPage() {
       ) {
         setAllIngredients(ingredientsResponse);
       }
-      setRecipe(recipeResponse);
+
+      const normalizedRecipe = {
+        ...recipeResponse,
+        description: recipeResponse.description ?? null,
+        status: recipeResponse.status ?? "published",
+        updated_at: recipeResponse.updated_at ?? recipeResponse.created_at,
+      };
+
+      setRecipe(normalizedRecipe);
+
       if (authorResponse) {
         setAuthor(authorResponse);
+      } else if (recipeResponse.user?.username) {
+        setAuthor({
+          id: recipeResponse.author_id,
+          username: recipeResponse.user.username,
+        });
       }
 
       if (recipeResponse.is_liked !== undefined) {
@@ -116,7 +137,7 @@ export default function RecipeDetailPage() {
     if (!id) return;
     if (!user) {
       toast.warning("Please login to like this recipe");
-      navigate("/auth");
+      goToSignin();
       return;
     }
     if (isLikeLoading) return;
@@ -134,15 +155,25 @@ export default function RecipeDetailPage() {
       const response = await api.post<{ is_liked: boolean }>(
         `/recipes/${id}/like`,
       );
-      setIsLiked(response.is_liked);
-      toast.success(response.is_liked ? "❤️ Liked!" : "Unliked");
+      const nextIsLiked = Boolean(response.is_liked);
+      const reconciledLikeCount = nextIsLiked
+        ? previousIsLiked
+          ? previousLikeCount
+          : previousLikeCount + 1
+        : previousIsLiked
+          ? Math.max(previousLikeCount - 1, 0)
+          : previousLikeCount;
+
+      setIsLiked(nextIsLiked);
+      setLikeCount(reconciledLikeCount);
+      toast.success(nextIsLiked ? "❤️ Liked!" : "Unliked");
     } catch (error: any) {
       setIsLiked(previousIsLiked);
       setLikeCount(previousLikeCount);
 
       if (error.response?.status === 401) {
         toast.error("Please login to like recipes");
-        navigate("/auth");
+        goToSignin();
       } else if (error.response?.status === 403) {
         toast.error("You cannot like your own recipe!");
       } else {
@@ -153,36 +184,32 @@ export default function RecipeDetailPage() {
     }
   };
 
-  const handleBookmark = async () => {
-    if (!id) return;
+  const handleAddToCollection = () => {
     if (!user) {
-      toast.warning("Please login to bookmark this recipe");
-      navigate("/auth");
+      toast.warning("Please login to add recipes to collections");
+      goToSignin();
       return;
     }
-    if (isBookmarkLoading) return;
 
-    const previousIsBookmarked = isBookmarked;
-    const newIsBookmarked = !isBookmarked;
+    toast.info("Add to collection sẽ nối API trong phiên bản tới.");
+  };
 
-    setIsBookmarked(newIsBookmarked);
-    setIsBookmarkLoading(true);
+  const handleShare = async () => {
+    const shareUrl = window.location.href;
 
     try {
-      await api.post(`/recipes/${id}/bookmark`);
-      toast.success(
-        newIsBookmarked ? "🔖 Bookmarked!" : "Removed from bookmarks",
-      );
-    } catch (error: any) {
-      setIsBookmarked(previousIsBookmarked);
-      if (error.response?.status === 401) {
-        toast.error("Please login to bookmark recipes");
-        navigate("/auth");
-      } else {
-        toast.error("Failed to update bookmark status");
+      if (navigator.share) {
+        await navigator.share({
+          title: recipe?.title || "SnapChef Recipe",
+          url: shareUrl,
+        });
+        return;
       }
-    } finally {
-      setIsBookmarkLoading(false);
+
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success("Link copied to clipboard");
+    } catch {
+      toast.error("Unable to share this recipe right now");
     }
   };
 
@@ -190,7 +217,7 @@ export default function RecipeDetailPage() {
     if (!recipe?.author_id) return;
     if (!user) {
       toast.warning("Please login to follow users");
-      navigate("/auth");
+      goToSignin();
       return;
     }
     if (user.id === recipe.author_id) {
@@ -206,13 +233,24 @@ export default function RecipeDetailPage() {
     setIsFollowLoading(true);
 
     try {
-      await api.post<{ message: string }>(`/users/${recipe.author_id}/follow`);
-      toast.success(newIsFollowing ? "✅ Following!" : "Unfollowed");
+      const response = await api.post<{ message?: string }>(
+        `/users/${recipe.author_id}/follow`,
+      );
+
+      const message = response?.message || "";
+      const backendFollowing = message.includes("unfollowed")
+        ? false
+        : message.includes("followed")
+          ? true
+          : newIsFollowing;
+
+      setIsFollowing(backendFollowing);
+      toast.success(backendFollowing ? "✅ Following!" : "Unfollowed");
     } catch (error: any) {
       setIsFollowing(previousIsFollowing);
       if (error.response?.status === 401) {
         toast.error("Please login to follow users");
-        navigate("/auth");
+        goToSignin();
       } else if (error.response?.status === 404) {
         toast.error("User not found");
       } else {
@@ -268,6 +306,9 @@ export default function RecipeDetailPage() {
         return `${author.firstName} ${author.lastName}`;
       }
       return author.username || "Unknown Chef";
+    }
+    if (recipe?.user?.username) {
+      return recipe.user.username;
     }
     return "Loading...";
   };
@@ -380,12 +421,11 @@ export default function RecipeDetailPage() {
 
           <RecipeHeader
             recipe={recipe}
-            author={author}
             formatCookingTime={formatCookingTime}
             getServings={getServings}
             getCookingTime={getCookingTime}
-            getAuthorName={getAuthorName}
             likeCount={likeCount}
+            isLiked={isLiked}
           />
 
           <RecipeActions
@@ -399,9 +439,8 @@ export default function RecipeDetailPage() {
             likeCount={likeCount}
             isLikeLoading={isLikeLoading}
             handleLike={handleLike}
-            isBookmarked={isBookmarked}
-            isBookmarkLoading={isBookmarkLoading}
-            handleBookmark={handleBookmark}
+            handleAddToCollection={handleAddToCollection}
+            handleShare={handleShare}
             handleDeleteRecipe={handleDeleteRecipe}
           />
 
@@ -464,24 +503,6 @@ export default function RecipeDetailPage() {
               </article>
             ))}
           </div>
-
-          <section className="rounded-xl border border-primary/20 bg-primary/10 p-6">
-            <Mail className="size-8 text-primary" />
-            <h4 className="mt-4 font-bold">Never miss a recipe</h4>
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-              Get new cooking ideas delivered to your inbox.
-            </p>
-            <div className="mt-4 flex flex-col gap-2">
-              <input
-                type="email"
-                placeholder="Email address"
-                className="w-full rounded-lg border border-primary/20 bg-background px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
-              />
-              <button className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90">
-                Subscribe
-              </button>
-            </div>
-          </section>
         </aside>
       </main>
     </div>

@@ -1,156 +1,136 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, User as UserIcon, LogOut } from "lucide-react";
+import {
+  Bell,
+  Menu,
+  X,
+  User as UserIcon,
+  LogOut,
+  ChefHat,
+} from "lucide-react";
 import { useState } from "react";
 import { useStore } from "@/lib/store";
 import UserMenu from "./UserMenu";
 import GlobalSearch from "@/components/common/GlobalSearch";
+import { toast } from "@/lib/toast-store";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
   const navigate = useNavigate();
 
   const user = useStore((state) => state.user);
   const logout = useStore((state) => state.logout);
   const isAuthenticated = !!user;
 
-  const isActive = (path: string) => {
-    if (path === "/") return location.pathname === "/";
-    return location.pathname.startsWith(path);
-  };
-
   const handleSignout = () => {
     logout();
     setIsOpen(false);
-    navigate("/auth/signin");
+    navigate("/");
   };
 
-  const navLinks = [
-    { path: "/", label: "Home" },
-    { path: "/recipes", label: "Recipes" },
-    { path: "/create-recipe", label: "Create Recipe" },
-    ...(isAuthenticated ? [{ path: "/my-recipes", label: "My Recipes" }] : []),
-    ...(user?.role === "moderator"
-      ? [{ path: "/moderation", label: "Moderation" }]
-      : []),
-  ];
+  const handleNotificationClick = () => {
+    if (!isAuthenticated) {
+      navigate("/auth/signin");
+      return;
+    }
+    toast.info("Notification center will be connected soon.");
+  };
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-md">
+    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/85">
       <div className="container mx-auto px-4">
-        {/* Desktop Layout - 3 Column Grid */}
-        <div className="hidden md:grid md:grid-cols-3 items-center h-16 gap-4">
-          {/* Left Section: Logo + Search Bar */}
-          <div className="flex items-center gap-4">
-            <Link
-              to="/"
-              className="text-2xl font-bold text-orange-600 hover:text-orange-700 transition-colors flex-shrink-0"
+        {/* Desktop */}
+        <div className="hidden h-16 items-center justify-between gap-4 md:flex">
+          {/* Left: Brand */}
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-lg font-extrabold tracking-tight text-orange-600 transition-colors hover:text-orange-700"
+          >
+            <ChefHat className="size-5" />
+            SnapChef
+          </Link>
+
+          {/* Center: Search */}
+          <GlobalSearch className="w-[420px]" />
+
+          {/* Right: User related */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleNotificationClick}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition-colors hover:bg-orange-100 hover:text-orange-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-orange-900/40 dark:hover:text-orange-300"
+              aria-label="Notifications"
             >
-              SnapChef
-            </Link>
+              <Bell size={18} />
+            </button>
 
-            {/* Global Search with mode toggle - Available to all users */}
-            <GlobalSearch className="w-80" />
-          </div>
-
-          {/* Center Section: Navigation Links */}
-          <nav className="flex items-center justify-center gap-6">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`text-sm font-medium transition-colors relative group whitespace-nowrap ${
-                  isActive(link.path)
-                    ? "text-orange-600 font-bold"
-                    : "text-gray-700 hover:text-orange-600"
-                }`}
-              >
-                {link.label}
-                {isActive(link.path) && (
-                  <span className="absolute bottom-[-20px] left-0 right-0 h-0.5 bg-orange-600"></span>
-                )}
-              </Link>
-            ))}
-          </nav>
-
-          {/* Right Section: User Profile / Auth Buttons */}
-          <div className="flex items-center justify-end gap-3">
             {isAuthenticated && user ? (
               <UserMenu />
             ) : (
               <>
-                <Button
-                  variant="ghost"
-                  asChild
-                  className="hover:text-orange-600"
-                >
-                  <Link to="/auth/signin">Sign In</Link>
-                </Button>
-                <Button
-                  asChild
-                  className="bg-orange-600 hover:bg-orange-700 text-white"
-                >
-                  <Link to="/auth/signup">Sign Up</Link>
-                </Button>
+                <Link to="/auth/signin">
+                  <Button variant="ghost" className="hover:text-orange-600">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/auth/signup">
+                  <Button className="bg-orange-600 text-white hover:bg-orange-700">
+                    Sign Up
+                  </Button>
+                </Link>
               </>
             )}
           </div>
         </div>
 
-        {/* Mobile Layout */}
-        <div className="flex md:hidden items-center justify-between h-16">
-          {/* Logo */}
+        {/* Mobile top bar */}
+        <div className="flex h-16 items-center justify-between md:hidden">
           <Link
             to="/"
-            className="text-2xl font-bold text-orange-600 hover:text-orange-700 transition-colors"
+            className="inline-flex items-center gap-2 text-xl font-extrabold text-orange-600"
           >
+            <ChefHat className="size-5" />
             SnapChef
           </Link>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="p-2 text-gray-700 hover:text-orange-600 transition-colors"
-            aria-label="Toggle menu"
-          >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleNotificationClick}
+              className="rounded-md p-2 text-slate-700 transition-colors hover:bg-slate-100 hover:text-orange-600 dark:text-slate-200 dark:hover:bg-slate-800"
+              aria-label="Notifications"
+            >
+              <Bell size={20} />
+            </button>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="rounded-md p-2 text-slate-700 transition-colors hover:bg-slate-100 hover:text-orange-600 dark:text-slate-200 dark:hover:bg-slate-800"
+              aria-label="Toggle menu"
+            >
+              {isOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile panel */}
         {isOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200">
-            {/* Mobile Nav Links */}
-            <div className="space-y-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onClick={() => setIsOpen(false)}
-                  className={`block px-4 py-3 rounded-md text-sm font-medium transition-colors ${
-                    isActive(link.path)
-                      ? "text-orange-600 font-bold bg-orange-50"
-                      : "text-gray-700 hover:text-orange-600 hover:bg-gray-50"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
+          <div className="space-y-3 border-t border-slate-200 py-4 dark:border-slate-800 md:hidden">
+            <GlobalSearch className="w-full" />
 
+            <div className="space-y-1">
               {isAuthenticated && user ? (
                 <>
                   <Link
                     to="/profile"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium text-gray-700 hover:text-orange-600 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-orange-600 dark:text-slate-200 dark:hover:bg-slate-800"
                   >
                     <UserIcon size={18} />
                     <span>{user.username || user.email}</span>
                   </Link>
                   <button
                     onClick={handleSignout}
-                    className="flex items-center gap-3 w-full px-4 py-3 rounded-md text-sm font-medium text-gray-700 hover:text-orange-600 hover:bg-gray-50 transition-colors"
+                    className="flex w-full items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-orange-600 dark:text-slate-200 dark:hover:bg-slate-800"
                   >
                     <LogOut size={18} />
                     Sign Out
@@ -161,14 +141,14 @@ export default function Header() {
                   <Link
                     to="/auth/signin"
                     onClick={() => setIsOpen(false)}
-                    className="block px-4 py-3 rounded-md text-sm font-medium text-gray-700 hover:text-orange-600 hover:bg-gray-50 transition-colors"
+                    className="block rounded-md px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-orange-600 dark:text-slate-200 dark:hover:bg-slate-800"
                   >
                     Sign In
                   </Link>
                   <Link
                     to="/auth/signup"
                     onClick={() => setIsOpen(false)}
-                    className="block px-4 py-3 rounded-md text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 transition-colors text-center"
+                    className="block rounded-md bg-orange-600 px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-orange-700"
                   >
                     Sign Up
                   </Link>

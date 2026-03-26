@@ -1,29 +1,27 @@
-import { Link } from "react-router-dom";
-import { Clock, Users, Star, ChefHat } from "lucide-react";
-import type { RecipeData, AuthorData } from "../../types/recipe-detail";
+import { Clock, Heart, Users } from "lucide-react";
+import type { RecipeData } from "../../types/recipe-detail";
 
 interface RecipeHeaderProps {
   recipe: RecipeData;
-  author: AuthorData | null;
   formatCookingTime: (minutes: number) => string;
   getServings: () => number;
   getCookingTime: () => number;
-  getAuthorName: () => string;
   likeCount: number;
+  isLiked: boolean;
 }
 
 export function RecipeHeader({
   recipe,
-  author,
   formatCookingTime,
   getServings,
   getCookingTime,
-  getAuthorName,
   likeCount,
+  isLiked,
 }: RecipeHeaderProps) {
-  const cuisineLabel = recipe.status
-    ? recipe.status.charAt(0).toUpperCase() + recipe.status.slice(1)
-    : "Featured";
+  const categories =
+    recipe.categories && recipe.categories.length > 0
+      ? recipe.categories
+      : [{ name: "Featured", slug: "featured" }];
 
   return (
     <div className="relative overflow-hidden rounded-xl group">
@@ -36,12 +34,14 @@ export function RecipeHeader({
 
       <div className="absolute inset-x-0 bottom-0 p-6 md:p-8">
         <div className="mb-3 flex flex-wrap items-center gap-2">
-          <span className="rounded bg-primary px-2 py-1 text-xs font-bold text-primary-foreground">
-            {cuisineLabel}
-          </span>
-          <span className="rounded bg-white/25 px-2 py-1 text-xs font-bold text-white backdrop-blur-sm">
-            Homemade
-          </span>
+          {categories.map((category) => (
+            <span
+              key={category.slug}
+              className="rounded bg-white/25 px-2 py-1 text-xs font-bold text-white backdrop-blur-sm"
+            >
+              {category.name}
+            </span>
+          ))}
         </div>
 
         <h1 className="text-3xl font-black leading-tight tracking-tight text-white md:text-5xl">
@@ -62,15 +62,11 @@ export function RecipeHeader({
           </div>
 
           <div className="flex items-center gap-1">
-            <Star className="size-4 fill-yellow-400 text-yellow-400" />
+            <Heart
+              className={`size-4 ${isLiked ? "fill-red-500 text-red-500" : "text-red-400"}`}
+            />
             <span className="text-sm font-medium">{likeCount} likes</span>
           </div>
-
-          <Link
-            to={`/users/${recipe.author_id}/profile`}
-            className="ml-auto inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/20"
-          >
-          </Link>
         </div>
       </div>
     </div>
