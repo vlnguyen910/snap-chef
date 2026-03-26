@@ -25,30 +25,29 @@ export function IngredientList({
   };
 
   return (
-    <div className="sticky top-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-        <span className="w-1 h-8 bg-orange-500 rounded-full" />
+    <div className="rounded-xl border border-slate-200 bg-card p-6 dark:border-slate-800">
+      <h2 className="border-b border-slate-200 pb-2 text-xl font-bold text-slate-900 dark:border-slate-800 dark:text-white">
         Ingredients
       </h2>
 
       {ingredients.length > 0 ? (
-        <div className="bg-orange-50 rounded-xl p-6 space-y-3">
+        <div className="mt-4 flex flex-col gap-3">
           {ingredients.map((ingredient) => (
             <label
               key={ingredient.index}
-              className="flex items-start gap-3 cursor-pointer group hover:bg-orange-100 p-2 rounded-lg transition-colors"
+              className="group flex cursor-pointer items-start gap-3 rounded-lg p-2 transition-colors hover:bg-primary/5"
             >
               <input
                 type="checkbox"
                 checked={checkedIngredients.has(ingredient.index)}
                 onChange={() => toggleIngredient(ingredient.index)}
-                className="mt-1 w-5 h-5 text-orange-500 rounded border-gray-300 focus:ring-orange-500 focus:ring-2 cursor-pointer"
+                className="mt-0.5 h-5 w-5 cursor-pointer rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary"
               />
               <span
-                className={`flex-1 text-gray-700 ${checkedIngredients.has(ingredient.index) ? "line-through text-gray-400" : ""}`}
+                className={`flex-1 text-slate-700 transition-colors group-hover:text-primary dark:text-slate-300 ${checkedIngredients.has(ingredient.index) ? "text-slate-400 line-through" : ""}`}
               >
                 <span className="font-semibold">
-                  {ingredient.amount} {ingredient.unit}
+                  {ingredient.quantity} {ingredient.unit}
                 </span>{" "}
                 {ingredient.name}
               </span>
@@ -56,7 +55,7 @@ export function IngredientList({
           ))}
         </div>
       ) : (
-        <p className="text-gray-500 italic">
+        <p className="mt-4 italic text-slate-500">
           No ingredients listed for this recipe.
         </p>
       )}
