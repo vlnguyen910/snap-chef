@@ -6,30 +6,34 @@ interface StepListProps {
 
 export function StepList({ steps }: StepListProps) {
   return (
-    <>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-        <span className="w-1 h-8 bg-orange-500 rounded-full" />
-        Instructions
+    <section className="rounded-xl border border-slate-200 bg-card p-6 dark:border-slate-800">
+      <h2 className="mb-4 text-xl font-bold text-slate-900 dark:text-white">
+        Step-by-Step Instructions
       </h2>
 
       {steps.length > 0 ? (
-        <div className="space-y-6">
+        <div className="flex flex-col gap-8">
           {steps.map((step, index) => (
-            <div key={index} className="flex gap-4 group">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg group-hover:scale-110 transition-transform">
+            <div key={index} className="flex gap-4">
+              <div className="flex shrink-0 flex-col items-center">
+                <div className="flex size-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
                   {step.order_index}
                 </div>
+                {index < steps.length - 1 && (
+                  <div className="mt-2 h-full w-px bg-slate-200 dark:bg-slate-800" />
+                )}
               </div>
-              <div className="flex-1 pt-2">
-                <p className="text-gray-700 leading-relaxed text-lg mb-3">
+              <div className="flex-1 pb-1">
+                <p className="mb-2 text-sm font-bold text-slate-900 dark:text-white">
+                  Step {step.order_index}
+                </p>
+                <p className="mb-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
                   {step.content}
                 </p>
                 {step.image_url && (
-                  <img
-                    src={step.image_url}
-                    alt={`Step ${step.order_index}`}
-                    className="rounded-lg shadow-md max-h-96 w-full md:w-auto object-contain mt-3"
+                  <div
+                    className="h-40 w-full rounded-lg bg-cover bg-center"
+                    style={{ backgroundImage: `url(${step.image_url})` }}
                   />
                 )}
               </div>
@@ -37,10 +41,10 @@ export function StepList({ steps }: StepListProps) {
           ))}
         </div>
       ) : (
-        <p className="text-gray-500 italic">
+        <p className="italic text-slate-500">
           No instructions available for this recipe.
         </p>
       )}
-    </>
+    </section>
   );
 }

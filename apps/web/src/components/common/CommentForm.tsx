@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { StarRating } from "../common/StarRating";
-import axios from "axios";
 import type { CreateCommentPayload } from "@/types";
 
 interface CommentFormProps {
@@ -92,12 +91,12 @@ export const CommentForm: React.FC<CommentFormProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 p-4 bg-white rounded-lg shadow"
+      className="mb-8 rounded-xl border border-slate-200 bg-background p-4 dark:border-slate-800"
     >
       <div>
         <label
           htmlFor="comment-rating"
-          className="block text-sm font-medium text-gray-700 mb-2"
+          className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
         >
           Your Rating
         </label>
@@ -107,7 +106,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
       <div>
         <label
           htmlFor="comment-content"
-          className="block text-sm font-medium text-gray-700 mb-2"
+          className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
         >
           Your Comment
         </label>
@@ -116,14 +115,14 @@ export const CommentForm: React.FC<CommentFormProps> = ({
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={4}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full rounded-lg border border-slate-200 bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 dark:border-slate-800"
           placeholder="Share your thoughts about this recipe..."
           disabled={isLoading}
         />
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-800 text-sm">
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">
           {error}
         </div>
       )}
@@ -131,7 +130,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
       <button
         type="submit"
         disabled={isLoading || !content.trim() || rating === 0}
-        className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+        className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-slate-300"
       >
         {isLoading ? "Posting..." : "Post Comment"}
       </button>

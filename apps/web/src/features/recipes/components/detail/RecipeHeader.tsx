@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Clock, Users, Calendar, ChefHat } from "lucide-react";
+import { Clock, Users, Star, ChefHat } from "lucide-react";
 import type { RecipeData, AuthorData } from "../../types/recipe-detail";
 
 interface RecipeHeaderProps {
@@ -8,8 +8,8 @@ interface RecipeHeaderProps {
   formatCookingTime: (minutes: number) => string;
   getServings: () => number;
   getCookingTime: () => number;
-  formatDate: (dateString: string) => string;
   getAuthorName: () => string;
+  likeCount: number;
 }
 
 export function RecipeHeader({
@@ -18,53 +18,58 @@ export function RecipeHeader({
   formatCookingTime,
   getServings,
   getCookingTime,
-  formatDate,
   getAuthorName,
+  likeCount,
 }: RecipeHeaderProps) {
+  const cuisineLabel = recipe.status
+    ? recipe.status.charAt(0).toUpperCase() + recipe.status.slice(1)
+    : "Featured";
+
   return (
-    <div className="relative h-[400px] md:h-[500px] overflow-hidden">
+    <div className="relative overflow-hidden rounded-xl group">
       <img
         src={recipe.thumbnail_url}
         alt={recipe.title}
-        className="w-full h-full object-cover"
+        className="h-[360px] w-full object-cover transition-transform duration-500 group-hover:scale-105 md:h-[420px]"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
 
-      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
-        <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg">
+      <div className="absolute inset-x-0 bottom-0 p-6 md:p-8">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <span className="rounded bg-primary px-2 py-1 text-xs font-bold text-primary-foreground">
+            {cuisineLabel}
+          </span>
+          <span className="rounded bg-white/25 px-2 py-1 text-xs font-bold text-white backdrop-blur-sm">
+            Homemade
+          </span>
+        </div>
+
+        <h1 className="text-3xl font-black leading-tight tracking-tight text-white md:text-5xl">
           {recipe.title}
         </h1>
 
-        <div className="flex flex-wrap gap-3">
-          <div className="flex items-center gap-2 bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
-            <Clock className="text-orange-500" size={20} />
-            <span className="font-medium text-gray-800">
+        <div className="mt-4 flex flex-wrap items-center gap-4 text-white/95">
+          <div className="flex items-center gap-1">
+            <Clock className="size-4 text-primary" />
+            <span className="text-sm font-medium">
               {formatCookingTime(getCookingTime())}
             </span>
           </div>
 
-          <div className="flex items-center gap-2 bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
-            <Users className="text-orange-500" size={20} />
-            <span className="font-medium text-gray-800">
-              {getServings()} servings
-            </span>
+          <div className="flex items-center gap-1">
+            <Users className="size-4 text-primary" />
+            <span className="text-sm font-medium">{getServings()} servings</span>
           </div>
 
-          <div className="flex items-center gap-2 bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
-            <Calendar className="text-orange-500" size={20} />
-            <span className="font-medium text-gray-800">
-              {formatDate(recipe.created_at)}
-            </span>
+          <div className="flex items-center gap-1">
+            <Star className="size-4 fill-yellow-400 text-yellow-400" />
+            <span className="text-sm font-medium">{likeCount} likes</span>
           </div>
 
           <Link
             to={`/users/${recipe.author_id}/profile`}
-            className="flex items-center gap-2 bg-orange-500 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg hover:bg-orange-600 transition-colors group"
+            className="ml-auto inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/20"
           >
-            <ChefHat className="text-white" size={20} />
-            <span className="font-medium text-white group-hover:underline">
-              By {getAuthorName()}
-            </span>
           </Link>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Mail, Timer } from "lucide-react";
 import Loading from "@/components/common/Loading";
 import ErrorState from "@/components/common/ErrorState";
 import { RecipeComments } from "@/components/common/RecipeComments";
@@ -287,7 +287,7 @@ export default function RecipeDetailPage() {
       return [];
     }
     return recipe.ingredients.map((item: any, index: number) => {
-      const amount = item.quantity || item.quanity || item.amount || 0;
+      const quantity = item.quantity || item.quanity || item.amount || 0;
       const unit = item.unit || "";
       let name = "Unknown ingredient";
       if (item.name) {
@@ -302,7 +302,7 @@ export default function RecipeDetailPage() {
           name = foundIngredient.name;
         }
       }
-      return { name, amount, unit, index };
+      return { name, quantity, unit, index };
     });
   }, [recipe?.ingredients, allIngredients]);
 
@@ -330,6 +330,30 @@ export default function RecipeDetailPage() {
   const ingredients = getIngredients;
   const steps = getSteps;
 
+  const relatedCards = useMemo(() => {
+    const baseImage =
+      recipe?.thumbnail_url ||
+      "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1200&q=80&auto=format&fit=crop";
+
+    return [
+      {
+        title: "Chef's Quick Variation",
+        time: Math.max(getCookingTime() - 10, 10),
+        image: steps[0]?.image_url || baseImage,
+      },
+      {
+        title: "Flavor Booster Side",
+        time: Math.max(Math.floor(getCookingTime() / 2), 10),
+        image: steps[1]?.image_url || baseImage,
+      },
+      {
+        title: "Fresh Serving Pair",
+        time: Math.max(Math.floor(getCookingTime() / 3), 8),
+        image: steps[2]?.image_url || baseImage,
+      },
+    ];
+  }, [recipe?.thumbnail_url, steps, getCookingTime]);
+
   if (isLoading) return <Loading fullScreen />;
   if (error)
     return <ErrorState message={error} onRetry={fetchRecipe} fullScreen />;
@@ -343,90 +367,123 @@ export default function RecipeDetailPage() {
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
-      <div className="container mx-auto px-4 py-6 max-w-6xl">
-        <button
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 transition-colors font-medium"
-        >
-          <ArrowLeft size={20} />
-          Back
-        </button>
-      </div>
+    <div className="min-h-screen bg-background-light text-slate-900 dark:bg-background-dark dark:text-slate-100">
+      <main className="mx-auto flex w-full max-w-[1280px] flex-col gap-8 px-4 py-6 md:flex-row md:px-8">
+        <section className="flex min-w-0 flex-1 flex-col gap-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex w-fit items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            <ArrowLeft size={16} />
+            Back
+          </button>
 
-      <div className="relative">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-            <RecipeHeader
-              recipe={recipe}
-              author={author}
-              formatCookingTime={formatCookingTime}
-              getServings={getServings}
-              getCookingTime={getCookingTime}
-              formatDate={formatDate}
-              getAuthorName={getAuthorName}
-            />
+          <RecipeHeader
+            recipe={recipe}
+            author={author}
+            formatCookingTime={formatCookingTime}
+            getServings={getServings}
+            getCookingTime={getCookingTime}
+            getAuthorName={getAuthorName}
+            likeCount={likeCount}
+          />
 
-            <div className="p-6 md:p-10">
-              <div className="mb-8 pb-6 border-b border-gray-200">
-                <RecipeActions
-                  recipe={recipe}
-                  isOwner={isOwner}
-                  getAuthorName={getAuthorName}
-                  isFollowing={isFollowing}
-                  isFollowLoading={isFollowLoading}
-                  handleFollowAuthor={handleFollowAuthor}
-                  isLiked={isLiked}
-                  likeCount={likeCount}
-                  isLikeLoading={isLikeLoading}
-                  handleLike={handleLike}
-                  isBookmarked={isBookmarked}
-                  isBookmarkLoading={isBookmarkLoading}
-                  handleBookmark={handleBookmark}
-                  handleDeleteRecipe={handleDeleteRecipe}
-                />
-              </div>
+          <RecipeActions
+            recipe={recipe}
+            isOwner={isOwner}
+            getAuthorName={getAuthorName}
+            isFollowing={isFollowing}
+            isFollowLoading={isFollowLoading}
+            handleFollowAuthor={handleFollowAuthor}
+            isLiked={isLiked}
+            likeCount={likeCount}
+            isLikeLoading={isLikeLoading}
+            handleLike={handleLike}
+            isBookmarked={isBookmarked}
+            isBookmarkLoading={isBookmarkLoading}
+            handleBookmark={handleBookmark}
+            handleDeleteRecipe={handleDeleteRecipe}
+          />
 
-              <div className="mb-10">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  About This Recipe
-                </h2>
-                <p className="text-gray-600 text-lg leading-relaxed">
-                  {recipe.description ||
-                    "No description available for this recipe."}
-                </p>
-              </div>
+          <section className="rounded-xl border border-slate-200 bg-card p-6 dark:border-slate-800">
+            <h2 className="mb-3 text-xl font-bold">About this recipe</h2>
+            <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+              {recipe.description || "No description available for this recipe."}
+            </p>
+            <p className="mt-3 text-xs font-medium text-slate-500">
+              Created on {formatDate(recipe.created_at)}
+            </p>
+          </section>
 
-              <div className="grid md:grid-cols-5 gap-8">
-                <div className="md:col-span-2">
-                  <IngredientList
-                    ingredients={ingredients}
-                    checkedIngredients={checkedIngredients}
-                    setCheckedIngredients={setCheckedIngredients}
-                  />
-                </div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-1">
+              <IngredientList
+                ingredients={ingredients}
+                checkedIngredients={checkedIngredients}
+                setCheckedIngredients={setCheckedIngredients}
+              />
+            </div>
 
-                <div className="md:col-span-3">
-                  <StepList steps={steps} />
-                </div>
-              </div>
-
-              <div className="mt-12 pt-8 border-t border-gray-200">
-                <p className="text-center text-gray-500 text-sm">
-                  Enjoy your delicious meal! Don't forget to share your creation
-                  with friends and family. 🍽️
-                </p>
-              </div>
-
-              <div className="mt-12 pt-8 border-t border-gray-200">
-                <RecipeComments recipeOwnerId={recipe?.author_id} />
-              </div>
+            <div className="lg:col-span-2">
+              <StepList steps={steps} />
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="h-20" />
+          <RecipeComments recipeOwnerId={recipe?.author_id} />
+        </section>
+
+        <aside className="w-full space-y-6 md:w-80">
+          <div>
+            <h3 className="text-xl font-bold">Related Recipes</h3>
+            <p className="text-sm font-medium text-primary">
+              More inspiration from {getAuthorName()}
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            {relatedCards.map((card) => (
+              <article
+                key={card.title}
+                className="group cursor-pointer rounded-xl border border-slate-200 bg-card p-3 shadow-sm transition-all hover:border-primary/50 dark:border-slate-800"
+              >
+                <div className="aspect-video overflow-hidden rounded-lg">
+                  <img
+                    src={card.image}
+                    alt={card.title}
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
+                <div className="mt-3">
+                  <p className="font-bold transition-colors group-hover:text-primary">
+                    {card.title}
+                  </p>
+                  <p className="mt-1 inline-flex items-center gap-1 text-xs text-slate-500">
+                    <Timer className="size-3.5" /> {card.time} mins
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <section className="rounded-xl border border-primary/20 bg-primary/10 p-6">
+            <Mail className="size-8 text-primary" />
+            <h4 className="mt-4 font-bold">Never miss a recipe</h4>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+              Get new cooking ideas delivered to your inbox.
+            </p>
+            <div className="mt-4 flex flex-col gap-2">
+              <input
+                type="email"
+                placeholder="Email address"
+                className="w-full rounded-lg border border-primary/20 bg-background px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
+              />
+              <button className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90">
+                Subscribe
+              </button>
+            </div>
+          </section>
+        </aside>
+      </main>
     </div>
   );
 }
