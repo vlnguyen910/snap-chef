@@ -74,9 +74,7 @@ describe('FeedService', () => {
       jest
         .spyOn(prismaService.recipe, 'findMany')
         .mockResolvedValue(mockRecipes as any);
-      jest
-        .spyOn(prismaService.comment, 'groupBy')
-        .mockResolvedValue([] as any);
+      jest.spyOn(prismaService.comment, 'groupBy').mockResolvedValue([] as any);
 
       const result = await service.getUserFeed('user-1', undefined, 10);
 
@@ -93,9 +91,7 @@ describe('FeedService', () => {
       jest
         .spyOn(prismaService.recipe, 'findFirst')
         .mockResolvedValue({ id: 'trending-1' } as any);
-      jest
-        .spyOn(prismaService.comment, 'groupBy')
-        .mockResolvedValue([] as any);
+      jest.spyOn(prismaService.comment, 'groupBy').mockResolvedValue([] as any);
 
       const getTrendingSpy = jest.spyOn(service, 'getTrendingRecipes');
 
@@ -123,7 +119,11 @@ describe('FeedService', () => {
 
       await service.getUserFeed('user-1', undefined, 10);
 
-      expect(getTrendingRecipesSpy).toHaveBeenCalledWith(10, undefined, 'user-1');
+      expect(getTrendingRecipesSpy).toHaveBeenCalledWith(
+        10,
+        undefined,
+        'user-1',
+      );
     });
 
     it('should continue with trending feed when cursor is trending-prefixed', async () => {
@@ -149,9 +149,7 @@ describe('FeedService', () => {
       jest
         .spyOn(prismaService.recipe, 'findMany')
         .mockResolvedValue(mockRecipes as any);
-      jest
-        .spyOn(prismaService.comment, 'groupBy')
-        .mockResolvedValue([] as any);
+      jest.spyOn(prismaService.comment, 'groupBy').mockResolvedValue([] as any);
 
       const result = await service.getTrendingRecipes(10);
 
@@ -175,9 +173,7 @@ describe('FeedService', () => {
       jest
         .spyOn(prismaService.recipe, 'findMany')
         .mockResolvedValue(mockRecipes as any);
-      jest
-        .spyOn(prismaService.comment, 'groupBy')
-        .mockResolvedValue([] as any);
+      jest.spyOn(prismaService.comment, 'groupBy').mockResolvedValue([] as any);
 
       await service.getTrendingRecipes(10, 'trending:trending-1');
 
@@ -192,9 +188,7 @@ describe('FeedService', () => {
 
     it('should exclude followed authors in trending fallback for logged-in users', async () => {
       jest.spyOn(prismaService.recipe, 'findMany').mockResolvedValue([] as any);
-      jest
-        .spyOn(prismaService.comment, 'groupBy')
-        .mockResolvedValue([] as any);
+      jest.spyOn(prismaService.comment, 'groupBy').mockResolvedValue([] as any);
 
       await service.getTrendingRecipes(10, undefined, 'user-1');
 

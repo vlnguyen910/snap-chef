@@ -134,6 +134,11 @@ export const MOCK_TOP_CHEFS: TopChef[] = [
 export const MOCK_TRENDING_CATEGORIES: TrendingCategory[] = [
   { id: 1, slug: "quick-easy", name: "Quick & Easy", recipe_count: 2400 },
   { id: 2, slug: "vegan-life", name: "Vegan Life", recipe_count: 1800 },
-  { id: 3, slug: "italian-classics", name: "Italian Classics", recipe_count: 3100 },
+  {
+    id: 3,
+    slug: "italian-classics",
+    name: "Italian Classics",
+    recipe_count: 3100,
+  },
   { id: 4, slug: "sweet-treats", name: "Sweet Treats", recipe_count: 950 },
 ];

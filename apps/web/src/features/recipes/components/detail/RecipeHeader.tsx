@@ -58,7 +58,9 @@ export function RecipeHeader({
 
           <div className="flex items-center gap-1">
             <Users className="size-4 text-primary" />
-            <span className="text-sm font-medium">{getServings()} servings</span>
+            <span className="text-sm font-medium">
+              {getServings()} servings
+            </span>
           </div>
 
           <div className="flex items-center gap-1">

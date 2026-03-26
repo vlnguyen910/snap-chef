@@ -1,13 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  Bell,
-  Menu,
-  X,
-  User as UserIcon,
-  LogOut,
-  ChefHat,
-} from "lucide-react";
+import { Bell, Menu, X, User as UserIcon, LogOut, ChefHat } from "lucide-react";
 import { useState } from "react";
 import { useStore } from "@/lib/store";
 import UserMenu from "./UserMenu";

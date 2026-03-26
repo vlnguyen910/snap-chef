@@ -56,9 +56,7 @@ export default function FeedSidebar({
               key={cat.id}
               className="flex items-center justify-between px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-sm font-medium transition-colors w-full text-left"
             >
-              <span>
-                {cat.name}
-              </span>
+              <span>{cat.name}</span>
               <span className="text-xs text-slate-400">{cat.recipe_count}</span>
             </button>
           ))}
