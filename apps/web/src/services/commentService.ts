@@ -94,7 +94,7 @@ function normalizeComment(data: any): Comment {
       ? {
           id: data.user.id?.toString() || "",
           username: data.user.username || "Anonymous",
-          avatar: data.user.avatar,
+          avatar: data.user.avatar || data.user.avatar_url,
         }
       : undefined,
     content: data.content || "",

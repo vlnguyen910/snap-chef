@@ -32,8 +32,19 @@ export interface RecipeData {
   cooking_time: number;
   thumbnail_url: string;
   status: string;
+  categories?: Array<{
+    name: string;
+    slug: string;
+  }>;
   ingredients: RecipeIngredient[];
   steps: StepFromAPI[];
+  user?: {
+    username: string;
+    avatar_url?: string | null;
+  };
+  likes_count?: number;
+  comments_count?: number;
+  is_liked?: boolean;
   created_at: string;
   updated_at: string;
 }

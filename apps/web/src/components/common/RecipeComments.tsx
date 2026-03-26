@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { commentService } from "@/services/commentService";
 import { CommentForm } from "../common/CommentForm";
 import { StarRating } from "../common/StarRating";
 import { useStore } from "@/lib/store";
 import { toast } from "@/lib/toast-store";
 import Swal from "sweetalert2";
-import { MessageCircle, ThumbsUp } from "lucide-react";
+import { MessageCircle, ThumbsUp, Ellipsis } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type {
   Comment,
   CreateCommentPayload,
@@ -30,6 +36,8 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({
   recipeOwnerId,
 }) => {
   const { id: recipeId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
   const user = useStore((state) => state.user);
 
   const [comments, setComments] = useState<Comment[]>([]);
@@ -39,6 +47,10 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
   const [editRating, setEditRating] = useState(0);
+
+  const signinWithRedirectPath = `/auth/signin?redirect=${encodeURIComponent(
+    `${location.pathname}${location.search}`,
+  )}`;
 
   // Fetch comments on mount - FIXED: Only depends on recipeId to prevent infinite loop
   useEffect(() => {
@@ -103,6 +115,12 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({
     try {
       await commentService.createComment(recipeId, payload);
       await fetchComments(); // Refresh comments list
+    } catch (error: any) {
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        toast.warning("Please login to comment");
+        navigate(signinWithRedirectPath);
+      }
+      throw error;
     } finally {
       setIsSubmitting(false);
     }
@@ -131,8 +149,12 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({
     } catch (error: any) {
       if (error.response?.status === 404) {
         toast.error("Comment not found");
-      } else if (error.response?.status === 401) {
+      } else if (
+        error.response?.status === 401 ||
+        error.response?.status === 403
+      ) {
         toast.error("You are not authorized to delete this comment");
+        navigate(signinWithRedirectPath);
       } else {
         toast.error("Failed to delete comment");
       }
@@ -163,9 +185,22 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({
       await commentService.updateComment(recipeId, commentId, payload);
       await fetchComments(); // Refresh comments list
       handleCancelEdit();
-    } catch (error) {
-      alert("Failed to update comment");
+    } catch (error: any) {
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        toast.warning("Please login to continue");
+        navigate(signinWithRedirectPath);
+        return;
+      }
+      toast.error("Failed to update comment");
     }
+  };
+
+  const handleHelpful = () => {
+    toast.info("Helpful reaction will be connected soon.");
+  };
+
+  const handleReply = () => {
+    toast.info("Reply feature will be connected soon.");
   };
 
   // Check if current user can delete a comment
@@ -198,7 +233,8 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({
       ) : (
         <div className="mb-6 rounded-lg border border-primary/20 bg-primary/5 p-4 text-center">
           <p className="font-medium text-primary">
-            Please <a href="/auth/signin">log in</a> to join the discussion
+            Please <Link to={signinWithRedirectPath}>log in</Link> to join the
+            discussion
           </p>
         </div>
       )}
@@ -259,25 +295,46 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex gap-2">
-                  {canEditComment(comment) && (
-                    <button
-                      onClick={() => handleStartEdit(comment)}
-                      className="text-sm font-medium text-primary hover:underline"
+                {/* Action Menu */}
+                {editingCommentId !== comment.id && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      className="rounded-md p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                      aria-label="Comment actions"
                     >
-                      Edit
-                    </button>
-                  )}
-                  {canDeleteComment(comment) && (
-                    <button
-                      onClick={() => handleDeleteComment(comment.id)}
-                      className="text-sm font-medium text-red-500 hover:underline"
-                    >
-                      Delete
-                    </button>
-                  )}
-                </div>
+                      <Ellipsis className="size-4" />
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent align="end" className="min-w-40">
+                      {canEditComment(comment) && (
+                        <DropdownMenuItem
+                          onClick={() => handleStartEdit(comment)}
+                        >
+                          Edit
+                        </DropdownMenuItem>
+                      )}
+
+                      {canDeleteComment(comment) && (
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => handleDeleteComment(comment.id)}
+                        >
+                          Delete
+                        </DropdownMenuItem>
+                      )}
+
+                      <DropdownMenuItem onClick={handleHelpful}>
+                        <ThumbsUp className="size-3.5" />
+                        Helpful
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem onClick={handleReply}>
+                        <MessageCircle className="size-3.5" />
+                        Reply
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
 
               {/* Rating */}
@@ -315,21 +372,9 @@ export const RecipeComments: React.FC<RecipeCommentsProps> = ({
                   </div>
                 </div>
               ) : (
-                <>
-                  <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                    {comment.content}
-                  </p>
-                  <div className="mt-3 flex gap-4">
-                    <button className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-primary">
-                      <ThumbsUp className="size-3.5" />
-                      Helpful
-                    </button>
-                    <button className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-primary">
-                      <MessageCircle className="size-3.5" />
-                      Reply
-                    </button>
-                  </div>
-                </>
+                <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                  {comment.content}
+                </p>
               )}
             </div>
           ))

@@ -11,7 +11,7 @@ export default function UserMenu() {
 
   const handleLogout = () => {
     logout();
-    navigate("/auth/signin");
+    navigate("/");
   };
 
   if (!user) return null;
